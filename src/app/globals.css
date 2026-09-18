@@ -1,0 +1,170 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f5f8fc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --muted: #e8eef6;
+  --muted-foreground: #64748b;
+  --border: #dbe4f0;
+  --primary: #1e88e5;
+  --primary-foreground: #ffffff;
+  --brand-blue-light: #4fc3f7;
+  --brand-blue: #1e88e5;
+  --brand-blue-deep: #1565c0;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --cyan: #4fc3f7;
+  --lime: #a3e635;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0f172a;
+  --ring: #1e88e5;
+  --shadow-soft: 0 8px 28px rgba(15, 23, 42, 0.06);
+}
+
+.dark {
+  --background: #0b0d11;
+  --foreground: #f1f5f9;
+  --card: #12151b;
+  --card-foreground: #f1f5f9;
+  --muted: #1a1e26;
+  --muted-foreground: #94a3b8;
+  --border: #232833;
+  --primary: #42a5f5;
+  --primary-foreground: #ffffff;
+  --brand-blue-light: #4fc3f7;
+  --brand-blue: #1e88e5;
+  --brand-blue-deep: #1565c0;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --cyan: #4fc3f7;
+  --lime: #a3e635;
+  --sidebar: #0e1116;
+  --sidebar-foreground: #f1f5f9;
+  --ring: #42a5f5;
+  --shadow-soft: 0 8px 28px rgba(0, 0, 0, 0.4);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-cyan: var(--cyan);
+  --color-lime: var(--lime);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-ring: var(--ring);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --radius-card: 1.25rem;
+  --radius-button: 0.875rem;
+  --radius-input: 0.75rem;
+  --shadow-soft: var(--shadow-soft);
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 14px;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  min-height: 100vh;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-heading {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--primary) 28%, transparent);
+}
+
+.focus-ring {
+  outline: none;
+}
+
+.focus-ring:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 35%, transparent);
+}
+
+.brand-x {
+  background: linear-gradient(180deg, #4fc3f7 0%, #1e88e5 48%, #1565c0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-white .brand-x,
+.brand-x-on-dark {
+  background: linear-gradient(180deg, #81d4fa 0%, #4fc3f7 40%, #42a5f5 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.surface {
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+}
+
+.gradient-primary {
+  background: linear-gradient(135deg, #1565c0 0%, #1e88e5 48%, #4fc3f7 100%);
+}
+
+.btn-gradient {
+  background-image: linear-gradient(135deg, #1565c0 0%, #1e88e5 48%, #4fc3f7 100%);
+  background-color: transparent;
+  color: #ffffff;
+}
+
+.btn-gradient:hover {
+  filter: brightness(1.08);
+}
+
+.gradient-mesh {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(30, 136, 229, 0.16), transparent),
+    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(79, 195, 247, 0.12), transparent),
+    var(--background);
+}
+
+.dark .gradient-mesh {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(30, 136, 229, 0.22), transparent),
+    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(79, 195, 247, 0.1), transparent),
+    var(--background);
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--muted-foreground) 35%, transparent) transparent;
+}
