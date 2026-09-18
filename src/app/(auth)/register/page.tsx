@@ -91,27 +91,27 @@ export default function ClassRepRegisterPage() {
       }
       subtitle="Register once for your stream, then manage uploads and the class timetable."
     >
-      <h1 className="font-heading text-lg font-semibold tracking-tight">
+      <h1 className="font-heading text-xl font-semibold tracking-tight sm:text-lg">
         Create CR account
       </h1>
-      <p className="mt-0.5 text-xs text-muted-foreground">
+      <p className="mt-1 text-sm text-muted-foreground sm:mt-0.5 sm:text-xs">
         For appointed class representatives only.
       </p>
 
-      <form className="mt-4 space-y-3" onSubmit={onSubmit} noValidate>
+      <form className="mt-5 space-y-3.5 sm:mt-4 sm:space-y-3" onSubmit={onSubmit} noValidate>
         {error ? <AuthAlert message={error} /> : null}
 
-        <label className="block text-xs font-medium">
+        <label className="block text-sm font-medium sm:text-xs">
           Full name
           <input
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="focus-ring mt-1 h-10 w-full rounded-[10px] border border-border bg-card px-3 text-sm"
+            className="focus-ring mt-1.5 h-11 w-full rounded-[10px] border border-border bg-card px-3 text-[15px] sm:mt-1 sm:h-10 sm:text-sm"
           />
         </label>
 
-        <label className="block text-xs font-medium">
+        <label className="block text-sm font-medium sm:text-xs">
           Email
           <input
             type="email"
@@ -119,16 +119,16 @@ export default function ClassRepRegisterPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="focus-ring mt-1 h-10 w-full rounded-[10px] border border-border bg-card px-3 text-sm"
+            className="focus-ring mt-1.5 h-11 w-full rounded-[10px] border border-border bg-card px-3 text-[15px] sm:mt-1 sm:h-10 sm:text-sm"
           />
         </label>
 
-        <label className="block text-xs font-medium">
+        <label className="block text-sm font-medium sm:text-xs">
           Stream
           <select
             value={streamId}
             onChange={(e) => setStreamId(e.target.value as ClassStreamId)}
-            className="focus-ring mt-1 h-10 w-full rounded-[10px] border border-border bg-card px-3 text-sm"
+            className="focus-ring mt-1.5 h-11 w-full rounded-[10px] border border-border bg-card px-3 text-[15px] sm:mt-1 sm:h-10 sm:text-sm"
           >
             {classStreams.map((s) => (
               <option key={s.id} value={s.id}>
@@ -159,7 +159,7 @@ export default function ClassRepRegisterPage() {
         </AuthSubmitButton>
       </form>
 
-      <p className="mt-4 text-center text-xs text-muted-foreground">
+      <p className="mt-5 text-center text-sm text-muted-foreground sm:mt-4 sm:text-xs">
         Already registered?{" "}
         <Link href="/login" className="font-medium text-primary">
           Sign in

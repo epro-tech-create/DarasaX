@@ -42,7 +42,7 @@ export function PasswordField({
 
   return (
     <div>
-      <label htmlFor={id} className="block text-[11px] font-medium">
+      <label htmlFor={id} className="block text-[13px] font-medium sm:text-[11px]">
         {label}
       </label>
       <div className="relative mt-1">
@@ -57,17 +57,17 @@ export function PasswordField({
           aria-invalid={!!error}
           aria-describedby={error ? `${id}-error` : undefined}
           className={cn(
-            "focus-ring h-9 w-full rounded-[9px] border bg-card px-2.5 pr-9 text-[13px]",
+            "focus-ring h-11 w-full rounded-[10px] border bg-card px-3 pr-10 text-[15px] sm:h-9 sm:rounded-[9px] sm:px-2.5 sm:pr-9 sm:text-[13px]",
             error ? "border-danger" : "border-border",
           )}
         />
         <button
           type="button"
           onClick={() => setVisible((v) => !v)}
-          className="focus-ring absolute right-1 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:text-foreground"
+          className="focus-ring absolute right-1.5 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:text-foreground sm:right-1 sm:h-6 sm:w-6"
           aria-label={visible ? "Hide password" : "Show password"}
         >
-          {visible ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+          {visible ? <EyeOff className="h-4 w-4 sm:h-3.5 sm:w-3.5" /> : <Eye className="h-4 w-4 sm:h-3.5 sm:w-3.5" />}
         </button>
       </div>
 
@@ -84,7 +84,7 @@ export function PasswordField({
               />
             ))}
           </div>
-          <ul className="grid grid-cols-2 gap-0.5 text-[9px] text-muted-foreground">
+          <ul className="grid grid-cols-2 gap-0.5 text-[11px] text-muted-foreground sm:text-[9px]">
             <li className={checks.minLength ? "text-success" : undefined}>
               8+ characters
             </li>
@@ -102,7 +102,7 @@ export function PasswordField({
       ) : null}
 
       {error ? (
-        <p id={`${id}-error`} className="mt-1 text-[11px] text-danger" role="alert">
+        <p id={`${id}-error`} className="mt-1 text-sm text-danger sm:text-[11px]" role="alert">
           {error}
         </p>
       ) : null}

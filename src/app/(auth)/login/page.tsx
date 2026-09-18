@@ -98,18 +98,18 @@ function StudentLoginForm() {
 
   return (
     <>
-      <h1 className="font-heading text-lg font-semibold tracking-tight">
+      <h1 className="font-heading text-xl font-semibold tracking-tight sm:text-lg">
         Welcome back
       </h1>
-      <p className="mt-0.5 text-xs text-muted-foreground">
+      <p className="mt-1 text-sm text-muted-foreground sm:mt-0.5 sm:text-xs">
         Log in to continue your semester.
       </p>
 
-      <form className="mt-4 space-y-3" onSubmit={onSubmit} noValidate>
+      <form className="mt-5 space-y-3.5 sm:mt-4 sm:space-y-3" onSubmit={onSubmit} noValidate>
         {error ? <AuthAlert message={error} /> : null}
         {info ? <AuthAlert message={info} tone="info" /> : null}
 
-        <label className="block text-xs font-medium">
+        <label className="block text-sm font-medium sm:text-xs">
           Email
           <input
             type="email"
@@ -117,7 +117,7 @@ function StudentLoginForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="focus-ring mt-1 h-10 w-full rounded-[10px] border border-border bg-card px-3 text-sm"
+            className="focus-ring mt-1.5 h-11 w-full rounded-[10px] border border-border bg-card px-3 text-[15px] sm:mt-1 sm:h-10 sm:text-sm"
           />
         </label>
 
@@ -130,7 +130,7 @@ function StudentLoginForm() {
         />
 
         <div className="flex justify-end">
-          <Link href="/forgot-password" className="text-xs font-medium text-primary">
+          <Link href="/forgot-password" className="text-sm font-medium text-primary sm:text-xs">
             Forgot password?
           </Link>
         </div>
@@ -140,15 +140,15 @@ function StudentLoginForm() {
         </AuthSubmitButton>
       </form>
 
-      <div className="my-4 flex items-center gap-3">
+      <div className="my-5 flex items-center gap-3 sm:my-4">
         <span className="h-px flex-1 bg-border" />
-        <span className="text-[11px] text-muted-foreground">OR</span>
+        <span className="text-xs text-muted-foreground sm:text-[11px]">OR</span>
         <span className="h-px flex-1 bg-border" />
       </div>
 
       <GoogleButton onClick={onGoogle} loading={googleLoading} />
 
-      <p className="mt-4 text-center text-xs text-muted-foreground">
+      <p className="mt-5 text-center text-sm text-muted-foreground sm:mt-4 sm:text-xs">
         Don&apos;t have an account?{" "}
         <Link href="/signup" className="font-medium text-primary">
           Create account
@@ -205,19 +205,19 @@ function StaffLoginForm({ role }: { role: "admin" | "class_rep" }) {
 
   return (
     <>
-      <h1 className="font-heading text-lg font-semibold tracking-tight">
+      <h1 className="font-heading text-xl font-semibold tracking-tight sm:text-lg">
         {isAdmin ? "Admin sign in" : "Class Rep sign in"}
       </h1>
-      <p className="mt-0.5 text-xs text-muted-foreground">
+      <p className="mt-1 text-sm text-muted-foreground sm:mt-0.5 sm:text-xs">
         {isAdmin
           ? "Restricted access for programme administrators only."
           : "Sign in to manage your stream’s materials and timetable."}
       </p>
 
-      <form className="mt-4 space-y-3" onSubmit={onSubmit} noValidate>
+      <form className="mt-5 space-y-3.5 sm:mt-4 sm:space-y-3" onSubmit={onSubmit} noValidate>
         {error ? <AuthAlert message={error} /> : null}
 
-        <label className="block text-xs font-medium">
+        <label className="block text-sm font-medium sm:text-xs">
           Email
           <input
             type="email"
@@ -225,7 +225,7 @@ function StaffLoginForm({ role }: { role: "admin" | "class_rep" }) {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="focus-ring mt-1 h-10 w-full rounded-[10px] border border-border bg-card px-3 text-sm"
+            className="focus-ring mt-1.5 h-11 w-full rounded-[10px] border border-border bg-card px-3 text-[15px] sm:mt-1 sm:h-10 sm:text-sm"
           />
         </label>
 
@@ -243,11 +243,11 @@ function StaffLoginForm({ role }: { role: "admin" | "class_rep" }) {
       </form>
 
       {isAdmin ? (
-        <p className="mt-4 text-center text-[11px] text-muted-foreground">
+        <p className="mt-5 text-center text-sm text-muted-foreground sm:mt-4 sm:text-[11px]">
           No public registration. Contact the system owner for credentials.
         </p>
       ) : (
-        <p className="mt-4 text-center text-xs text-muted-foreground">
+        <p className="mt-5 text-center text-sm text-muted-foreground sm:mt-4 sm:text-xs">
           New class representative?{" "}
           <Link href="/register" className="font-medium text-primary">
             Create an account

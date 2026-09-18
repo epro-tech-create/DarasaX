@@ -53,7 +53,7 @@ export function AuthShell({
         <div className="absolute right-4 top-4 lg:hidden">
           <ThemeToggle />
         </div>
-        <div className="w-full max-w-[380px]">
+        <div className="w-full max-w-[400px] text-[15px] sm:text-[13px]">
           <div className="mb-6 lg:hidden">
             <Logo href="/" />
           </div>

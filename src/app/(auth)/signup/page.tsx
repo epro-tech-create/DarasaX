@@ -111,29 +111,29 @@ export default function SignupPage() {
       subtitle="Sign up in minutes, join your class, and keep every module organized from day one."
     >
       <AuthSteps current="account" />
-      <h1 className="font-heading text-[15px] font-semibold tracking-tight">
+      <h1 className="font-heading text-xl font-semibold tracking-tight sm:text-[15px]">
         Create account
       </h1>
-      <p className="mt-0.5 text-[11px] text-muted-foreground">
+      <p className="mt-1 text-sm text-muted-foreground sm:mt-0.5 sm:text-[11px]">
         Start with your student details.
       </p>
 
-      <form className="mt-3 space-y-2.5" onSubmit={onSubmit} noValidate>
+      <form className="mt-5 space-y-3.5 sm:mt-3 sm:space-y-2.5" onSubmit={onSubmit} noValidate>
         {error ? <AuthAlert message={error} /> : null}
 
-        <label className="block text-[11px] font-medium">
+        <label className="block text-sm font-medium sm:text-[11px]">
           Full Name
           <input
             required
             autoComplete="name"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            className="focus-ring mt-1 h-9 w-full rounded-[9px] border border-border bg-card px-2.5 text-[13px]"
+            className="focus-ring mt-1.5 h-11 w-full rounded-[10px] border border-border bg-card px-3 text-[15px] sm:mt-1 sm:h-9 sm:rounded-[9px] sm:px-2.5 sm:text-[13px]"
             placeholder="Ezekiel Mwamba"
           />
         </label>
 
-        <label className="block text-[11px] font-medium">
+        <label className="block text-sm font-medium sm:text-[11px]">
           Email
           <input
             type="email"
@@ -141,7 +141,7 @@ export default function SignupPage() {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="focus-ring mt-1 h-9 w-full rounded-[9px] border border-border bg-card px-2.5 text-[13px]"
+            className="focus-ring mt-1.5 h-11 w-full rounded-[10px] border border-border bg-card px-3 text-[15px] sm:mt-1 sm:h-9 sm:rounded-[9px] sm:px-2.5 sm:text-[13px]"
             placeholder="you@student.university.ac.tz"
           />
         </label>
@@ -169,15 +169,15 @@ export default function SignupPage() {
         </AuthSubmitButton>
       </form>
 
-      <div className="my-3 flex items-center gap-3">
+      <div className="my-5 flex items-center gap-3 sm:my-3">
         <span className="h-px flex-1 bg-border" />
-        <span className="text-[10px] text-muted-foreground">OR</span>
+        <span className="text-xs text-muted-foreground sm:text-[10px]">OR</span>
         <span className="h-px flex-1 bg-border" />
       </div>
 
       <GoogleButton onClick={onGoogle} loading={googleLoading} />
 
-      <p className="mt-3 text-center text-[11px] text-muted-foreground">
+      <p className="mt-5 text-center text-sm text-muted-foreground sm:mt-3 sm:text-[11px]">
         Already have an account?{" "}
         <Link href="/login" className="font-medium text-primary">
           Sign in

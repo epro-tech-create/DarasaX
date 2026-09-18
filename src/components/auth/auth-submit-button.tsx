@@ -15,7 +15,7 @@ export function AuthSubmitButton({
   return (
     <Button
       type="submit"
-      className={cn("h-9 w-full text-[13px]", className)}
+      className={cn("h-11 w-full text-[15px] sm:h-9 sm:text-[13px]", className)}
       disabled={loading || disabled}
       {...props}
     >

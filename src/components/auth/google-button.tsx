@@ -37,7 +37,7 @@ export function GoogleButton({
     <Button
       type="button"
       variant="outline"
-      className="h-9 w-full border-border bg-card text-[13px] text-foreground hover:bg-muted"
+      className="h-11 w-full border-border bg-card text-[15px] text-foreground hover:bg-muted sm:h-9 sm:text-[13px]"
       onClick={onClick}
       disabled={loading}
     >
