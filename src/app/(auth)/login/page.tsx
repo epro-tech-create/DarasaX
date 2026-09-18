@@ -16,8 +16,10 @@ import {
   getPostAuthRedirect,
 } from "@/lib/auth/profile";
 import { createClient } from "@/lib/supabase/client";
+import { APP_HOME, getAppRole } from "@/lib/app-role";
+import { loginStaff, useStaffSession } from "@/lib/staff-auth";
 
-function LoginForm() {
+function StudentLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next");
@@ -156,20 +158,153 @@ function LoginForm() {
   );
 }
 
+function StaffLoginForm({ role }: { role: "admin" | "class_rep" }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = searchParams.get("next");
+  const { session, ready } = useStaffSession();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!ready || !session) return;
+    if (session.role === role) {
+      router.replace(next && next.startsWith("/") ? next : APP_HOME[role]);
+    }
+  }, [next, ready, role, router, session]);
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault();
+    setError("");
+    const normalized = normalizeEmail(email);
+    if (!isValidEmail(normalized)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+    if (!password) {
+      setError("Please enter your password.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await loginStaff({ role, email: normalized, password });
+      router.replace(next && next.startsWith("/") ? next : APP_HOME[role]);
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Sign in failed.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const isAdmin = role === "admin";
+
+  return (
+    <>
+      <h1 className="font-heading text-lg font-semibold tracking-tight">
+        {isAdmin ? "Admin sign in" : "Class Rep sign in"}
+      </h1>
+      <p className="mt-0.5 text-xs text-muted-foreground">
+        {isAdmin
+          ? "Restricted access for programme administrators only."
+          : "Sign in to manage your stream’s materials and timetable."}
+      </p>
+
+      <form className="mt-4 space-y-3" onSubmit={onSubmit} noValidate>
+        {error ? <AuthAlert message={error} /> : null}
+
+        <label className="block text-xs font-medium">
+          Email
+          <input
+            type="email"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="focus-ring mt-1 h-10 w-full rounded-[10px] border border-border bg-card px-3 text-sm"
+          />
+        </label>
+
+        <PasswordField
+          id="staff-login-password"
+          label="Password"
+          value={password}
+          onChange={setPassword}
+          autoComplete="current-password"
+        />
+
+        <AuthSubmitButton loading={loading} loadingText="Signing in...">
+          Sign In
+        </AuthSubmitButton>
+      </form>
+
+      {isAdmin ? (
+        <p className="mt-4 text-center text-[11px] text-muted-foreground">
+          No public registration. Contact the system owner for credentials.
+        </p>
+      ) : (
+        <p className="mt-4 text-center text-xs text-muted-foreground">
+          New class representative?{" "}
+          <Link href="/register" className="font-medium text-primary">
+            Create an account
+          </Link>
+        </p>
+      )}
+    </>
+  );
+}
+
+function LoginRouter() {
+  const role = getAppRole();
+  if (role === "admin" || role === "class_rep") {
+    return <StaffLoginForm role={role} />;
+  }
+  return <StudentLoginForm />;
+}
+
 export default function LoginPage() {
+  const role = getAppRole();
+  const staff = role === "admin" || role === "class_rep";
+
   return (
     <AuthShell
       title={
-        <>
-          Your academic day,
-          <br />
-          finally clear.
-        </>
+        staff ? (
+          role === "admin" ? (
+            <>
+              Admin desk,
+              <br />
+              secure access.
+            </>
+          ) : (
+            <>
+              Class rep desk,
+              <br />
+              ready for your stream.
+            </>
+          )
+        ) : (
+          <>
+            Your academic day,
+            <br />
+            finally clear.
+          </>
+        )
       }
-      subtitle="Modules, deadlines, notes and AI study help — ready when you open DarasaX."
+      subtitle={
+        staff
+          ? role === "admin"
+            ? "Sign in to manage students, class reps, timetable, and materials."
+            : "Sign in to upload materials, edit the timetable, and support your class."
+          : "Modules, deadlines, notes and AI study help — ready when you open DarasaX."
+      }
     >
       <Suspense fallback={<div className="h-64 animate-pulse rounded-2xl bg-muted" />}>
-        <LoginForm />
+        <LoginRouter />
       </Suspense>
     </AuthShell>
   );

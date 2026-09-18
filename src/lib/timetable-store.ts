@@ -10,9 +10,9 @@ function readStore(): TimetableEntry[] {
   if (typeof window === "undefined") return seedTimetable;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return seedTimetable;
+    if (raw === null) return seedTimetable;
     const parsed = JSON.parse(raw) as TimetableEntry[];
-    if (!Array.isArray(parsed) || parsed.length === 0) return seedTimetable;
+    if (!Array.isArray(parsed)) return seedTimetable;
     return parsed;
   } catch {
     return seedTimetable;
@@ -23,6 +23,16 @@ function writeStore(entries: TimetableEntry[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
   window.dispatchEvent(new Event("darasax:timetable"));
 }
+
+export type TimetableInput = {
+  streamId: ClassStreamId;
+  moduleId: string;
+  day: number;
+  startTime: string;
+  endTime: string;
+  room: string;
+  lecturer: string;
+};
 
 export function useTimetableStore() {
   const [entries, setEntries] = useState<TimetableEntry[]>(seedTimetable);
@@ -41,7 +51,7 @@ export function useTimetableStore() {
   }, []);
 
   const updateEntry = useCallback(
-    (id: string, patch: Partial<Omit<TimetableEntry, "id" | "streamId">>) => {
+    (id: string, patch: Partial<Omit<TimetableEntry, "id">>) => {
       setEntries((prev) => {
         const next = prev.map((e) => (e.id === id ? { ...e, ...patch } : e));
         writeStore(next);
@@ -51,12 +61,39 @@ export function useTimetableStore() {
     [],
   );
 
+  const addEntry = useCallback((input: TimetableInput) => {
+    const entry: TimetableEntry = {
+      id: `tt-${Date.now()}`,
+      streamId: input.streamId,
+      moduleId: input.moduleId,
+      day: input.day,
+      startTime: input.startTime,
+      endTime: input.endTime,
+      room: input.room.trim(),
+      lecturer: input.lecturer.trim(),
+    };
+    setEntries((prev) => {
+      const next = [...prev, entry];
+      writeStore(next);
+      return next;
+    });
+    return entry;
+  }, []);
+
+  const deleteEntry = useCallback((id: string) => {
+    setEntries((prev) => {
+      const next = prev.filter((e) => e.id !== id);
+      writeStore(next);
+      return next;
+    });
+  }, []);
+
   const forStream = useCallback(
     (streamId: ClassStreamId) => entries.filter((e) => e.streamId === streamId),
     [entries],
   );
 
-  return { entries, ready, updateEntry, forStream };
+  return { entries, ready, updateEntry, addEntry, deleteEntry, forStream };
 }
 
 export function getTimetableSnapshot(): TimetableEntry[] {

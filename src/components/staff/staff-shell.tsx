@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import {
   Activity,
@@ -9,19 +9,25 @@ import {
   Bell,
   BookOpen,
   CalendarDays,
+  ClipboardList,
   FileUp,
   Flag,
   GraduationCap,
   Home,
+  LogOut,
+  Megaphone,
   PanelLeft,
   PanelLeftClose,
+  ScrollText,
   Shield,
   Users,
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { StaffPageMotion } from "@/components/staff/staff-page-motion";
 import { APP_PORTS } from "@/lib/app-role";
+import { logoutStaff } from "@/lib/staff-auth";
 import { cn } from "@/lib/utils";
 import type { StaffRole } from "@/types";
 
@@ -35,9 +41,14 @@ const adminNav: StaffNavItem[] = [
   { href: "/admin", label: "Overview", icon: Home },
   { href: "/admin/uploads", label: "Upload", icon: FileUp },
   { href: "/admin/materials", label: "Library", icon: BookOpen },
+  { href: "/admin/past-papers", label: "Past papers", icon: ClipboardList },
   { href: "/admin/timetable", label: "Timetable", icon: CalendarDays },
   { href: "/admin/students", label: "Students", icon: Users },
+  { href: "/admin/class-reps", label: "Class reps", icon: GraduationCap },
+  { href: "/admin/streams", label: "Streams", icon: Shield },
+  { href: "/admin/announcements", label: "Announce", icon: Megaphone },
   { href: "/admin/issues", label: "Issues", icon: Flag },
+  { href: "/admin/audit", label: "Audit logs", icon: ScrollText },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
 ];
 
@@ -45,6 +56,7 @@ const crNav: StaffNavItem[] = [
   { href: "/cr", label: "Overview", icon: Home },
   { href: "/cr/uploads", label: "Upload", icon: FileUp },
   { href: "/cr/materials", label: "Library", icon: BookOpen },
+  { href: "/cr/past-papers", label: "Past papers", icon: ClipboardList },
   { href: "/cr/timetable", label: "Timetable", icon: CalendarDays },
   { href: "/cr/members", label: "Members", icon: Users },
   { href: "/cr/issues", label: "Issues", icon: Flag },
@@ -63,6 +75,7 @@ export function StaffShell({
   children: ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const nav = role === "admin" ? adminNav : crNav;
   const home = role === "admin" ? "/admin" : "/cr";
@@ -70,6 +83,12 @@ export function StaffShell({
 
   const isActive = (href: string) =>
     href === home ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+
+  async function onSignOut() {
+    await logoutStaff();
+    router.replace("/login");
+    router.refresh();
+  }
 
   return (
     <div className="flex min-h-screen bg-background font-sans text-[13px]">
@@ -185,11 +204,23 @@ export function StaffShell({
             >
               <Bell className="h-4 w-4" />
             </button>
+            <button
+              type="button"
+              onClick={() => void onSignOut()}
+              className="focus-ring inline-flex h-9 items-center gap-1.5 rounded-xl border border-border px-2.5 text-[12px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+              aria-label="Sign out"
+              title="Sign out"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Sign out</span>
+            </button>
           </div>
         </header>
 
         <main className="flex-1 px-4 pb-24 pt-5 sm:px-5 lg:pb-8 lg:pt-6">
-          <div className="mx-auto w-full max-w-7xl">{children}</div>
+          <div className="mx-auto w-full max-w-7xl">
+            <StaffPageMotion>{children}</StaffPageMotion>
+          </div>
         </main>
 
         {/* Mobile bottom nav */}

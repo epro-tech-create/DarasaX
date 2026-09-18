@@ -6,11 +6,13 @@ export function PageHeader({
   description,
   actions,
   className,
+  size = "md",
 }: {
   title: string;
   description?: string;
   actions?: ReactNode;
   className?: string;
+  size?: "md" | "lg";
 }) {
   return (
     <div
@@ -20,11 +22,25 @@ export function PageHeader({
       )}
     >
       <div>
-        <h1 className="font-heading text-[15px] font-semibold tracking-tight sm:text-base">
+        <h1
+          className={cn(
+            "font-heading font-semibold tracking-tight",
+            size === "lg"
+              ? "text-xl sm:text-2xl"
+              : "text-[15px] sm:text-base",
+          )}
+        >
           {title}
         </h1>
         {description ? (
-          <p className="mt-0.5 max-w-2xl text-[11px] text-muted-foreground sm:text-[12px]">
+          <p
+            className={cn(
+              "max-w-2xl text-muted-foreground",
+              size === "lg"
+                ? "mt-1 text-[12px] sm:text-[13px]"
+                : "mt-0.5 text-[11px] sm:text-[12px]",
+            )}
+          >
             {description}
           </p>
         ) : null}

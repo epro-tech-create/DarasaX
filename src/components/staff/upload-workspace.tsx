@@ -42,32 +42,41 @@ export function UploadWorkspace({
     lockedStream ?? classStreams[0]?.id ?? "all",
   );
   const [titleValue, setTitleValue] = useState("");
-  const [fileName, setFileName] = useState<string | null>(null);
-  const [fileSize, setFileSize] = useState("—");
+  const [file, setFile] = useState<File | null>(null);
+  const [publishing, setPublishing] = useState(false);
   const [published, setPublished] = useState(false);
+  const [error, setError] = useState("");
 
-  function onFileChange(file?: File | null) {
-    if (!file) return;
-    setFileName(file.name);
-    setFileSize(`${(file.size / (1024 * 1024)).toFixed(1)} MB`);
-    if (!titleValue) setTitleValue(file.name.replace(/\.[^.]+$/, ""));
+  function onFileChange(next?: File | null) {
+    if (!next) return;
+    setFile(next);
+    if (!titleValue) setTitleValue(next.name.replace(/\.[^.]+$/, ""));
     setPublished(false);
+    setError("");
   }
 
-  function handlePublish() {
-    if (!titleValue.trim() || !fileName) return;
-    publish({
-      title: titleValue.trim(),
-      kind,
-      moduleId,
-      streamId: lockedStream ?? streamId,
-      uploadedBy,
-      role,
-      size: fileSize,
-    });
-    setPublished(true);
-    setFileName(null);
-    setTitleValue("");
+  async function handlePublish() {
+    if (!titleValue.trim() || !file) return;
+    setPublishing(true);
+    setError("");
+    try {
+      await publish({
+        title: titleValue.trim(),
+        kind,
+        moduleId,
+        streamId: lockedStream ?? streamId,
+        uploadedBy,
+        role,
+        file,
+      });
+      setPublished(true);
+      setFile(null);
+      setTitleValue("");
+    } catch {
+      setError("Could not save the file. Try a smaller file and publish again.");
+    } finally {
+      setPublishing(false);
+    }
   }
 
   return (
@@ -81,23 +90,23 @@ export function UploadWorkspace({
         <label
           className={cn(
             "flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-muted/30 px-4 py-10 text-center transition hover:border-primary/50 hover:bg-primary/[0.04]",
-            fileName && "border-primary/40 bg-primary/[0.05]",
+            file && "border-primary/40 bg-primary/[0.05]",
           )}
         >
           <input
             type="file"
             className="hidden"
-            accept=".pdf,.ppt,.pptx,.doc,.docx,.png,.jpg,.jpeg,.zip"
+            accept=".pdf,.ppt,.pptx,.doc,.docx,.png,.jpg,.jpeg,.zip,.txt,.md"
             onChange={(e) => onFileChange(e.target.files?.[0])}
           />
           <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/12 text-primary">
             <UploadCloud className="h-5 w-5" />
           </span>
           <p className="mt-3 text-[13px] font-semibold">
-            {fileName ? fileName : "Drop file or browse"}
+            {file ? file.name : "Drop file or browse"}
           </p>
           <p className="mt-1 max-w-sm text-[11px] text-muted-foreground">
-            Publish once — it appears in the student Modules / Past Papers feed right away.
+            The real file is stored so students (and you) can view or download it.
           </p>
         </label>
 
@@ -166,22 +175,27 @@ export function UploadWorkspace({
           ) : null}
         </div>
 
+        {error ? (
+          <p className="mt-3 text-[12px] font-medium text-danger">{error}</p>
+        ) : null}
+
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <Button
             type="button"
             onClick={handlePublish}
-            disabled={!fileName || !titleValue.trim()}
+            disabled={!file || !titleValue.trim() || publishing}
           >
             <FileUp className="h-3.5 w-3.5" />
-            Publish to students
+            {publishing ? "Publishing…" : "Publish to students"}
           </Button>
           <Button
             type="button"
             variant="outline"
             onClick={() => {
-              setFileName(null);
+              setFile(null);
               setTitleValue("");
               setPublished(false);
+              setError("");
             }}
           >
             Clear
@@ -189,7 +203,7 @@ export function UploadWorkspace({
           {published ? (
             <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-success">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              Live in student library
+              Live — viewable & downloadable in Library
             </span>
           ) : null}
         </div>
@@ -206,7 +220,8 @@ export function UploadWorkspace({
             One publish → student accounts
           </p>
           <p className="relative mt-2 text-[12px] text-white/80">
-            Notes land in Modules. Past papers land in Past Papers. No extra steps for students.
+            Notes land in Modules. Past papers land in Past Papers. Staff can view,
+            download, edit, or delete from Library anytime.
           </p>
         </div>
         <div className="surface rounded-[20px] p-4">

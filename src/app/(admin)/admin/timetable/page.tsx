@@ -6,7 +6,7 @@ export default function AdminTimetablePage() {
     <div className="space-y-5">
       <PageHeader
         title="Timetable"
-        description="Edit the live schedule for each stream. Changes show on the student app."
+        description="Add, edit, or delete sessions for any stream. Students see updates right away."
       />
       <TimetableEditor />
     </div>

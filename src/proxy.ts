@@ -2,14 +2,20 @@ import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 import { getProfile } from "@/lib/auth/profile";
 import {
+  APP_HOME,
   forbiddenRedirect,
   getAppRole,
   pathAllowedForRole,
 } from "@/lib/app-role";
+import {
+  decodeStaffSession,
+  STAFF_SESSION_COOKIE,
+} from "@/lib/staff-auth-server";
 
 const AUTH_ROUTES = new Set([
   "/login",
   "/signup",
+  "/register",
   "/verify-email",
   "/forgot-password",
   "/forgot-password/verify",
@@ -46,6 +52,10 @@ function isStaffProtected(pathname: string, role: "admin" | "class_rep") {
   return pathname === root || pathname.startsWith(`${root}/`);
 }
 
+function getStaffSession(request: NextRequest) {
+  return decodeStaffSession(request.cookies.get(STAFF_SESSION_COOKIE)?.value);
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const appRole = getAppRole();
@@ -69,11 +79,37 @@ export async function proxy(request: NextRequest) {
     return res;
   }
 
-  // Landing page → role home when not browsing marketing intentionally
-  if (pathname === "/" && appRole !== "student") {
-    const url = request.nextUrl.clone();
-    url.pathname = forbiddenRedirect(appRole);
-    return NextResponse.redirect(url);
+  // Staff apps: gate protected routes with staff session cookie.
+  if (appRole === "admin" || appRole === "class_rep") {
+    const staffSession = getStaffSession(request);
+    const staffAuthed = !!staffSession && staffSession.role === appRole;
+
+    if (pathname === "/" || pathname === "") {
+      const url = request.nextUrl.clone();
+      url.pathname = staffAuthed ? APP_HOME[appRole] : "/login";
+      return NextResponse.redirect(url);
+    }
+
+    if (isStaffProtected(pathname, appRole) && !staffAuthed) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.searchParams.set("next", pathname);
+      return NextResponse.redirect(url);
+    }
+
+    if (
+      staffAuthed &&
+      (pathname === "/login" || pathname === "/register")
+    ) {
+      const url = request.nextUrl.clone();
+      url.pathname = APP_HOME[appRole];
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+
+    const res = NextResponse.next();
+    res.headers.set("x-darasax-role", appRole);
+    return res;
   }
 
   const hasEnv =
@@ -89,10 +125,7 @@ export async function proxy(request: NextRequest) {
   const { supabase, user, supabaseResponse } = await updateSession(request);
   supabaseResponse.headers.set("x-darasax-role", appRole);
 
-  const needsAuth =
-    appRole === "student"
-      ? isStudentProtected(pathname)
-      : isStaffProtected(pathname, appRole);
+  const needsAuth = isStudentProtected(pathname);
 
   if (needsAuth && !user) {
     const url = request.nextUrl.clone();
@@ -104,11 +137,7 @@ export async function proxy(request: NextRequest) {
   if (user && (pathname === "/login" || pathname === "/signup")) {
     const profile = await getProfile(supabase, user.id).catch(() => null);
     const url = request.nextUrl.clone();
-    if (appRole === "student") {
-      url.pathname = profile?.onboarding_completed ? "/dashboard" : "/onboarding";
-    } else {
-      url.pathname = forbiddenRedirect(appRole);
-    }
+    url.pathname = profile?.onboarding_completed ? "/dashboard" : "/onboarding";
     return NextResponse.redirect(url);
   }
 

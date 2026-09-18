@@ -261,6 +261,10 @@ export interface MaterialUpload {
   size: string;
   createdAt: string;
   downloads: number;
+  /** Public path or blob/data URL when available */
+  fileUrl?: string;
+  fileName?: string;
+  mimeType?: string;
 }
 
 export interface StudentMonitor {
@@ -290,4 +294,41 @@ export interface StaffActivity {
   target: string;
   at: string;
   role: StaffRole;
+}
+
+export type AuditAction =
+  | "login"
+  | "upload"
+  | "publish"
+  | "timetable_edit"
+  | "issue_update"
+  | "student_add"
+  | "student_update"
+  | "student_delete"
+  | "cr_add"
+  | "cr_update"
+  | "cr_delete"
+  | "announcement"
+  | "settings"
+  | "other";
+
+export interface AuditLogEntry {
+  id: string;
+  at: string;
+  actor: string;
+  role: StaffRole | "student" | "system";
+  action: AuditAction;
+  summary: string;
+  detail?: string;
+  streamId?: ClassStreamId;
+}
+
+export interface ClassRepAccount {
+  id: string;
+  name: string;
+  email: string;
+  streamId: ClassStreamId;
+  phone?: string;
+  status: "active" | "inactive";
+  appointedAt: string;
 }

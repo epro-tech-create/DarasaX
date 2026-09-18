@@ -6,16 +6,25 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StaffSection, StaffStatCard } from "@/components/staff/staff-ui";
+import { StaffFadeItem, StaffStagger } from "@/components/staff/staff-motion";
 import {
   classRepUser,
   getIssuesForStream,
-  getStudentsForStream,
   getUploadsForRole,
 } from "@/data/staff-mock";
+import { useAdminPeopleStore } from "@/lib/admin-people-store";
+
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+}
 
 export default function ClassRepOverviewPage() {
   const streamId = classRepUser.streamId;
-  const members = getStudentsForStream(streamId);
+  const { studentsForStream } = useAdminPeopleStore();
+  const members = studentsForStream(streamId);
   const openIssues = getIssuesForStream(streamId).filter(
     (i) => i.status !== "resolved",
   );
@@ -24,8 +33,9 @@ export default function ClassRepOverviewPage() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Class desk"
-        description={`Keep ${streamId} supplied and clear blockers.`}
+        size="lg"
+        title={`${greeting()}, ${classRepUser.name}`}
+        description={`Class Representative · ${streamId}`}
         actions={
           <div className="flex flex-wrap gap-2">
             <Button href="/cr/uploads" size="sm">
@@ -39,21 +49,31 @@ export default function ClassRepOverviewPage() {
         }
       />
 
-      <div className="grid gap-2.5 sm:grid-cols-3">
-        <StaffStatCard
-          label="Open issues"
-          value={String(openIssues.length)}
-          icon={Flag}
-          tone="warning"
-        />
-        <StaffStatCard label="Members" value={String(members.length)} icon={Users} />
-        <StaffStatCard
-          label="Your uploads"
-          value={String(uploads.length)}
-          icon={FileUp}
-          tone="success"
-        />
-      </div>
+      <StaffStagger className="grid gap-2.5 sm:grid-cols-3">
+        <StaffFadeItem>
+          <StaffStatCard
+            label="Open issues"
+            value={String(openIssues.length)}
+            icon={Flag}
+            tone="warning"
+          />
+        </StaffFadeItem>
+        <StaffFadeItem>
+          <StaffStatCard
+            label="Members"
+            value={String(members.length)}
+            icon={Users}
+          />
+        </StaffFadeItem>
+        <StaffFadeItem>
+          <StaffStatCard
+            label="Your uploads"
+            value={String(uploads.length)}
+            icon={FileUp}
+            tone="success"
+          />
+        </StaffFadeItem>
+      </StaffStagger>
 
       <StaffSection
         title="Needs attention"

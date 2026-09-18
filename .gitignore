@@ -16,9 +16,11 @@
 # next.js
 /.next/
 /out/
+.next/
 .next-student/
 .next-admin/
 .next-class_rep/
+.next-*/
 
 # production
 /build
@@ -42,3 +44,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.vercel
+.env*

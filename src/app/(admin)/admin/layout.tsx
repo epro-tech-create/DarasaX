@@ -1,19 +1,24 @@
-import { RoleGuard } from "@/components/staff/role-guard";
-import { StaffShell } from "@/components/staff/staff-shell";
-import { adminUser } from "@/data/staff-mock";
+"use client";
 
-export const dynamic = "force-dynamic";
+import { RoleGuard } from "@/components/staff/role-guard";
+import { StaffAuthGuard } from "@/components/staff/staff-auth-guard";
+import { StaffShell } from "@/components/staff/staff-shell";
+import { useStaffSession } from "@/lib/staff-auth";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const { session } = useStaffSession();
+
   return (
     <RoleGuard allow="admin">
-      <StaffShell
-        role="admin"
-        userName={adminUser.name}
-        userMeta="Programme operations · Port 3006"
-      >
-        {children}
-      </StaffShell>
+      <StaffAuthGuard allow="admin">
+        <StaffShell
+          role="admin"
+          userName={session?.name || "Admin"}
+          userMeta={session?.email || "Programme operations"}
+        >
+          {children}
+        </StaffShell>
+      </StaffAuthGuard>
     </RoleGuard>
   );
 }

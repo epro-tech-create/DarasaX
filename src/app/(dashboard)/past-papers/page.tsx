@@ -8,14 +8,21 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getModule, modules, pastPapers } from "@/data/mock";
 import { downloadPastPaper, viewPastPaper } from "@/lib/download";
-import { useMaterialsStore } from "@/lib/materials-store";
+import {
+  downloadMaterial,
+  useMaterialsStore,
+  viewMaterial,
+} from "@/lib/materials-store";
 import { cn } from "@/lib/utils";
-import type { PastPaper } from "@/types";
+import type { MaterialUpload, PastPaper } from "@/types";
 
-type PaperRow = PastPaper & {
-  fromStaff: boolean;
-  uploadedBy: string;
-};
+type PaperRow =
+  | (PastPaper & { fromStaff: false; uploadedBy: string })
+  | (PastPaper & {
+      fromStaff: true;
+      uploadedBy: string;
+      material: MaterialUpload;
+    });
 
 export default function PastPapersPage() {
   const [query, setQuery] = useState("");
@@ -37,9 +44,10 @@ export default function PastPapersPage() {
           type: "cat" as const,
           fileType: "pdf" as const,
           size: u.size,
-          fileUrl: "/past-papers/sample.pdf",
-          fromStaff: true,
+          fileUrl: u.fileUrl ?? "/past-papers/pp-1.pdf",
+          fromStaff: true as const,
           uploadedBy: u.uploadedBy,
+          material: u,
         })),
     [published],
   );
@@ -49,7 +57,7 @@ export default function PastPapersPage() {
       ...staffPapers,
       ...pastPapers.map((p) => ({
         ...p,
-        fromStaff: false,
+        fromStaff: false as const,
         uploadedBy: "Library",
       })),
     ],
@@ -253,7 +261,10 @@ export default function PastPapersPage() {
                     size="sm"
                     variant="outline"
                     type="button"
-                    onClick={() => viewPastPaper(paper)}
+                    onClick={() => {
+                      if (paper.fromStaff) void viewMaterial(paper.material);
+                      else viewPastPaper(paper);
+                    }}
                   >
                     <Eye className="h-4 w-4" />
                     View
@@ -261,7 +272,10 @@ export default function PastPapersPage() {
                   <Button
                     size="sm"
                     type="button"
-                    onClick={() => downloadPastPaper(paper)}
+                    onClick={() => {
+                      if (paper.fromStaff) void downloadMaterial(paper.material);
+                      else downloadPastPaper(paper);
+                    }}
                   >
                     <Download className="h-4 w-4" />
                     Download

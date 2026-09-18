@@ -35,34 +35,46 @@ export function isStaffRole(role: AppRole): role is StaffRole {
 }
 
 export function pathAllowedForRole(pathname: string, role: AppRole): boolean {
-  const isAuth =
+  const isSharedAuth =
     pathname === "/login" ||
-    pathname === "/signup" ||
     pathname === "/verify-email" ||
     pathname === "/forgot-password" ||
     pathname.startsWith("/forgot-password/") ||
     pathname === "/reset-password" ||
-    pathname.startsWith("/auth/");
-
-  const isPublicLanding = pathname === "/";
-
-  if (isAuth || isPublicLanding) return true;
+    pathname.startsWith("/auth/") ||
+    pathname.startsWith("/api/staff/");
 
   if (role === "student") {
     if (pathname.startsWith("/admin") || pathname.startsWith("/cr")) return false;
+    if (pathname === "/register") return false;
+    if (isSharedAuth || pathname === "/signup" || pathname === "/") return true;
     return true;
   }
 
   if (role === "admin") {
+    if (pathname === "/login" || pathname.startsWith("/api/staff/")) return true;
     if (pathname.startsWith("/admin")) return true;
+    // No public signup / student marketing on admin app
     return false;
   }
 
   // class_rep
+  if (
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname.startsWith("/api/staff/")
+  ) {
+    return true;
+  }
   if (pathname.startsWith("/cr")) return true;
   return false;
 }
 
 export function forbiddenRedirect(role: AppRole): string {
+  if (role === "admin" || role === "class_rep") return "/login";
+  return APP_HOME[role];
+}
+
+export function staffHomeRedirect(role: AppRole): string {
   return APP_HOME[role];
 }

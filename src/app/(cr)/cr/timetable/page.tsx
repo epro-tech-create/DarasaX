@@ -7,12 +7,12 @@ export default function ClassRepTimetablePage() {
     <div className="space-y-5">
       <PageHeader
         title="Class timetable"
-        description={`Edit sessions for ${classRepUser.streamId} only.`}
+        description={`Add, edit, or delete sessions for ${classRepUser.streamId}. Changes sync to your classmates.`}
       />
       <TimetableEditor
         streamId={classRepUser.streamId}
-        title="Edit class sessions"
-        description="Update room, time, or lecturer on existing classes — you are not creating a second timetable."
+        title="Manage class sessions"
+        description="Add modules, change rooms/times, or remove sessions — students update automatically."
       />
     </div>
   );

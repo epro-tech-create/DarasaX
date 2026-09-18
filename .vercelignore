@@ -1,0 +1,15 @@
+# Keep Vercel uploads lean — build runs on their servers
+node_modules
+.next
+.next-*
+.git
+.vercel
+.env*
+*.pem
+coverage
+.DS_Store
+*.tsbuildinfo
+AGENTS.md
+CLAUDE.md
+APPS.md
+SUPABASE_SETUP.md
