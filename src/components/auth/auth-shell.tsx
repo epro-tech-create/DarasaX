@@ -31,7 +31,7 @@ export function AuthShell({
         <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-[#0B1B2B] to-transparent" />
 
         <div className="relative z-10 flex items-center justify-between">
-          <Logo className="text-white" href="/" />
+          <Logo variant="dark" className="drop-shadow-sm" href="/" />
           <ThemeToggle lightOnDark />
         </div>
         <div className="relative z-10">

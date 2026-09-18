@@ -1,15 +1,24 @@
-import { modules, timetable } from "@/data/mock";
-import type { Module, TimetableEntry } from "@/types";
+import {
+  DEFAULT_CLASS_STREAM,
+  modules,
+  timetable as seedTimetable,
+} from "@/data/mock";
+import type { ClassStreamId, Module, TimetableEntry } from "@/types";
 
-export function getNextClass(now = new Date()): {
+export function getNextClass(
+  now = new Date(),
+  streamId: ClassStreamId = DEFAULT_CLASS_STREAM,
+  timetable: TimetableEntry[] = seedTimetable,
+): {
   entry: TimetableEntry;
   module: Module;
   dayOffset: number;
 } | null {
   const currentDay = now.getDay();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const streamTimetable = timetable.filter((entry) => entry.streamId === streamId);
 
-  const enriched = timetable
+  const enriched = streamTimetable
     .map((entry) => {
       let dayOffset = entry.day - currentDay;
       if (dayOffset < 0) dayOffset += 7;

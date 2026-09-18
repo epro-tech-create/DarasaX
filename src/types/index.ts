@@ -129,9 +129,23 @@ export interface Announcement {
   moduleId?: string;
 }
 
+export type ClassStreamId =
+  | "BENG24COE-1"
+  | "BENG24COE-2"
+  | "BENG24COE-3"
+  | "BENG24COE-4";
+
+export interface ClassStream {
+  id: ClassStreamId;
+  label: string;
+  description: string;
+  isEvening?: boolean;
+}
+
 export interface TimetableEntry {
   id: string;
   moduleId: string;
+  streamId: ClassStreamId;
   day: number; // 0 = Sunday, 1 = Monday ...
   startTime: string;
   endTime: string;
@@ -196,4 +210,84 @@ export interface UpdateFeedItem {
   category: string;
   createdAt: string;
   icon: string;
+}
+
+export type StaffRole = "admin" | "class_rep";
+
+export type IssueStatus = "open" | "in_progress" | "resolved";
+export type IssueSeverity = "low" | "medium" | "high";
+export type IssueCategory =
+  | "materials"
+  | "timetable"
+  | "assignment"
+  | "attendance"
+  | "technical"
+  | "other";
+
+export type UploadKind =
+  | "notes"
+  | "slides"
+  | "past_paper"
+  | "assignment"
+  | "announcement"
+  | "timetable";
+
+export type UploadStatus = "pending" | "processing" | "published" | "rejected";
+
+export interface StaffIssue {
+  id: string;
+  title: string;
+  description: string;
+  category: IssueCategory;
+  severity: IssueSeverity;
+  status: IssueStatus;
+  streamId?: ClassStreamId;
+  moduleId?: string;
+  reportedBy: string;
+  assignee?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MaterialUpload {
+  id: string;
+  title: string;
+  kind: UploadKind;
+  moduleId?: string;
+  streamId?: ClassStreamId;
+  status: UploadStatus;
+  uploadedBy: string;
+  role: StaffRole;
+  size: string;
+  createdAt: string;
+  downloads: number;
+}
+
+export interface StudentMonitor {
+  id: string;
+  name: string;
+  email: string;
+  streamId: ClassStreamId;
+  year: number;
+  attendancePct: number;
+  assignmentsDone: number;
+  assignmentsTotal: number;
+  lastActive: string;
+  risk: "low" | "medium" | "high";
+}
+
+export interface AnalyticsPoint {
+  label: string;
+  uploads: number;
+  views: number;
+  issues: number;
+}
+
+export interface StaffActivity {
+  id: string;
+  actor: string;
+  action: string;
+  target: string;
+  at: string;
+  role: StaffRole;
 }

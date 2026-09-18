@@ -106,7 +106,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-background">
       <header className="absolute inset-x-0 top-0 z-30">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-          <Logo size="md" className="text-white drop-shadow-sm" />
+          <Logo size="md" variant="dark" className="drop-shadow-sm" />
           <nav className="hidden items-center gap-5 text-sm font-medium text-white/80 md:flex">
             <a href="#features" className="transition hover:text-white">
               Features

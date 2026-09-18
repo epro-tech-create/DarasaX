@@ -56,16 +56,24 @@ export function AppSidebar() {
         collapsed ? "w-[76px]" : "w-[232px]",
       )}
     >
-      <div className="flex h-14 items-center justify-between px-3">
-        {!collapsed ? (
-          <Logo href="/dashboard" size="sm" />
-        ) : (
-          <Logo href="/dashboard" className="sr-only" />
+      <div
+        className={cn(
+          "flex border-b border-border",
+          collapsed
+            ? "h-auto flex-col items-center gap-2 px-2 py-3"
+            : "h-14 items-center justify-between gap-1 px-3",
         )}
+      >
+        <Logo
+          href="/dashboard"
+          size="sm"
+          markOnly={collapsed}
+          className={cn(!collapsed && "min-w-0 pl-0.5")}
+        />
         <button
           type="button"
           onClick={() => setCollapsed((v) => !v)}
-          className="focus-ring inline-flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground"
+          className="focus-ring inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? (

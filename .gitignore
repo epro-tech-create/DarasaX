@@ -16,6 +16,9 @@
 # next.js
 /.next/
 /out/
+.next-student/
+.next-admin/
+.next-class_rep/
 
 # production
 /build

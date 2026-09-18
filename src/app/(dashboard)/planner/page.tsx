@@ -75,9 +75,6 @@ export default function PlannerPage() {
   const todaysPlan = sessions
     .filter((s) => s.date === today)
     .sort((a, b) => Number(a.completed) - Number(b.completed));
-  const thisWeek = sessions
-    .filter((s) => s.date > today && s.date <= weekEnd)
-    .sort((a, b) => a.date.localeCompare(b.date));
   const completed = sessions.filter((s) => s.completed);
   const todayMinutes = todaysPlan.reduce((sum, s) => sum + s.durationMinutes, 0);
   const weekMinutes = sessions
@@ -454,45 +451,6 @@ export default function PlannerPage() {
             <p className="relative mt-3 text-[11px] text-white/80">
               Target date {openLabel} — protect your study blocks.
             </p>
-          </section>
-
-          <section className="surface rounded-[16px] p-3.5">
-            <h2 className="mb-2.5 font-heading text-[13px] font-semibold">
-              Coming up
-            </h2>
-            {thisWeek.length === 0 ? (
-              <p className="text-[11px] text-muted-foreground">
-                Nothing scheduled for the rest of the week.
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {thisWeek.map((session) => {
-                  const module = getModule(session.moduleId);
-                  return (
-                    <div
-                      key={session.id}
-                      className="flex items-center gap-2.5 rounded-xl bg-muted/50 px-2.5 py-2"
-                    >
-                      <span
-                        className="h-8 w-1 shrink-0 rounded-full"
-                        style={{
-                          backgroundColor: module?.accent || "#1E88E5",
-                        }}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-[12px] font-medium">
-                          {session.title}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground">
-                          {formatSessionDate(session.date)} ·{" "}
-                          {session.durationMinutes} min
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
           </section>
         </aside>
       </div>

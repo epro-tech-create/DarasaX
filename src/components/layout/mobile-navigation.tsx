@@ -33,7 +33,7 @@ export function MobileNavigation() {
         <Sparkles className="h-5 w-5" />
       </Link>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 px-2 pb-safe backdrop-blur-md lg:hidden">
         <ul className="grid grid-cols-5">
           {items.map((item) => {
             const Icon = item.icon;

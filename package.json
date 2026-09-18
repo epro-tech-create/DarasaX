@@ -3,9 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --port 3005",
+    "dev": "node scripts/run-app.mjs student dev",
+    "dev:student": "node scripts/run-app.mjs student dev",
+    "dev:admin": "node scripts/run-app.mjs admin dev",
+    "dev:cr": "node scripts/run-app.mjs class_rep dev",
+    "start": "node scripts/run-app.mjs student start",
+    "start:student": "node scripts/run-app.mjs student start",
+    "start:admin": "node scripts/run-app.mjs admin start",
+    "start:cr": "node scripts/run-app.mjs class_rep start",
     "build": "next build",
-    "start": "next start --port 3005",
     "lint": "eslint"
   },
   "dependencies": {
@@ -17,7 +23,6 @@
     "framer-motion": "^13.4.0",
     "lucide-react": "^1.47.0",
     "next": "16.3.5",
-    "next-themes": "^0.4.6",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "tailwind-merge": "^3.7.0"

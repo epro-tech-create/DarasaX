@@ -1,6 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 import { getProfile } from "@/lib/auth/profile";
+import {
+  forbiddenRedirect,
+  getAppRole,
+  pathAllowedForRole,
+} from "@/lib/app-role";
 
 const AUTH_ROUTES = new Set([
   "/login",
@@ -11,18 +16,15 @@ const AUTH_ROUTES = new Set([
   "/reset-password",
 ]);
 
-const PUBLIC_PREFIXES = ["/", "/auth/callback"];
-
-function isPublicPath(pathname: string) {
-  if (pathname === "/") return true;
-  if (pathname.startsWith("/auth/")) return true;
+function isAuthPath(pathname: string) {
   if (AUTH_ROUTES.has(pathname)) return true;
   if (pathname.startsWith("/forgot-password")) return true;
+  if (pathname.startsWith("/auth/")) return true;
   return false;
 }
 
-function isProtectedPath(pathname: string) {
-  const protectedRoots = [
+function isStudentProtected(pathname: string) {
+  const roots = [
     "/dashboard",
     "/modules",
     "/assignments",
@@ -36,15 +38,18 @@ function isProtectedPath(pathname: string) {
     "/settings",
     "/onboarding",
   ];
-  return protectedRoots.some(
-    (root) => pathname === root || pathname.startsWith(`${root}/`),
-  );
+  return roots.some((root) => pathname === root || pathname.startsWith(`${root}/`));
+}
+
+function isStaffProtected(pathname: string, role: "admin" | "class_rep") {
+  const root = role === "admin" ? "/admin" : "/cr";
+  return pathname === root || pathname.startsWith(`${root}/`);
 }
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const appRole = getAppRole();
 
-  // Skip static assets
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon") ||
@@ -53,18 +58,43 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Hard role isolation — always on, even without Supabase.
+  if (!pathAllowedForRole(pathname, appRole)) {
+    const url = request.nextUrl.clone();
+    url.pathname = forbiddenRedirect(appRole);
+    url.search = "";
+    const res = NextResponse.redirect(url);
+    res.headers.set("x-darasax-role", appRole);
+    res.headers.set("x-darasax-denied", pathname);
+    return res;
+  }
+
+  // Landing page → role home when not browsing marketing intentionally
+  if (pathname === "/" && appRole !== "student") {
+    const url = request.nextUrl.clone();
+    url.pathname = forbiddenRedirect(appRole);
+    return NextResponse.redirect(url);
+  }
+
   const hasEnv =
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!hasEnv) {
-    // Allow app to run without env during local UI work; protect nothing.
-    return NextResponse.next();
+    const res = NextResponse.next();
+    res.headers.set("x-darasax-role", appRole);
+    return res;
   }
 
   const { supabase, user, supabaseResponse } = await updateSession(request);
+  supabaseResponse.headers.set("x-darasax-role", appRole);
 
-  if (isProtectedPath(pathname) && !user) {
+  const needsAuth =
+    appRole === "student"
+      ? isStudentProtected(pathname)
+      : isStaffProtected(pathname, appRole);
+
+  if (needsAuth && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", pathname);
@@ -74,11 +104,15 @@ export async function proxy(request: NextRequest) {
   if (user && (pathname === "/login" || pathname === "/signup")) {
     const profile = await getProfile(supabase, user.id).catch(() => null);
     const url = request.nextUrl.clone();
-    url.pathname = profile?.onboarding_completed ? "/dashboard" : "/onboarding";
+    if (appRole === "student") {
+      url.pathname = profile?.onboarding_completed ? "/dashboard" : "/onboarding";
+    } else {
+      url.pathname = forbiddenRedirect(appRole);
+    }
     return NextResponse.redirect(url);
   }
 
-  if (user && pathname === "/onboarding") {
+  if (appRole === "student" && user && pathname === "/onboarding") {
     const profile = await getProfile(supabase, user.id).catch(() => null);
     if (profile?.onboarding_completed) {
       const url = request.nextUrl.clone();
@@ -88,10 +122,11 @@ export async function proxy(request: NextRequest) {
   }
 
   if (
+    appRole === "student" &&
     user &&
-    isProtectedPath(pathname) &&
+    needsAuth &&
     pathname !== "/onboarding" &&
-    !pathname.startsWith("/auth/")
+    !isAuthPath(pathname)
   ) {
     const profile = await getProfile(supabase, user.id).catch(() => null);
     if (profile && !profile.onboarding_completed) {
@@ -100,10 +135,6 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(url);
     }
   }
-
-  // Silence unused warning
-  void isPublicPath;
-  void PUBLIC_PREFIXES;
 
   return supabaseResponse;
 }

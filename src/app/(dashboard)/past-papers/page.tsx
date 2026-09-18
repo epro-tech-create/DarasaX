@@ -1,14 +1,21 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Archive, Download, Eye, Filter, Search, X } from "lucide-react";
+import { Archive, Download, Eye, Filter, Search, Sparkles, X } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getModule, modules, pastPapers } from "@/data/mock";
 import { downloadPastPaper, viewPastPaper } from "@/lib/download";
+import { useMaterialsStore } from "@/lib/materials-store";
 import { cn } from "@/lib/utils";
+import type { PastPaper } from "@/types";
+
+type PaperRow = PastPaper & {
+  fromStaff: boolean;
+  uploadedBy: string;
+};
 
 export default function PastPapersPage() {
   const [query, setQuery] = useState("");
@@ -16,16 +23,48 @@ export default function PastPapersPage() {
   const [type, setType] = useState("all");
   const [year, setYear] = useState("all");
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const { published } = useMaterialsStore();
+
+  const staffPapers: PaperRow[] = useMemo(
+    () =>
+      published
+        .filter((u) => u.kind === "past_paper" && u.moduleId)
+        .map((u) => ({
+          id: u.id,
+          moduleId: u.moduleId!,
+          title: u.title,
+          year: new Date(u.createdAt).getFullYear(),
+          type: "cat" as const,
+          fileType: "pdf" as const,
+          size: u.size,
+          fileUrl: "/past-papers/sample.pdf",
+          fromStaff: true,
+          uploadedBy: u.uploadedBy,
+        })),
+    [published],
+  );
+
+  const catalog: PaperRow[] = useMemo(
+    () => [
+      ...staffPapers,
+      ...pastPapers.map((p) => ({
+        ...p,
+        fromStaff: false,
+        uploadedBy: "Library",
+      })),
+    ],
+    [staffPapers],
+  );
 
   const years = useMemo(
-    () => Array.from(new Set(pastPapers.map((p) => p.year))).sort((a, b) => b - a),
-    [],
+    () => Array.from(new Set(catalog.map((p) => p.year))).sort((a, b) => b - a),
+    [catalog],
   );
 
   const activeFilterCount = [moduleId, type, year].filter((v) => v !== "all").length;
 
   const filtered = useMemo(() => {
-    return pastPapers.filter((p) => {
+    return catalog.filter((p) => {
       const module = getModule(p.moduleId);
       const matchesQuery =
         !query ||
@@ -38,7 +77,7 @@ export default function PastPapersPage() {
         (year === "all" || String(p.year) === year)
       );
     });
-  }, [query, moduleId, type, year]);
+  }, [catalog, query, moduleId, type, year]);
 
   function clearFilters() {
     setModuleId("all");
@@ -50,8 +89,22 @@ export default function PastPapersPage() {
     <div>
       <PageHeader
         title="Past Papers"
-        description="Find revision materials quickly."
+        description="Library papers plus new uploads from Admin and Class Rep."
       />
+
+      {staffPapers.length > 0 ? (
+        <div className="mb-4 flex items-start gap-2 rounded-2xl border border-primary/25 bg-primary/[0.06] px-3.5 py-3">
+          <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+          <div>
+            <p className="text-[12px] font-semibold text-primary">
+              {staffPapers.length} new from staff
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              Published directly to your account.
+            </p>
+          </div>
+        </div>
+      ) : null}
 
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative min-w-0 flex-1">
@@ -170,7 +223,7 @@ export default function PastPapersPage() {
         <EmptyState
           icon={Archive}
           title="No past papers"
-          description="Try a different filter or check back after your class rep uploads more."
+          description="Try a different filter or check back after staff uploads more."
         />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -179,12 +232,12 @@ export default function PastPapersPage() {
             return (
               <article
                 key={paper.id}
-                className="surface flex flex-col rounded-[18px] p-4 transition duration-200 hover:scale-[1.01] hover:border-primary hover:shadow-lg hover:shadow-primary/20 sm:p-5"
+                className="surface flex flex-col rounded-[18px] p-4 transition duration-200 hover:border-primary/40 sm:p-5"
               >
                 <div className="mb-3 flex flex-wrap gap-1.5">
                   <Badge tone="primary">{paper.type.toUpperCase()}</Badge>
                   <Badge>{paper.year}</Badge>
-                  <Badge tone="cyan">PDF</Badge>
+                  {paper.fromStaff ? <Badge tone="cyan">New</Badge> : null}
                 </div>
                 <h3 className="font-heading text-[15px] font-semibold tracking-tight">
                   {module?.name}
@@ -193,7 +246,7 @@ export default function PastPapersPage() {
                   {paper.title}
                 </p>
                 <p className="mt-2 text-[11px] text-muted-foreground">
-                  {paper.size}
+                  {paper.size} · {paper.uploadedBy}
                 </p>
                 <div className="mt-auto flex flex-wrap gap-2 pt-4">
                   <Button
