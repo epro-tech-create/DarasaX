@@ -2,12 +2,12 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   BookOpen,
-  CalendarDays,
   ClipboardList,
   Clock,
   Flame,
   GraduationCap,
   MapPin,
+  UserRound,
 } from "lucide-react";
 import type { Module, TimetableEntry } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -23,17 +23,22 @@ export function NextClassCard({
   dayOffset?: number;
 }) {
   const mins = minutesUntil(entry.startTime, dayOffset);
+  const days = Math.floor(mins / (60 * 24));
+  const hours = Math.floor((mins % (60 * 24)) / 60);
+  const remainingMinutes = mins % 60;
   const startsLabel =
-    mins > 60 * 24
-      ? `Starts in ${Math.ceil(mins / (60 * 24))} days`
-      : mins > 0
-        ? `Starts in ${mins} minutes`
-        : mins > -120
-          ? "Happening now"
-          : "Coming up";
+    mins >= 60 * 24
+      ? `Starts in ${days} ${days === 1 ? "day" : "days"}${hours ? ` ${hours} hr` : ""}`
+      : mins >= 60
+        ? `Starts in ${hours} hr${remainingMinutes ? ` ${remainingMinutes} min` : ""}`
+        : mins > 0
+          ? `Starts in ${mins} min`
+          : mins > -120
+            ? "Happening now"
+            : "Coming up";
 
   return (
-    <section className="relative overflow-hidden rounded-[22px] text-white shadow-lg shadow-primary/20">
+    <section className="relative overflow-hidden rounded-[22px] text-white">
       <Image
         src="/next-class-students.jpg"
         alt="African students studying in a university library"
@@ -45,42 +50,64 @@ export function NextClassCard({
       <div className="absolute inset-0 bg-gradient-to-r from-[#0d47a1]/96 via-[#1565c0]/82 to-[#1e88e5]/40 sm:via-[#1565c0]/78 sm:to-[#1e88e5]/18" />
       <div className="absolute inset-0 bg-gradient-to-t from-[#0d47a1]/60 via-transparent to-[#0d47a1]/30" />
 
-      <div className="relative z-10 flex min-h-[168px] flex-col justify-between gap-5 p-5 sm:min-h-[188px] sm:max-w-[58%] sm:p-6">
-        <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-white/75">
-            Next class
-          </p>
-          <h2 className="mt-1.5 font-heading text-xl font-semibold tracking-tight sm:text-2xl">
+      <div className="relative z-10 flex min-h-[220px] flex-col justify-between gap-6 p-5 sm:min-h-[240px] sm:p-7">
+        <div className="max-w-3xl">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/75">
+              Next class
+            </p>
+            <p className="rounded-full border border-white/15 bg-white/15 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+              {startsLabel}
+            </p>
+          </div>
+          <h2 className="mt-2 font-heading text-xl font-semibold leading-tight tracking-tight sm:text-2xl">
             {module.name}
           </h2>
-          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-[12px] text-white/90">
-            <span className="inline-flex items-center gap-1.5">
-              <Clock className="h-3.5 w-3.5 shrink-0" />
-              {formatTime(entry.startTime)} — {formatTime(entry.endTime)}
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <MapPin className="h-3.5 w-3.5 shrink-0" />
-              {entry.room}
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <CalendarDays className="h-3.5 w-3.5 shrink-0" />
-              {entry.lecturer}
-            </span>
-          </div>
-          <p className="mt-3 inline-flex rounded-full bg-white/15 px-2.5 py-1 text-[12px] font-semibold backdrop-blur-sm">
-            {startsLabel}
-          </p>
+          <dl className="mt-4 grid max-w-2xl gap-2 sm:grid-cols-3">
+            <div className="flex min-w-0 items-center gap-2.5 rounded-xl border border-white/10 bg-[#082f6a]/35 px-3 py-2.5 backdrop-blur-sm">
+              <Clock className="h-4 w-4 shrink-0 text-white/75" aria-hidden="true" />
+              <div className="min-w-0">
+                <dt className="text-[10px] font-medium uppercase tracking-[0.12em] text-white/60">
+                  Time
+                </dt>
+                <dd className="truncate text-sm font-semibold text-white">
+                  {formatTime(entry.startTime)} — {formatTime(entry.endTime)}
+                </dd>
+              </div>
+            </div>
+            <div className="flex min-w-0 items-center gap-2.5 rounded-xl border border-white/10 bg-[#082f6a]/35 px-3 py-2.5 backdrop-blur-sm">
+              <MapPin className="h-4 w-4 shrink-0 text-white/75" aria-hidden="true" />
+              <div className="min-w-0">
+                <dt className="text-[10px] font-medium uppercase tracking-[0.12em] text-white/60">
+                  Room
+                </dt>
+                <dd className="truncate text-sm font-semibold text-white">{entry.room}</dd>
+              </div>
+            </div>
+            <div className="flex min-w-0 items-center gap-2.5 rounded-xl border border-white/10 bg-[#082f6a]/35 px-3 py-2.5 backdrop-blur-sm">
+              <UserRound className="h-4 w-4 shrink-0 text-white/75" aria-hidden="true" />
+              <div className="min-w-0">
+                <dt className="text-[10px] font-medium uppercase tracking-[0.12em] text-white/60">
+                  Lecturer
+                </dt>
+                <dd className="truncate text-sm font-semibold text-white">
+                  {entry.lecturer}
+                </dd>
+              </div>
+            </div>
+          </dl>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2.5">
           <Button
-            className="h-9 bg-none bg-white text-[12px] text-primary hover:bg-white/90"
+            variant="secondary"
+            className="h-10 bg-white px-4 text-sm font-semibold text-[#0d47a1] shadow-none hover:bg-white/90"
             href={`/modules/${module.id}`}
           >
             View Module
           </Button>
           <Button
             variant="outline"
-            className="h-9 border-white/45 bg-white/10 text-[12px] text-white hover:bg-white/20"
+            className="h-10 border-white/40 bg-[#082f6a]/30 px-4 text-sm text-white hover:bg-white/15"
             href="/timetable"
           >
             View Timetable
