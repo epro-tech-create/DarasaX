@@ -201,6 +201,9 @@ export interface MissedDaySummary {
     assignment?: string;
     deadline?: string;
     announcement?: string;
+    startTime?: string;
+    endTime?: string;
+    room?: string;
   }[];
 }
 

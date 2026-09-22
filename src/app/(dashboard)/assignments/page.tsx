@@ -5,7 +5,8 @@ import { AssignmentCard } from "@/components/assignments/assignment-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
-import { assignments, getModule, modules } from "@/data/mock";
+import { getModule, modules } from "@/data/mock";
+import { useAssignments } from "@/lib/assignment-progress-store";
 import { cn, daysUntil } from "@/lib/utils";
 import {
   AlertTriangle,
@@ -23,6 +24,7 @@ export default function AssignmentsPage() {
   const [moduleFilter, setModuleFilter] = useState("all");
   const [priority, setPriority] = useState("all");
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const { items: assignments } = useAssignments();
 
   const upcoming = assignments.filter((a) => a.status === "upcoming");
   const dueSoon = upcoming.filter((a) => {
@@ -45,7 +47,7 @@ export default function AssignmentsPage() {
         (a, b) =>
           new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
       );
-  }, [tab, moduleFilter, priority]);
+  }, [tab, moduleFilter, priority, assignments]);
 
   const activeFilterCount = [moduleFilter, priority].filter(
     (v) => v !== "all",
@@ -210,8 +212,18 @@ export default function AssignmentsPage() {
       {filtered.length === 0 ? (
         <EmptyState
           icon={ClipboardList}
-          title="No assignments yet"
-          description="When new coursework is posted, it will show up here."
+          title={
+            tab === "Upcoming"
+              ? "Nothing upcoming"
+              : tab === "Completed"
+                ? "No completed work yet"
+                : "No assignments yet"
+          }
+          description={
+            tab === "Upcoming"
+              ? "Mark work complete from an assignment page and it leaves Upcoming."
+              : "When new coursework is posted, it will show up here."
+          }
         />
       ) : (
         <div className="space-y-2.5">

@@ -1,22 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo } from "react";
 import { notFound, useParams } from "next/navigation";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DeadlineBadge } from "@/components/assignments/assignment-card";
-import { getAssignment, getModule, resources } from "@/data/mock";
+import { getModule, resources } from "@/data/mock";
+import { useAssignments } from "@/lib/assignment-progress-store";
 import { downloadFile, downloadResource } from "@/lib/download";
-import { CheckCircle2, Download, FileText } from "lucide-react";
+import { CheckCircle2, Download, FileText, RotateCcw } from "lucide-react";
 
 export default function AssignmentDetailPage() {
   const params = useParams<{ id: string }>();
-  const assignment = getAssignment(params.id);
-  const [completed, setCompleted] = useState(assignment?.status === "completed");
+  const { items, markCompleted, setStatus } = useAssignments();
+  const assignment = useMemo(
+    () => items.find((a) => a.id === params.id),
+    [items, params.id],
+  );
 
   if (!assignment) notFound();
 
+  const completed = assignment.status === "completed";
   const module = getModule(assignment.moduleId);
   const related = resources.filter((r) =>
     assignment.relatedResourceIds.includes(r.id),
@@ -124,14 +129,28 @@ export default function AssignmentDetailPage() {
           </section>
         ) : null}
 
-        <Button
-          onClick={() => setCompleted(true)}
-          disabled={completed}
-          className="w-full sm:w-auto"
-        >
-          <CheckCircle2 className="h-4 w-4" />
-          {completed ? "Marked as completed" : "Mark as Completed"}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            onClick={() => markCompleted(assignment.id)}
+            disabled={completed}
+            className="w-full sm:w-auto"
+            type="button"
+          >
+            <CheckCircle2 className="h-4 w-4" />
+            {completed ? "Marked as completed" : "Mark as Completed"}
+          </Button>
+          {completed ? (
+            <Button
+              variant="outline"
+              type="button"
+              className="w-full sm:w-auto"
+              onClick={() => setStatus(assignment.id, "upcoming")}
+            >
+              <RotateCcw className="h-4 w-4" />
+              Move back to Upcoming
+            </Button>
+          ) : null}
+        </div>
       </div>
     </div>
   );

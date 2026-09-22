@@ -65,14 +65,16 @@ export function StaffSection({
 }) {
   return (
     <section className={cn("surface overflow-hidden rounded-[20px]", className)}>
-      <div className="flex flex-wrap items-start justify-between gap-2 border-b border-border/70 px-4 py-3">
-        <div>
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border/70 px-4 py-3.5">
+        <div className="min-w-0 flex-1">
           <h2 className="font-heading text-[13px] font-semibold">{title}</h2>
           {description ? (
-            <p className="mt-0.5 text-[11px] text-muted-foreground">{description}</p>
+            <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
+              {description}
+            </p>
           ) : null}
         </div>
-        {action}
+        {action ? <div className="shrink-0">{action}</div> : null}
       </div>
       <div className="p-4">{children}</div>
     </section>

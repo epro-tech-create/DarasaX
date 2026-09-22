@@ -80,8 +80,8 @@ export function UploadWorkspace({
   }
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1.35fr_0.65fr]">
-      <div className="surface rounded-[20px] p-4 sm:p-5">
+    <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)]">
+      <div className="surface min-w-0 rounded-[20px] p-4 sm:p-5">
         <div className="mb-4">
           <h2 className="font-heading text-[15px] font-semibold">{title}</h2>
           <p className="mt-1 text-[12px] text-muted-foreground">{description}</p>
@@ -203,14 +203,14 @@ export function UploadWorkspace({
           {published ? (
             <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-success">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              Live — viewable & downloadable in Library
+              Live on student Modules / Past Papers
             </span>
           ) : null}
         </div>
         {footerNote}
       </div>
 
-      <div className="space-y-3">
+      <aside className="flex min-w-0 flex-col gap-3">
         <div className="gradient-primary relative overflow-hidden rounded-[20px] p-4 text-white shadow-lg shadow-primary/20">
           <div className="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
           <p className="relative text-[11px] font-medium uppercase tracking-[0.12em] text-white/75">
@@ -220,28 +220,28 @@ export function UploadWorkspace({
             One publish → student accounts
           </p>
           <p className="relative mt-2 text-[12px] text-white/80">
-            Notes land in Modules. Past papers land in Past Papers. Staff can view,
-            download, edit, or delete from Library anytime.
+            Pick the module carefully. Notes and slides appear on that module’s
+            Notes tab; past papers appear under Past Papers for the whole class.
           </p>
         </div>
         <div className="surface rounded-[20px] p-4">
           <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
             Before you publish
           </p>
-          <ul className="mt-3 space-y-2 text-[12px] text-muted-foreground">
+          <ul className="mt-3 space-y-2.5 text-[12px] text-muted-foreground">
             {[
               "Clear title students recognise",
               "Correct module selected",
               "Readable file (not blurry scans)",
             ].map((item) => (
-              <li key={item} className="flex gap-2">
+              <li key={item} className="flex items-start gap-2">
                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                {item}
+                <span className="leading-snug">{item}</span>
               </li>
             ))}
           </ul>
         </div>
-      </div>
+      </aside>
     </div>
   );
 }

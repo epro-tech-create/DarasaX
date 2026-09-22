@@ -35,6 +35,11 @@ export async function loginStaff(input: {
   email: string;
   password: string;
 }): Promise<StaffSession> {
+  if (!isConfigured()) {
+    throw new Error(
+      "Supabase is not configured on this deployment. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY, then redeploy.",
+    );
+  }
   const supabase = createClient();
   const { data, error } = await supabase.auth.signInWithPassword({
     email: input.email,
