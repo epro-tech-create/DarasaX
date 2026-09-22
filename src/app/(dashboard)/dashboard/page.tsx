@@ -22,6 +22,8 @@ import { getNextClass } from "@/lib/academic";
 import { formatCountdownParts, getMsUntilSchoolOpen } from "@/lib/school";
 import { formatDate, getGreeting } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/server";
+import { DEFAULT_CLASS_STREAM, timetable as seedTimetable } from "@/data/mock";
+import type { TimetableEntry } from "@/types";
 
 const feedIcons = {
   FileText,
@@ -41,7 +43,35 @@ function displayFirstName(name: string) {
 }
 
 export default async function DashboardPage() {
-  const next = getNextClass();
+  let liveTimetable: TimetableEntry[] = seedTimetable;
+  try {
+    if (
+      process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    ) {
+      const supabase = await createClient();
+      const { data } = await supabase
+        .from("timetable_entries")
+        .select("*")
+        .order("day")
+        .order("start_time");
+      if (data && data.length > 0) {
+        liveTimetable = data.map((row) => ({
+          id: row.id,
+          streamId: row.stream_id as TimetableEntry["streamId"],
+          moduleId: row.module_id,
+          day: row.day,
+          startTime: row.start_time,
+          endTime: row.end_time,
+          room: row.room,
+          lecturer: row.lecturer,
+        }));
+      }
+    }
+  } catch {
+    // Fall back to bundled timetable
+  }
+  const next = getNextClass(new Date(), DEFAULT_CLASS_STREAM, liveTimetable);
   const upcoming = assignments
     .filter((a) => a.status !== "completed")
     .sort(

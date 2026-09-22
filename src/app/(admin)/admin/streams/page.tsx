@@ -1,11 +1,18 @@
+"use client";
+
 import { Moon, Sun, Users } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { classStreams, getTimetableForStream } from "@/data/mock";
-import { getIssuesForStream, getStudentsForStream } from "@/data/staff-mock";
+import { classStreams } from "@/data/mock";
+import { useAdminPeopleStore } from "@/lib/admin-people-store";
+import { useIssuesStore } from "@/lib/issues-store";
+import { useTimetableStore } from "@/lib/timetable-store";
 
 export default function AdminStreamsPage() {
+  const { studentsForStream } = useAdminPeopleStore();
+  const { items: issues } = useIssuesStore();
+  const { forStream } = useTimetableStore();
   return (
     <div className="space-y-5">
       <PageHeader
@@ -20,11 +27,13 @@ export default function AdminStreamsPage() {
 
       <div className="grid gap-3 md:grid-cols-2">
         {classStreams.map((stream) => {
-          const students = getStudentsForStream(stream.id);
-          const issues = getIssuesForStream(stream.id).filter(
-            (i) => i.status !== "resolved",
+          const students = studentsForStream(stream.id);
+          const openIssues = issues.filter(
+            (i) =>
+              (i.streamId === stream.id || !i.streamId) &&
+              i.status !== "resolved",
           );
-          const sessions = getTimetableForStream(stream.id).length;
+          const sessions = forStream(stream.id).length;
 
           return (
             <div key={stream.id} className="surface relative overflow-hidden rounded-[20px] p-4">
@@ -59,7 +68,7 @@ export default function AdminStreamsPage() {
                 </div>
                 <div className="rounded-xl bg-muted/40 px-2.5 py-2">
                   <p className="text-[10px] text-muted-foreground">Open issues</p>
-                  <p className="mt-0.5 font-heading text-[16px] font-semibold">{issues.length}</p>
+                  <p className="mt-0.5 font-heading text-[16px] font-semibold">{openIssues.length}</p>
                 </div>
               </div>
 

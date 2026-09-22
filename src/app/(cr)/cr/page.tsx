@@ -7,12 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StaffSection, StaffStatCard } from "@/components/staff/staff-ui";
 import { StaffFadeItem, StaffStagger } from "@/components/staff/staff-motion";
-import {
-  classRepUser,
-  getIssuesForStream,
-  getUploadsForRole,
-} from "@/data/staff-mock";
 import { useAdminPeopleStore } from "@/lib/admin-people-store";
+import { useIssuesStore } from "@/lib/issues-store";
+import { useMaterialsStore } from "@/lib/materials-store";
+import { useStaffSession } from "@/lib/staff-auth";
 
 function greeting() {
   const h = new Date().getHours();
@@ -22,19 +20,23 @@ function greeting() {
 }
 
 export default function ClassRepOverviewPage() {
-  const streamId = classRepUser.streamId;
+  const { session } = useStaffSession();
+  const streamId = session?.streamId ?? "BENG24COE-1";
+  const displayName = session?.name ?? "Class Rep";
   const { studentsForStream } = useAdminPeopleStore();
+  const { forStream } = useIssuesStore();
+  const { items: uploads } = useMaterialsStore();
   const members = studentsForStream(streamId);
-  const openIssues = getIssuesForStream(streamId).filter(
+  const openIssues = forStream(streamId).filter(
     (i) => i.status !== "resolved",
   );
-  const uploads = getUploadsForRole("class_rep");
+  const myUploads = uploads.filter((u) => u.role === "class_rep");
 
   return (
     <div className="space-y-5">
       <PageHeader
         size="lg"
-        title={`${greeting()}, ${classRepUser.name}`}
+        title={`${greeting()}, ${displayName}`}
         description={`Class Representative · ${streamId}`}
         actions={
           <div className="flex flex-wrap gap-2">
@@ -68,7 +70,7 @@ export default function ClassRepOverviewPage() {
         <StaffFadeItem>
           <StaffStatCard
             label="Your uploads"
-            value={String(uploads.length)}
+            value={String(myUploads.length)}
             icon={FileUp}
             tone="success"
           />

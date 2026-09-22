@@ -31,6 +31,7 @@ export default function AdminClassRepsPage() {
   const [editing, setEditing] = useState<ClassRepAccount | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [note, setNote] = useState("");
+  const [formError, setFormError] = useState("");
 
   const active = useMemo(
     () => classReps.filter((c) => c.status === "active"),
@@ -63,35 +64,46 @@ export default function AdminClassRepsPage() {
     setEditing(null);
   }
 
-  function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name.trim() || !form.email.trim()) return;
-    if (editing) {
-      updateClassRep(editing.id, {
-        name: form.name,
-        email: form.email,
-        phone: form.phone,
-        streamId: form.streamId,
-        status: form.status,
-      });
-      setNote("Class rep updated.");
-    } else {
-      addClassRep({
-        name: form.name,
-        email: form.email,
-        phone: form.phone,
-        streamId: form.streamId,
-        status: form.status,
-      });
-      setNote(`CR appointed for ${form.streamId}.`);
+    setNote("");
+    setFormError("");
+    try {
+      if (editing) {
+        await updateClassRep(editing.id, {
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          streamId: form.streamId,
+          status: form.status,
+        });
+        setNote("Class rep updated.");
+      } else {
+        await addClassRep({
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          streamId: form.streamId,
+          status: form.status,
+        });
+        setNote(`CR appointed for ${form.streamId}.`);
+      }
+      closeModal();
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : "Could not save.");
     }
-    closeModal();
   }
 
   function onDelete(cr: ClassRepAccount) {
     if (!window.confirm(`Remove ${cr.name} as class representative?`)) return;
-    deleteClassRep(cr.id);
-    setNote(`Removed ${cr.name}.`);
+    deleteClassRep(cr.id).then(
+      () => setNote(`Removed ${cr.name}.`),
+      (err: unknown) =>
+        setNote(
+          `Could not remove: ${err instanceof Error ? err.message : "try again."}`,
+        ),
+    );
   }
 
   return (
@@ -133,6 +145,7 @@ export default function AdminClassRepsPage() {
       </div>
 
       {note ? <p className="text-[12px] font-medium text-success">{note}</p> : null}
+      {formError ? <p className="text-[12px] font-medium text-danger">{formError}</p> : null}
 
       <StaffSection title="CR directory" description={`${classReps.length} records`}>
         <div className="space-y-2">
@@ -194,7 +207,7 @@ export default function AdminClassRepsPage() {
         description={
           editing
             ? "Update CR details. Activating on a stream deactivates the previous CR."
-            : "Appoint a CR. An existing active CR on that stream is deactivated."
+            : "CRs register themselves on the Class Rep portal — then set their stream and status here."
         }
       >
         <form onSubmit={onSubmit} className="space-y-3">

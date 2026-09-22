@@ -134,28 +134,24 @@ cp .env.example .env.local
 
 | Variable | Used by | Notes |
 |---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Student | Public Supabase project URL. |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Student | Public anon key only. Never use service_role in the app. |
+| `NEXT_PUBLIC_SUPABASE_URL` | All | Public Supabase project URL (one project for all portals). |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | All | Public anon key only. Never use service_role in the app. |
 | `APP_ROLE` | All | Build-time role: `student`, `admin`, or `class_rep`. Set this on Vercel. Do not add `NEXT_PUBLIC_APP_ROLE` manually. |
-| `STAFF_AUTH_SECRET` | Admin, Class Rep | Signs staff sessions and CR registry cookies. Required in production. |
-| `ADMIN_EMAIL` | Admin | Admin login email. Defaults to `admin@darasax.app` locally. |
-| `ADMIN_PASSWORD` | Admin | Admin login password. Override in production. |
-| `ADMIN_NAME` | Admin | Optional display name. Defaults to `Admin Desk`. |
 
-Class Rep accounts have no preset password. Create one at `/register` on the Class Rep app with a password of at least 8 characters.
+Class Rep accounts self-register at `/register` on the Class Rep app. The admin account is created once in Supabase Auth + `staff_profiles` (see `SUPABASE_SETUP.md` §3a).
 
 ## Authentication model
 
 - Student routes use Supabase sessions. Protected pages redirect to `/login`, completed onboarding redirects to `/dashboard`, and incomplete onboarding redirects to `/onboarding`.
-- Admin login validates against `ADMIN_EMAIL` and `ADMIN_PASSWORD`, then issues a signed 7-day HTTP-only staff cookie.
-- Class Rep registration stores a signed per-browser account registry cookie and issues the same type of staff session cookie.
-- `src/proxy.ts` enforces role isolation before Supabase or staff checks and adds `x-darasax-role` diagnostics headers.
+- Staff (admin / class rep) also sign in with Supabase Auth. Their role and stream come from `staff_profiles`; `src/proxy.ts` gates `/admin` and `/cr` on the matching active staff row.
+- `src/proxy.ts` enforces role isolation before Supabase checks and adds `x-darasax-role` diagnostics headers.
 
 ## Data and storage
 
 - `public.profiles` stores student profile and onboarding state with Row Level Security so users can only read and update their own profile.
-- New Supabase users automatically get a profile row through `handle_new_user`.
-- Timetable, materials, admin people, and CR registry state currently use browser-local or cookie-backed stores and mock data. This means staff-created records may not sync across devices until a shared database layer is added.
+- New Supabase users automatically get a profile row through `handle_new_user` (staff via `handle_new_staff`).
+- Timetable, materials, monitored students, issues, and audit logs live in Supabase tables (`supabase/migrations/20260922000000_academic_data.sql`), scoped by RLS (students read own stream; staff scoped by role/stream).
+- Uploaded files live in the private `materials` storage bucket; the app mints signed URLs for view/download. Only UI prefs (theme, selected stream) stay in `localStorage`.
 - Supabase email templates for signup and recovery are versioned under `supabase/email-templates`.
 
 ## Deployment
@@ -184,6 +180,7 @@ Pushes to `main` trigger production deployments for all three portals. `next.con
 - `APPS.md` — local ports and role isolation summary
 - `SUPABASE_SETUP.md` — full Supabase Auth, Google OAuth, redirect URL, SMTP, migration, and smoke-test guide
 - `supabase/migrations/20260917000000_profiles.sql` — profiles schema and policies
+- `supabase/migrations/20260922000000_academic_data.sql` — staff, timetable, materials, students, issues, audit, storage bucket, seeds
 
 ## Collaborating
 
@@ -197,5 +194,4 @@ Pushes to `main` trigger production deployments for all three portals. `next.con
 ## Current limitations worth knowing
 
 - Broader `npm run lint` reports pre-existing errors in unrelated files; targeted checks for changed UI files pass.
-- CR accounts and some staff content are browser-local rather than globally shared.
 - Production email delivery needs custom SMTP in Supabase for reliable OTP delivery.

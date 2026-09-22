@@ -1,18 +1,23 @@
+"use client";
+
 import { PageHeader } from "@/components/layout/page-header";
 import { StaffSection, StaffStatCard } from "@/components/staff/staff-ui";
-import {
-  classRepUser,
-  getIssuesForStream,
-  getStudentsForStream,
-  getUploadsForRole,
-  weeklyAnalytics,
-} from "@/data/staff-mock";
+import { weeklyAnalytics } from "@/data/staff-mock";
+import { useAdminPeopleStore } from "@/lib/admin-people-store";
+import { useIssuesStore } from "@/lib/issues-store";
+import { useMaterialsStore } from "@/lib/materials-store";
+import { useStaffSession } from "@/lib/staff-auth";
 import { Download, Eye, FileUp, Flag } from "lucide-react";
 
 export default function ClassRepAnalyticsPage() {
-  const members = getStudentsForStream(classRepUser.streamId);
-  const uploads = getUploadsForRole("class_rep");
-  const issues = getIssuesForStream(classRepUser.streamId);
+  const { session } = useStaffSession();
+  const streamId = session?.streamId ?? "BENG24COE-1";
+  const { studentsForStream } = useAdminPeopleStore();
+  const { forStream } = useIssuesStore();
+  const { items } = useMaterialsStore();
+  const members = studentsForStream(streamId);
+  const uploads = items.filter((u) => u.role === "class_rep");
+  const issues = forStream(streamId);
   const downloads = uploads.reduce((a, u) => a + u.downloads, 0);
   const max = Math.max(...weeklyAnalytics.map((d) => d.views));
 
@@ -20,7 +25,7 @@ export default function ClassRepAnalyticsPage() {
     <div className="space-y-5">
       <PageHeader
         title="Class insights"
-        description={`Engagement and ops snapshot for ${classRepUser.streamId}.`}
+        description={`Engagement and ops snapshot for ${streamId}.`}
       />
 
       <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4">

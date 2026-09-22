@@ -1,138 +1,68 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { monitoredStudents as seedStudents } from "@/data/staff-mock";
+import { createClient } from "@/lib/supabase/client";
 import { classStreams } from "@/data/mock";
+import type {
+  AuditLogRow,
+  Database,
+  MonitoredStudentRow,
+  StaffProfile,
+} from "@/types/database";
 import type {
   AuditAction,
   AuditLogEntry,
   ClassRepAccount,
   ClassStreamId,
+  StaffRole,
   StudentMonitor,
 } from "@/types";
 
-const STUDENTS_KEY = "darasax-admin-students-v1";
-const CRS_KEY = "darasax-admin-crs-v1";
-const AUDIT_KEY = "darasax-admin-audit-v1";
-
-const seedCRs: ClassRepAccount[] = [
-  {
-    id: "cr-1",
-    name: "Amina Hassan",
-    email: "amina.cr@student.dit.ac.tz",
-    streamId: "BENG24COE-1",
-    phone: "+255 712 000 111",
-    status: "active",
-    appointedAt: "2026-08-20T10:00:00",
-  },
-  {
-    id: "cr-2",
-    name: "James Mwita",
-    email: "james.cr@student.dit.ac.tz",
-    streamId: "BENG24COE-2",
-    phone: "+255 713 000 222",
-    status: "active",
-    appointedAt: "2026-08-21T10:00:00",
-  },
-  {
-    id: "cr-3",
-    name: "Neema Said",
-    email: "neema.cr@student.dit.ac.tz",
-    streamId: "BENG24COE-3",
-    status: "active",
-    appointedAt: "2026-08-22T10:00:00",
-  },
-];
-
-const seedAudit: AuditLogEntry[] = [
-  {
-    id: "aud-1",
-    at: "2026-09-18T09:12:00",
-    actor: "Admin Desk",
-    role: "admin",
-    action: "upload",
-    summary: "Published DSA CAT 2025 past paper",
-    detail: "Visible to all streams",
-  },
-  {
-    id: "aud-2",
-    at: "2026-09-18T08:40:00",
-    actor: "Amina Hassan",
-    role: "class_rep",
-    action: "upload",
-    summary: "Shared Sensor Networks notes",
-    streamId: "BENG24COE-1",
-  },
-  {
-    id: "aud-3",
-    at: "2026-09-17T16:05:00",
-    actor: "Admin Desk",
-    role: "admin",
-    action: "timetable_edit",
-    summary: "Moved Electronics Lab to Lab 05",
-    streamId: "BENG24COE-4",
-  },
-  {
-    id: "aud-4",
-    at: "2026-09-17T11:20:00",
-    actor: "Admin Desk",
-    role: "admin",
-    action: "issue_update",
-    summary: "Marked Lab 03 clash as in progress",
-    streamId: "BENG24COE-3",
-  },
-  {
-    id: "aud-5",
-    at: "2026-09-16T10:00:00",
-    actor: "system",
-    role: "system",
-    action: "login",
-    summary: "Failed login attempts blocked (2)",
-    detail: "IP range throttled",
-  },
-  {
-    id: "aud-6",
-    at: "2026-09-15T14:30:00",
-    actor: "Admin Desk",
-    role: "admin",
-    action: "cr_add",
-    summary: "Appointed Neema Said as CR",
-    streamId: "BENG24COE-3",
-  },
-];
-
-function readJson<T>(key: string, fallback: T): T {
-  if (typeof window === "undefined") return fallback;
-  try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return fallback;
-    return JSON.parse(raw) as T;
-  } catch {
-    return fallback;
-  }
+function isConfigured() {
+  return Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  );
 }
 
-function writeJson<T>(key: string, value: T, event: string) {
-  localStorage.setItem(key, JSON.stringify(value));
-  window.dispatchEvent(new Event(event));
-}
-
-function pushAudit(
-  entry: Omit<AuditLogEntry, "id" | "at"> & { at?: string },
-) {
-  const logs = readJson(AUDIT_KEY, seedAudit);
-  const next: AuditLogEntry = {
-    id: `aud-${Date.now()}`,
-    at: entry.at ?? new Date().toISOString(),
-    actor: entry.actor,
-    role: entry.role,
-    action: entry.action,
-    summary: entry.summary,
-    detail: entry.detail,
-    streamId: entry.streamId,
+function toStudent(row: MonitoredStudentRow): StudentMonitor {
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    streamId: row.stream_id as ClassStreamId,
+    year: row.year,
+    attendancePct: Number(row.attendance_pct),
+    assignmentsDone: row.assignments_done,
+    assignmentsTotal: row.assignments_total,
+    lastActive: row.last_active,
+    risk: row.risk as StudentMonitor["risk"],
   };
-  writeJson(AUDIT_KEY, [next, ...logs], "darasax:audit");
-  return next;
+}
+
+function toClassRep(row: StaffProfile): ClassRepAccount {
+  return {
+    id: row.id,
+    name: row.full_name ?? "Class Rep",
+    email: row.email ?? "",
+    streamId: (row.stream_id ?? "BENG24COE-1") as ClassStreamId,
+    phone: row.phone ?? undefined,
+    status: row.status === "inactive" ? "inactive" : "active",
+    appointedAt: row.created_at,
+  };
+}
+
+function toAudit(row: AuditLogRow): AuditLogEntry {
+  return {
+    id: String(row.id),
+    at: row.at,
+    actor: row.actor,
+    role: row.role as AuditLogEntry["role"],
+    action: row.action as AuditAction,
+    summary: row.summary,
+    detail: row.detail ?? undefined,
+    streamId: (row.stream_id as ClassStreamId | null) ?? undefined,
+  };
 }
 
 export type StudentInput = {
@@ -153,33 +83,55 @@ export type ClassRepInput = {
 };
 
 export function useAdminPeopleStore() {
-  const [students, setStudents] = useState<StudentMonitor[]>(seedStudents);
-  const [classReps, setClassReps] = useState<ClassRepAccount[]>(seedCRs);
-  const [audit, setAudit] = useState<AuditLogEntry[]>(seedAudit);
+  const [students, setStudents] = useState<StudentMonitor[]>([]);
+  const [classReps, setClassReps] = useState<ClassRepAccount[]>([]);
+  const [audit, setAudit] = useState<AuditLogEntry[]>([]);
   const [ready, setReady] = useState(false);
 
-  useEffect(() => {
-    setStudents(readJson(STUDENTS_KEY, seedStudents));
-    setClassReps(readJson(CRS_KEY, seedCRs));
-    setAudit(readJson(AUDIT_KEY, seedAudit));
-    setReady(true);
-    const sync = () => {
-      setStudents(readJson(STUDENTS_KEY, seedStudents));
-      setClassReps(readJson(CRS_KEY, seedCRs));
-      setAudit(readJson(AUDIT_KEY, seedAudit));
-    };
-    window.addEventListener("storage", sync);
-    window.addEventListener("darasax:people", sync);
-    window.addEventListener("darasax:audit", sync);
-    return () => {
-      window.removeEventListener("storage", sync);
-      window.removeEventListener("darasax:people", sync);
-      window.removeEventListener("darasax:audit", sync);
-    };
+  const refresh = useCallback(async () => {
+    try {
+      if (!isConfigured()) {
+        setStudents([]);
+        setClassReps([]);
+        setAudit([]);
+        return;
+      }
+      const supabase = createClient();
+      const [studentsRes, crsRes, auditRes] = await Promise.all([
+        supabase
+          .from("monitored_students")
+          .select("*")
+          .order("name"),
+        supabase
+          .from("staff_profiles")
+          .select("*")
+          .eq("role", "class_rep")
+          .order("created_at"),
+        supabase
+          .from("audit_log")
+          .select("*")
+          .order("at", { ascending: false })
+          .limit(200),
+      ]);
+      if (studentsRes.error) throw studentsRes.error;
+      if (crsRes.error) throw crsRes.error;
+      if (auditRes.error) throw auditRes.error;
+      setStudents((studentsRes.data ?? []).map(toStudent));
+      setClassReps((crsRes.data ?? []).map(toClassRep));
+      setAudit((auditRes.data ?? []).map(toAudit));
+    } catch {
+      // Keep previously loaded data on transient failures.
+    } finally {
+      setReady(true);
+    }
   }, []);
 
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
   const log = useCallback(
-    (input: {
+    async (input: {
       actor?: string;
       role?: AuditLogEntry["role"];
       action: AuditAction;
@@ -187,14 +139,25 @@ export function useAdminPeopleStore() {
       detail?: string;
       streamId?: ClassStreamId;
     }) => {
-      const entry = pushAudit({
-        actor: input.actor ?? "Admin Desk",
-        role: input.role ?? "admin",
-        action: input.action,
-        summary: input.summary,
-        detail: input.detail,
-        streamId: input.streamId,
-      });
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const { data, error } = await supabase
+        .from("audit_log")
+        .insert({
+          actor: input.actor ?? "Admin Desk",
+          role: input.role ?? "admin",
+          action: input.action,
+          summary: input.summary,
+          detail: input.detail ?? null,
+          stream_id: input.streamId ?? null,
+          actor_id: user?.id ?? null,
+        })
+        .select("*")
+        .single();
+      if (error) throw error;
+      const entry = toAudit(data);
       setAudit((prev) => [entry, ...prev]);
       return entry;
     },
@@ -202,198 +165,212 @@ export function useAdminPeopleStore() {
   );
 
   const addStudent = useCallback(
-    (
+    async (
       input: StudentInput,
       meta?: { actor?: string; role?: AuditLogEntry["role"] },
     ) => {
-      const student: StudentMonitor = {
-        id: `st-${Date.now()}`,
-        name: input.name.trim(),
-        email: input.email.trim().toLowerCase(),
-        streamId: input.streamId,
-        year: input.year ?? 3,
-        attendancePct: input.attendancePct ?? 100,
-        assignmentsDone: 0,
-        assignmentsTotal: 5,
-        lastActive: new Date().toISOString(),
-        risk: input.risk ?? "low",
-      };
-      setStudents((prev) => {
-        const next = [student, ...prev];
-        writeJson(STUDENTS_KEY, next, "darasax:people");
-        return next;
-      });
-      log({
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("monitored_students")
+        .insert({
+          id: `st-${Date.now()}`,
+          name: input.name.trim(),
+          email: input.email.trim().toLowerCase(),
+          stream_id: input.streamId,
+          year: input.year ?? 3,
+          attendance_pct: input.attendancePct ?? 100,
+          assignments_done: 0,
+          assignments_total: 5,
+          last_active: new Date().toISOString(),
+          risk: input.risk ?? "low",
+        })
+        .select("*")
+        .single();
+      if (error) throw error;
+      const student = toStudent(data);
+      setStudents((prev) => [student, ...prev]);
+      await log({
         actor: meta?.actor,
         role: meta?.role,
         action: "student_add",
         summary: `Added student ${student.name}`,
         detail: student.email,
         streamId: student.streamId,
-      });
+      }).catch(() => null);
       return student;
     },
     [log],
   );
 
   const updateStudent = useCallback(
-    (
+    async (
       id: string,
       patch: Partial<Omit<StudentMonitor, "id">>,
       meta?: { actor?: string; role?: AuditLogEntry["role"] },
     ) => {
-      const current = readJson(STUDENTS_KEY, seedStudents);
-      const existing = current.find((s) => s.id === id);
-      if (!existing) return undefined;
-      const updated: StudentMonitor = {
-        ...existing,
-        ...patch,
-        name: patch.name?.trim() ?? existing.name,
-        email: patch.email?.trim().toLowerCase() ?? existing.email,
-      };
-      const next = current.map((s) => (s.id === id ? updated : s));
-      writeJson(STUDENTS_KEY, next, "darasax:people");
-      setStudents(next);
-      log({
+      const supabase = createClient();
+      const dbPatch: Database["public"]["Tables"]["monitored_students"]["Update"] = {};
+      if (patch.name !== undefined) dbPatch.name = patch.name.trim();
+      if (patch.email !== undefined)
+        dbPatch.email = patch.email.trim().toLowerCase();
+      if (patch.streamId !== undefined) dbPatch.stream_id = patch.streamId;
+      if (patch.year !== undefined) dbPatch.year = patch.year;
+      if (patch.attendancePct !== undefined)
+        dbPatch.attendance_pct = patch.attendancePct;
+      if (patch.assignmentsDone !== undefined)
+        dbPatch.assignments_done = patch.assignmentsDone;
+      if (patch.assignmentsTotal !== undefined)
+        dbPatch.assignments_total = patch.assignmentsTotal;
+      if (patch.lastActive !== undefined) dbPatch.last_active = patch.lastActive;
+      if (patch.risk !== undefined) dbPatch.risk = patch.risk;
+      const { data, error } = await supabase
+        .from("monitored_students")
+        .update(dbPatch)
+        .eq("id", id)
+        .select("*")
+        .single();
+      if (error) throw error;
+      const updated = toStudent(data);
+      setStudents((prev) => prev.map((s) => (s.id === id ? updated : s)));
+      await log({
         actor: meta?.actor,
         role: meta?.role,
         action: "student_update",
         summary: `Updated student ${updated.name}`,
         detail: updated.email,
         streamId: updated.streamId,
-      });
+      }).catch(() => null);
       return updated;
     },
     [log],
   );
 
   const deleteStudent = useCallback(
-    (
+    async (
       id: string,
       meta?: { actor?: string; role?: AuditLogEntry["role"] },
     ) => {
-      const current = readJson(STUDENTS_KEY, seedStudents);
-      const removed = current.find((s) => s.id === id);
-      if (!removed) return;
-      const next = current.filter((s) => s.id !== id);
-      writeJson(STUDENTS_KEY, next, "darasax:people");
-      setStudents(next);
-      log({
-        actor: meta?.actor,
-        role: meta?.role,
-        action: "student_delete",
-        summary: `Removed student ${removed.name}`,
-        detail: removed.email,
-        streamId: removed.streamId,
-      });
+      const supabase = createClient();
+      const { data: removed } = await supabase
+        .from("monitored_students")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+      const { error } = await supabase
+        .from("monitored_students")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+      setStudents((prev) => prev.filter((s) => s.id !== id));
+      if (removed) {
+        await log({
+          actor: meta?.actor,
+          role: meta?.role,
+          action: "student_delete",
+          summary: `Removed student ${removed.name}`,
+          detail: removed.email,
+          streamId: removed.stream_id as ClassStreamId,
+        }).catch(() => null);
+      }
     },
     [log],
   );
 
   const updateStudentRisk = useCallback(
-    (id: string, risk: StudentMonitor["risk"]) => {
-      updateStudent(id, { risk });
+    async (id: string, risk: StudentMonitor["risk"]) => {
+      await updateStudent(id, { risk });
     },
     [updateStudent],
   );
 
-  const addClassRep = useCallback(
-    (input: ClassRepInput) => {
-      const streamTaken = readJson(CRS_KEY, seedCRs).find(
-        (c) => c.streamId === input.streamId && c.status === "active",
-      );
-      const cr: ClassRepAccount = {
-        id: `cr-${Date.now()}`,
-        name: input.name.trim(),
-        email: input.email.trim().toLowerCase(),
-        streamId: input.streamId,
-        phone: input.phone?.trim() || undefined,
-        status: input.status ?? "active",
-        appointedAt: new Date().toISOString(),
-      };
-      setClassReps((prev) => {
-        const demoted =
-          cr.status === "active"
-            ? prev.map((c) =>
-                c.streamId === cr.streamId && c.status === "active"
-                  ? { ...c, status: "inactive" as const }
-                  : c,
-              )
-            : prev;
-        const next = [cr, ...demoted];
-        writeJson(CRS_KEY, next, "darasax:people");
-        return next;
-      });
-      log({
-        action: "cr_add",
-        summary: `Appointed ${cr.name} as CR for ${cr.streamId}`,
-        detail: streamTaken ? `Replaced ${streamTaken.name}` : cr.email,
-        streamId: cr.streamId,
-      });
-      return cr;
-    },
-    [log],
-  );
+  const addClassRep = useCallback(async (input: ClassRepInput) => {
+    void input;
+    // CRs own a Supabase Auth account, so only they can create their profile
+    // row (RLS self-registration). Admins manage registered CRs below.
+    throw new Error(
+      "CRs create their own login on the Class Rep portal first — then edit their stream and status here.",
+    );
+  }, []);
 
   const updateClassRep = useCallback(
-    (id: string, patch: Partial<Omit<ClassRepAccount, "id" | "appointedAt">>) => {
-      const current = readJson(CRS_KEY, seedCRs);
-      const target = current.find((c) => c.id === id);
-      if (!target) return undefined;
-      const updated: ClassRepAccount = {
-        ...target,
-        ...patch,
-        name: patch.name?.trim() ?? target.name,
-        email: patch.email?.trim().toLowerCase() ?? target.email,
-        phone:
-          patch.phone !== undefined
-            ? patch.phone.trim() || undefined
-            : target.phone,
-      };
-      const nextStatus = updated.status;
-      const nextStream = updated.streamId;
-      let next = current.map((c) => (c.id === id ? updated : c));
-      if (nextStatus === "active") {
-        next = next.map((c) =>
-          c.id !== id && c.streamId === nextStream && c.status === "active"
-            ? { ...c, status: "inactive" as const }
-            : c,
-        );
+    async (
+      id: string,
+      patch: Partial<Omit<ClassRepAccount, "id" | "appointedAt">>,
+    ) => {
+      const supabase = createClient();
+      const dbPatch: Database["public"]["Tables"]["staff_profiles"]["Update"] = {};
+      if (patch.name !== undefined) dbPatch.full_name = patch.name.trim();
+      if (patch.email !== undefined)
+        dbPatch.email = patch.email.trim().toLowerCase();
+      if (patch.phone !== undefined)
+        dbPatch.phone = patch.phone.trim() || null;
+      if (patch.streamId !== undefined) dbPatch.stream_id = patch.streamId;
+      if (patch.status !== undefined) dbPatch.status = patch.status;
+
+      // One active CR per stream: demote the others first.
+      if (patch.status === "active") {
+        const targetStream =
+          patch.streamId ??
+          classReps.find((c) => c.id === id)?.streamId ??
+          null;
+        if (targetStream) {
+          await supabase
+            .from("staff_profiles")
+            .update({ status: "inactive" })
+            .eq("role", "class_rep")
+            .eq("stream_id", targetStream)
+            .eq("status", "active")
+            .neq("id", id);
+        }
       }
-      writeJson(CRS_KEY, next, "darasax:people");
-      setClassReps(next);
-      log({
+
+      const { data, error } = await supabase
+        .from("staff_profiles")
+        .update(dbPatch)
+        .eq("id", id)
+        .select("*")
+        .single();
+      if (error) throw error;
+      const updated = toClassRep(data);
+      setClassReps((prev) => prev.map((c) => (c.id === id ? updated : c)));
+      await log({
         action: "cr_update",
         summary: `Updated CR ${updated.name}`,
         detail: updated.email,
         streamId: updated.streamId,
-      });
+      }).catch(() => null);
+      // Refresh to pick up demotions.
+      await refresh().catch(() => null);
       return updated;
     },
-    [log],
+    [classReps, log, refresh],
   );
 
   const deleteClassRep = useCallback(
-    (id: string) => {
-      const current = readJson(CRS_KEY, seedCRs);
-      const removed = current.find((c) => c.id === id);
-      if (!removed) return;
-      const next = current.filter((c) => c.id !== id);
-      writeJson(CRS_KEY, next, "darasax:people");
-      setClassReps(next);
-      log({
-        action: "cr_delete",
-        summary: `Removed CR ${removed.name}`,
-        detail: removed.email,
-        streamId: removed.streamId,
-      });
+    async (id: string) => {
+      const supabase = createClient();
+      const removed = classReps.find((c) => c.id === id);
+      const { error } = await supabase
+        .from("staff_profiles")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+      setClassReps((prev) => prev.filter((c) => c.id !== id));
+      if (removed) {
+        await log({
+          action: "cr_delete",
+          summary: `Removed CR ${removed.name}`,
+          detail: removed.email,
+          streamId: removed.streamId,
+        }).catch(() => null);
+      }
     },
-    [log],
+    [classReps, log],
   );
 
   const setClassRepStatus = useCallback(
-    (id: string, status: ClassRepAccount["status"]) => {
-      updateClassRep(id, { status });
+    async (id: string, status: ClassRepAccount["status"]) => {
+      await updateClassRep(id, { status });
     },
     [updateClassRep],
   );
@@ -414,6 +391,7 @@ export function useAdminPeopleStore() {
     audit,
     streamsWithoutCr,
     studentsForStream,
+    refresh,
     addStudent,
     updateStudent,
     deleteStudent,
@@ -425,3 +403,5 @@ export function useAdminPeopleStore() {
     log,
   };
 }
+
+export type { StaffRole };

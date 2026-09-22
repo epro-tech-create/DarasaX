@@ -14,8 +14,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StaffSection, StaffStatCard } from "@/components/staff/staff-ui";
 import { StaffFadeItem, StaffStagger } from "@/components/staff/staff-motion";
-import { staffIssues, adminUser } from "@/data/staff-mock";
 import { useAdminPeopleStore } from "@/lib/admin-people-store";
+import { useIssuesStore } from "@/lib/issues-store";
+import { useStaffSession } from "@/lib/staff-auth";
 
 function greeting() {
   const h = new Date().getHours();
@@ -26,7 +27,9 @@ function greeting() {
 
 export default function AdminOverviewPage() {
   const { students, classReps, audit } = useAdminPeopleStore();
-  const openIssues = staffIssues.filter((i) => i.status !== "resolved").length;
+  const { items: issues } = useIssuesStore();
+  const { session } = useStaffSession();
+  const openIssues = issues.filter((i) => i.status !== "resolved");
   const activeCrs = classReps.filter((c) => c.status === "active").length;
   const atRisk = students.filter((s) => s.risk !== "low").length;
 
@@ -34,7 +37,7 @@ export default function AdminOverviewPage() {
     <div className="space-y-5">
       <PageHeader
         size="lg"
-        title={`${greeting()}, ${adminUser.name}`}
+        title={`${greeting()}, ${session?.name ?? "Admin"}`}
         description="Admin · DarasaX programme operations"
         actions={
           <div className="flex flex-wrap gap-2">
@@ -72,7 +75,7 @@ export default function AdminOverviewPage() {
         <StaffFadeItem>
           <StaffStatCard
             label="Open issues"
-            value={String(openIssues)}
+            value={String(openIssues.length)}
             icon={Flag}
             tone="warning"
           />
@@ -150,8 +153,7 @@ export default function AdminOverviewPage() {
           }
         >
           <div className="space-y-2">
-            {staffIssues
-              .filter((i) => i.status !== "resolved")
+            {openIssues
               .slice(0, 5)
               .map((issue) => (
                 <div

@@ -3,13 +3,14 @@
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { StaffSection, StaffStatCard } from "@/components/staff/staff-ui";
-import { classRepUser } from "@/data/staff-mock";
 import { useAdminPeopleStore } from "@/lib/admin-people-store";
+import { useStaffSession } from "@/lib/staff-auth";
 import { Activity, UserCheck, UserX } from "lucide-react";
 
 export default function ClassRepAttendancePage() {
+  const { session } = useStaffSession();
   const { studentsForStream } = useAdminPeopleStore();
-  const members = studentsForStream(classRepUser.streamId);
+  const members = studentsForStream(session?.streamId ?? "BENG24COE-1");
   const avg = Math.round(
     members.reduce((a, s) => a + s.attendancePct, 0) / Math.max(members.length, 1),
   );

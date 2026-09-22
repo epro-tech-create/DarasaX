@@ -72,35 +72,42 @@ export default function AdminStudentsPage() {
     setEditing(null);
   }
 
-  function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name.trim() || !form.email.trim()) return;
-    if (editing) {
-      updateStudent(editing.id, {
-        name: form.name,
-        email: form.email,
-        streamId: form.streamId,
-        year: form.year,
-        risk: form.risk,
-      });
-      setMessage("Student updated.");
-    } else {
-      addStudent({
-        name: form.name,
-        email: form.email,
-        streamId: form.streamId,
-        year: form.year,
-        risk: form.risk,
-      });
-      setMessage("Student added.");
+    setMessage("");
+    try {
+      if (editing) {
+        await updateStudent(editing.id, {
+          name: form.name,
+          email: form.email,
+          streamId: form.streamId,
+          year: form.year,
+          risk: form.risk,
+        });
+        setMessage("Student updated.");
+      } else {
+        await addStudent({
+          name: form.name,
+          email: form.email,
+          streamId: form.streamId,
+          year: form.year,
+          risk: form.risk,
+        });
+        setMessage("Student added.");
+      }
+      closeModal();
+    } catch {
+      setMessage("Could not save. Check your connection and try again.");
     }
-    closeModal();
   }
 
   function onDelete(s: StudentMonitor) {
     if (!window.confirm(`Remove ${s.name} from the roster?`)) return;
-    deleteStudent(s.id);
-    setMessage(`Removed ${s.name}.`);
+    deleteStudent(s.id).then(
+      () => setMessage(`Removed ${s.name}.`),
+      () => setMessage("Could not remove. Try again."),
+    );
   }
 
   return (

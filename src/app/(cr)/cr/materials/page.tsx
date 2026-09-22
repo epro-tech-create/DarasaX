@@ -4,19 +4,21 @@ import { useCallback } from "react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { MaterialsLibrary } from "@/components/staff/materials-library";
-import { classRepUser } from "@/data/staff-mock";
+import { useStaffSession } from "@/lib/staff-auth";
 import type { MaterialUpload } from "@/types";
 
 export default function ClassRepMaterialsPage() {
+  const { session } = useStaffSession();
+  const streamId = session?.streamId ?? "BENG24COE-1";
   const filterItems = useCallback(
     (items: MaterialUpload[]) =>
       items.filter(
         (u) =>
           u.role === "class_rep" ||
-          u.streamId === classRepUser.streamId ||
+          u.streamId === streamId ||
           !u.streamId,
       ),
-    [],
+    [streamId],
   );
 
   return (

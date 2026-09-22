@@ -93,7 +93,7 @@ export function TimetableEditor({
       lecturer: draft.lecturer.trim(),
       day: draft.day,
       moduleId: draft.moduleId,
-    });
+    }).catch(() => setFlash("Could not save. Check your connection and try again."));
     setEditingId(null);
     setDraft({});
     setSavedId(id);
@@ -109,9 +109,10 @@ export function TimetableEditor({
     ) {
       return;
     }
-    deleteEntry(id);
+    deleteEntry(id)
+      .then(() => setFlash("Session deleted — removed from student timetable."))
+      .catch(() => setFlash("Could not delete. Try again."));
     if (editingId === id) cancelEdit();
-    setFlash("Session deleted — removed from student timetable.");
   }
 
   function onAdd(e: React.FormEvent) {
@@ -123,7 +124,7 @@ export function TimetableEditor({
       setFlash("End time must be after start time.");
       return;
     }
-    const created = addEntry({
+    addEntry({
       streamId: activeStream,
       moduleId: addForm.moduleId,
       day: addForm.day,
@@ -131,11 +132,15 @@ export function TimetableEditor({
       endTime: addForm.endTime,
       room: addForm.room,
       lecturer: addForm.lecturer,
-    });
-    setShowAdd(false);
-    setSavedId(created.id);
-    setFlash("Session added — live on student timetable.");
-    window.setTimeout(() => setSavedId(null), 1800);
+    }).then(
+      (created) => {
+        setShowAdd(false);
+        setSavedId(created.id);
+        setFlash("Session added — live on student timetable.");
+        window.setTimeout(() => setSavedId(null), 1800);
+      },
+      () => setFlash("Could not add. Check your connection and try again."),
+    );
   }
 
   return (

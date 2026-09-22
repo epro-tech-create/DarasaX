@@ -5,13 +5,13 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StaffSection, StaffStatCard } from "@/components/staff/staff-ui";
-import { staffIssues } from "@/data/staff-mock";
+import { useIssuesStore } from "@/lib/issues-store";
 import { CheckCircle2, Flag, Timer } from "lucide-react";
 import type { IssueStatus } from "@/types";
 
 export default function AdminIssuesPage() {
-  const [status, setStatus] = useState<"all" | IssueStatus>("all");
-  const [items, setItems] = useState(staffIssues);
+  const [status, setStatusFilter] = useState<"all" | IssueStatus>("all");
+  const { items, setStatus } = useIssuesStore();
 
   const filtered = useMemo(
     () => items.filter((i) => status === "all" || i.status === status),
@@ -19,13 +19,7 @@ export default function AdminIssuesPage() {
   );
 
   function setIssueStatus(id: string, next: IssueStatus) {
-    setItems((prev) =>
-      prev.map((i) =>
-        i.id === id
-          ? { ...i, status: next, updatedAt: new Date().toISOString() }
-          : i,
-      ),
-    );
+    void setStatus(id, next).catch(() => null);
   }
 
   return (
@@ -60,7 +54,7 @@ export default function AdminIssuesPage() {
           <button
             key={s}
             type="button"
-            onClick={() => setStatus(s)}
+            onClick={() => setStatusFilter(s)}
             className={`rounded-lg px-3 py-1.5 text-[11px] font-medium capitalize ${
               status === s ? "btn-gradient" : "text-muted-foreground"
             }`}

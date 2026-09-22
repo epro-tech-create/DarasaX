@@ -61,12 +61,17 @@ export default function ClassRepRegisterPage() {
 
     setLoading(true);
     try {
-      await registerClassRep({
+      const { session: crSession, needsVerification } = await registerClassRep({
         name: name.trim(),
         email: normalized,
         password,
         streamId,
       });
+      if (needsVerification || !crSession) {
+        sessionStorage.setItem("darasax_verify_email", normalized);
+        router.push("/verify-email");
+        return;
+      }
       router.replace(APP_HOME.class_rep);
       router.refresh();
     } catch (err) {

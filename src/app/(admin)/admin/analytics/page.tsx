@@ -1,16 +1,19 @@
+"use client";
+
 import { PageHeader } from "@/components/layout/page-header";
 import { StaffSection, StaffStatCard } from "@/components/staff/staff-ui";
-import {
-  materialUploads,
-  monitoredStudents,
-  staffIssues,
-  weeklyAnalytics,
-} from "@/data/staff-mock";
+import { weeklyAnalytics } from "@/data/staff-mock";
+import { useAdminPeopleStore } from "@/lib/admin-people-store";
+import { useIssuesStore } from "@/lib/issues-store";
+import { useMaterialsStore } from "@/lib/materials-store";
 import { BarChart3, Download, Eye, Flag } from "lucide-react";
 
 export default function AdminAnalyticsPage() {
+  const { students } = useAdminPeopleStore();
+  const { items: issues } = useIssuesStore();
+  const { items: uploads } = useMaterialsStore();
   const max = Math.max(...weeklyAnalytics.map((d) => Math.max(d.views, d.uploads * 20)));
-  const downloads = materialUploads.reduce((a, u) => a + u.downloads, 0);
+  const downloads = uploads.reduce((a, u) => a + u.downloads, 0);
 
   return (
     <div className="space-y-5">
@@ -33,7 +36,7 @@ export default function AdminAnalyticsPage() {
         />
         <StaffStatCard
           label="Issues logged"
-          value={String(staffIssues.length)}
+          value={String(issues.length)}
           icon={Flag}
           tone="warning"
         />
@@ -64,8 +67,10 @@ export default function AdminAnalyticsPage() {
         <StaffSection title="Risk distribution">
           <div className="space-y-3">
             {(["low", "medium", "high"] as const).map((level) => {
-              const count = monitoredStudents.filter((s) => s.risk === level).length;
-              const pct = Math.round((count / monitoredStudents.length) * 100);
+              const count = students.filter((s) => s.risk === level).length;
+              const pct = students.length
+                ? Math.round((count / students.length) * 100)
+                : 0;
               return (
                 <div key={level}>
                   <div className="mb-1 flex justify-between text-[11px]">
@@ -94,7 +99,7 @@ export default function AdminAnalyticsPage() {
 
         <StaffSection title="Top materials">
           <div className="space-y-2">
-            {[...materialUploads]
+            {[...uploads]
               .sort((a, b) => b.downloads - a.downloads)
               .slice(0, 5)
               .map((u) => (

@@ -16,11 +16,15 @@ import {
   ensureProfile,
   getPostAuthRedirect,
 } from "@/lib/auth/profile";
+import { ensureStaffProfile } from "@/lib/auth/staff-profile";
+import { APP_HOME, getAppRole } from "@/lib/app-role";
 import { AUTH_OTP_LENGTH } from "@/lib/auth/constants";
 import { createClient } from "@/lib/supabase/client";
 
 export default function VerifyEmailPage() {
   const router = useRouter();
+  const appRole = getAppRole();
+  const staffRole = appRole === "admin" || appRole === "class_rep" ? appRole : null;
   const cooldown = useResendCooldown(60);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -34,7 +38,7 @@ export default function VerifyEmailPage() {
   useEffect(() => {
     const stored = sessionStorage.getItem("darasax_verify_email");
     if (!stored) {
-      router.replace("/signup");
+      router.replace(staffRole === "class_rep" ? "/register" : staffRole ? "/login" : "/signup");
       return;
     }
     setEmail(normalizeEmail(stored));
@@ -62,9 +66,17 @@ export default function VerifyEmailPage() {
         });
         if (retry.error) throw verifyError;
         if (!retry.data.user) throw new Error("No user");
-        await ensureProfile(supabase, retry.data.user);
+        if (staffRole) {
+          await ensureStaffProfile(supabase, retry.data.user, { role: staffRole });
+        } else {
+          await ensureProfile(supabase, retry.data.user);
+        }
       } else if (data.user) {
-        await ensureProfile(supabase, data.user);
+        if (staffRole) {
+          await ensureStaffProfile(supabase, data.user, { role: staffRole });
+        } else {
+          await ensureProfile(supabase, data.user);
+        }
       }
 
       sessionStorage.removeItem("darasax_verify_email");
@@ -74,6 +86,12 @@ export default function VerifyEmailPage() {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) throw new Error("No user");
+      if (staffRole) {
+        await ensureStaffProfile(supabase, user, { role: staffRole });
+        setSuccess(true);
+        setContinueTo(APP_HOME[staffRole]);
+        return;
+      }
       const profile = await ensureProfile(supabase, user);
       setSuccess(true);
       setContinueTo(getPostAuthRedirect(profile));
@@ -125,8 +143,12 @@ export default function VerifyEmailPage() {
           <AuthSteps current="verify" />
           <WelcomeCelebration
             title="Email verified"
-            subtitle="Great — your account is active. Next, set up your academic profile."
-            ctaLabel="Continue to profile"
+            subtitle={
+              staffRole
+                ? "Great — your staff account is active."
+                : "Great — your account is active. Next, set up your academic profile."
+            }
+            ctaLabel={staffRole ? "Continue to desk" : "Continue to profile"}
             onContinue={() => {
               router.replace(continueTo);
               router.refresh();
@@ -179,7 +201,10 @@ export default function VerifyEmailPage() {
 
             <p className="text-center text-[11px] text-muted-foreground">
               Wrong email?{" "}
-              <Link href="/signup" className="font-medium text-primary">
+              <Link
+                href={staffRole === "class_rep" ? "/register" : staffRole ? "/login" : "/signup"}
+                className="font-medium text-primary"
+              >
                 Go back
               </Link>
             </p>

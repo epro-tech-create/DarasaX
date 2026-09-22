@@ -7,8 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StaffModal } from "@/components/staff/staff-modal";
 import { StaffSection, StaffStatCard } from "@/components/staff/staff-ui";
-import { classRepUser } from "@/data/staff-mock";
 import { useAdminPeopleStore } from "@/lib/admin-people-store";
+import { useStaffSession } from "@/lib/staff-auth";
 import type { StudentMonitor } from "@/types";
 
 const emptyForm = {
@@ -19,7 +19,8 @@ const emptyForm = {
 };
 
 export default function ClassRepMembersPage() {
-  const streamId = classRepUser.streamId;
+  const { session } = useStaffSession();
+  const streamId = session?.streamId ?? "BENG24COE-1";
   const { studentsForStream, addStudent, updateStudent, deleteStudent } =
     useAdminPeopleStore();
   const members = studentsForStream(streamId);
@@ -40,8 +41,8 @@ export default function ClassRepMembersPage() {
   const [message, setMessage] = useState("");
 
   const meta = useMemo(
-    () => ({ actor: classRepUser.name, role: "class_rep" as const }),
-    [],
+    () => ({ actor: session?.name ?? "Class Rep", role: "class_rep" as const }),
+    [session?.name],
   );
 
   function openAdd() {
@@ -66,42 +67,49 @@ export default function ClassRepMembersPage() {
     setEditing(null);
   }
 
-  function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name.trim() || !form.email.trim()) return;
-    if (editing) {
-      updateStudent(
-        editing.id,
-        {
-          name: form.name,
-          email: form.email,
-          year: form.year,
-          risk: form.risk,
-          streamId,
-        },
-        meta,
-      );
-      setMessage("Member updated.");
-    } else {
-      addStudent(
-        {
-          name: form.name,
-          email: form.email,
-          streamId,
-          year: form.year,
-          risk: form.risk,
-        },
-        meta,
-      );
-      setMessage("Member added to your class.");
+    setMessage("");
+    try {
+      if (editing) {
+        await updateStudent(
+          editing.id,
+          {
+            name: form.name,
+            email: form.email,
+            year: form.year,
+            risk: form.risk,
+            streamId,
+          },
+          meta,
+        );
+        setMessage("Member updated.");
+      } else {
+        await addStudent(
+          {
+            name: form.name,
+            email: form.email,
+            streamId,
+            year: form.year,
+            risk: form.risk,
+          },
+          meta,
+        );
+        setMessage("Member added to your class.");
+      }
+      closeModal();
+    } catch {
+      setMessage("Could not save. Check your connection and try again.");
     }
-    closeModal();
   }
 
   function onDelete(s: StudentMonitor) {
     if (!window.confirm(`Remove ${s.name} from ${streamId}?`)) return;
-    deleteStudent(s.id, meta);
-    setMessage(`Removed ${s.name}.`);
+    deleteStudent(s.id, meta).then(
+      () => setMessage(`Removed ${s.name}.`),
+      () => setMessage("Could not remove. Try again."),
+    );
   }
 
   return (

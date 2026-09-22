@@ -1,7 +1,12 @@
-# DarasaX — Supabase Auth Setup
+# DarasaX — Supabase Backend Setup
 
-This guide covers only the manual steps you must complete in Supabase / Google Cloud.
-The application code is already wired for authentication.
+This guide covers the manual steps you must complete in Supabase / Google Cloud.
+The application code is already wired for authentication and data.
+
+All three portals (student, admin, class rep) share **one** Supabase project.
+Staff (admin / class rep) sign in with Supabase Auth; their role and stream
+come from the `staff_profiles` table. The `service_role` key is never used
+by the app — all access is anon key + Row Level Security.
 
 ---
 
@@ -34,13 +39,13 @@ Restart the dev server after changing env vars.
 
 ---
 
-## 3) Run the database migration
+## 3) Run the database migrations
 
-In **Supabase → SQL Editor**:
+In **Supabase → SQL Editor**, run each file in order
+(**copy the full SQL contents**, not the file path):
 
-1. Open the local file `supabase/migrations/20260917000000_profiles.sql` in your editor
-2. **Copy the full SQL contents** (not the file path)
-3. Paste into the SQL Editor and click **Run**
+1. `supabase/migrations/20260917000000_profiles.sql` — student `profiles`
+2. `supabase/migrations/20260922000000_academic_data.sql` — everything else
 
 Do **not** paste `supabase/migrations/...sql` as the query — that is a path, not SQL.
 
@@ -50,11 +55,31 @@ Alternatively, from the project root (after `supabase link`):
 npx supabase db push
 ```
 
-This creates:
+Migration 2 creates:
 
-- `public.profiles`
-- auto profile creation trigger on `auth.users`
-- Row Level Security policies (users can only read/update their own profile)
+- `staff_profiles` (+ auto-create trigger for signups with staff role metadata)
+- `timetable_entries`, `materials`, `monitored_students`, `issues`, `audit_log`
+- RLS policies (students read own stream; staff scoped by role/stream)
+- `increment_material_downloads()` RPC for download counting
+- Private storage bucket `materials` (+ storage RLS; app mints signed URLs)
+- Starter seed rows (timetable, students, issues, demo materials)
+
+### 3a) Create the admin login
+
+There is no public admin registration. In **Supabase → Authentication → Users → Add user**:
+
+1. Create user with the admin email + a strong password (check "Auto Confirm User")
+2. In **SQL Editor**, grant the admin role:
+
+```sql
+insert into public.staff_profiles (id, email, full_name, role, status)
+select id, email, 'Admin Desk', 'admin', 'active'
+from auth.users where email = 'admin@darasax.app'
+on conflict (id) do update set role = 'admin', status = 'active';
+```
+
+Class reps self-register on the Class Rep portal (`/register`); an admin
+then sets their stream/status on the Admin → Class reps page.
 
 ---
 
@@ -180,6 +205,8 @@ You can reuse the same branding from `supabase/email-templates/recovery-otp.html
 | Google | `/login` or `/signup` → Google → `/auth/callback` |
 | Forgot password OTP | `/forgot-password` → `/forgot-password/verify` → `/reset-password` → `/login` |
 | Sign out | Settings → Account → Sign out |
+| Class Rep register | CR `/register` → `/verify-email` (if confirmation on) → `/cr` |
+| Staff login | Admin/CR `/login` → `/admin` or `/cr` |
 
 Protected app routes redirect unauthenticated users to `/login`.
 

@@ -5,9 +5,11 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { StaffSection } from "@/components/staff/staff-ui";
 import { announcements } from "@/data/mock";
-import { classRepUser } from "@/data/staff-mock";
+import { useStaffSession } from "@/lib/staff-auth";
 
 export default function ClassRepAnnouncementsPage() {
+  const { session } = useStaffSession();
+  const streamId = session?.streamId ?? "BENG24COE-1";
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [sent, setSent] = useState(false);
@@ -16,7 +18,7 @@ export default function ClassRepAnnouncementsPage() {
     <div className="space-y-5">
       <PageHeader
         title="Class announcements"
-        description={`Posts target ${classRepUser.streamId} only — not the whole programme.`}
+        description={`Posts target ${streamId} only — not the whole programme.`}
       />
 
       <div className="grid gap-4 lg:grid-cols-2">

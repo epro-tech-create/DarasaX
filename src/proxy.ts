@@ -1,16 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 import { getProfile } from "@/lib/auth/profile";
+import { getStaffProfile } from "@/lib/auth/staff-profile";
 import {
   APP_HOME,
   forbiddenRedirect,
   getAppRole,
   pathAllowedForRole,
 } from "@/lib/app-role";
-import {
-  decodeStaffSession,
-  STAFF_SESSION_COOKIE,
-} from "@/lib/staff-auth-server";
 
 const AUTH_ROUTES = new Set([
   "/login",
@@ -52,10 +49,6 @@ function isStaffProtected(pathname: string, role: "admin" | "class_rep") {
   return pathname === root || pathname.startsWith(`${root}/`);
 }
 
-function getStaffSession(request: NextRequest) {
-  return decodeStaffSession(request.cookies.get(STAFF_SESSION_COOKIE)?.value);
-}
-
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const appRole = getAppRole();
@@ -79,10 +72,27 @@ export async function proxy(request: NextRequest) {
     return res;
   }
 
-  // Staff apps: gate protected routes with staff session cookie.
+  const hasEnv =
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  // Staff apps: gate protected routes with the Supabase staff session.
   if (appRole === "admin" || appRole === "class_rep") {
-    const staffSession = getStaffSession(request);
-    const staffAuthed = !!staffSession && staffSession.role === appRole;
+    if (!hasEnv) {
+      const res = NextResponse.next();
+      res.headers.set("x-darasax-role", appRole);
+      return res;
+    }
+    const { supabase, user, supabaseResponse } =
+      await updateSession(request);
+    const staffProfile = user
+      ? await getStaffProfile(supabase, user.id).catch(() => null)
+      : null;
+    const staffAuthed =
+      !!user &&
+      !!staffProfile &&
+      staffProfile.role === appRole &&
+      staffProfile.status === "active";
 
     if (pathname === "/" || pathname === "") {
       const url = request.nextUrl.clone();
@@ -107,14 +117,10 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    const res = NextResponse.next();
+    const res = supabaseResponse;
     res.headers.set("x-darasax-role", appRole);
     return res;
   }
-
-  const hasEnv =
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!hasEnv) {
     const res = NextResponse.next();

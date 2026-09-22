@@ -41,8 +41,7 @@ export function pathAllowedForRole(pathname: string, role: AppRole): boolean {
     pathname === "/forgot-password" ||
     pathname.startsWith("/forgot-password/") ||
     pathname === "/reset-password" ||
-    pathname.startsWith("/auth/") ||
-    pathname.startsWith("/api/staff/");
+    pathname.startsWith("/auth/");
 
   if (role === "student") {
     if (pathname.startsWith("/admin") || pathname.startsWith("/cr")) return false;
@@ -52,18 +51,14 @@ export function pathAllowedForRole(pathname: string, role: AppRole): boolean {
   }
 
   if (role === "admin") {
-    if (pathname === "/login" || pathname.startsWith("/api/staff/")) return true;
+    if (pathname === "/login" || isSharedAuth) return true;
     if (pathname.startsWith("/admin")) return true;
     // No public signup / student marketing on admin app
     return false;
   }
 
   // class_rep
-  if (
-    pathname === "/login" ||
-    pathname === "/register" ||
-    pathname.startsWith("/api/staff/")
-  ) {
+  if (pathname === "/login" || pathname === "/register" || isSharedAuth) {
     return true;
   }
   if (pathname.startsWith("/cr")) return true;
