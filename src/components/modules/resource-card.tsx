@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Eye, Sparkles, FileText, Presentation, Link2, Video, HelpCircle } from "lucide-react";
+import { Download, Eye, FileText, Presentation, Link2, Video, HelpCircle } from "lucide-react";
 import type { Resource } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -65,10 +65,6 @@ export function ResourceCard({
           >
             <Download className="h-4 w-4" />
             Download
-          </Button>
-          <Button size="sm" href={`/ask?resource=${resource.id}`}>
-            <Sparkles className="h-4 w-4" />
-            Ask AI
           </Button>
         </div>
       </div>

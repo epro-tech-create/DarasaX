@@ -1,14 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import {
   BookOpen,
   CalendarDays,
   Clock,
   FileText,
   MapPin,
-  Sparkles,
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -202,32 +200,15 @@ export default function MissedPage() {
         </div>
       )}
 
-      <div className="mt-8 overflow-hidden rounded-[20px] bg-gradient-to-br from-primary to-cyan p-5 text-white sm:p-7">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0">
-            <h2 className="font-heading text-lg font-semibold sm:text-xl">
-              Catch Me Up
-            </h2>
-            <p className="mt-2 max-w-xl text-[13px] text-white/85">
-              Ask DarasaX to summarize missed topics, highlight deadlines, and
-              build a short recovery plan from your modules.
-            </p>
-          </div>
-          <Button
-            href="/ask?intent=catch-up"
-            className="shrink-0 bg-none bg-white text-primary hover:bg-white/90"
-          >
-            <Sparkles className="h-4 w-4" />
-            Catch Me Up
-          </Button>
-        </div>
-        <p className="mt-4 text-[11px] text-white/70">
-          Tip: open each module’s Notes tab — staff uploads from Admin or CR show
-          there as soon as they publish.{" "}
-          <Link href="/modules" className="underline underline-offset-2">
-            Browse modules
-          </Link>
+      <div className="mt-8 surface rounded-[20px] p-5 sm:p-6">
+        <h2 className="font-heading text-lg font-semibold">Catch up</h2>
+        <p className="mt-2 max-w-xl text-[13px] text-muted-foreground">
+          Open each module’s Notes tab for staff uploads, then mark topics done
+          so your progress stays accurate.
         </p>
+        <Button href="/modules" className="mt-4">
+          Browse modules
+        </Button>
       </div>
     </div>
   );

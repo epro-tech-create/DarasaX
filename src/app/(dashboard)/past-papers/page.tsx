@@ -1,28 +1,26 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Archive, Download, Eye, Filter, Search, Sparkles, X } from "lucide-react";
+import { Archive, Download, Eye, Filter, Search, X } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { getModule, modules, pastPapers } from "@/data/mock";
-import { downloadPastPaper, viewPastPaper } from "@/lib/download";
+import { getModule, modules } from "@/data/mock";
 import {
   downloadMaterial,
   useMaterialsStore,
   viewMaterial,
 } from "@/lib/materials-store";
 import { cn } from "@/lib/utils";
-import type { MaterialUpload, PastPaper } from "@/types";
+import type { MaterialUpload } from "@/types";
 
-type PaperRow =
-  | (PastPaper & { fromStaff: false; uploadedBy: string })
-  | (PastPaper & {
-      fromStaff: true;
-      uploadedBy: string;
-      material: MaterialUpload;
-    });
+function inferPaperType(title: string): "cat" | "test" | "final" {
+  const t = title.toLowerCase();
+  if (t.includes("final") || t.includes("exam")) return "final";
+  if (t.includes("test")) return "test";
+  return "cat";
+}
 
 export default function PastPapersPage() {
   const [query, setQuery] = useState("");
@@ -30,62 +28,40 @@ export default function PastPapersPage() {
   const [type, setType] = useState("all");
   const [year, setYear] = useState("all");
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const { published } = useMaterialsStore();
+  const { published, ready } = useMaterialsStore();
 
-  const staffPapers: PaperRow[] = useMemo(
-    () =>
-      published
-        .filter((u) => u.kind === "past_paper" && u.moduleId)
-        .map((u) => ({
-          id: u.id,
-          moduleId: u.moduleId!,
-          title: u.title,
-          year: new Date(u.createdAt).getFullYear(),
-          type: "cat" as const,
-          fileType: "pdf" as const,
-          size: u.size,
-          fileUrl: u.fileUrl ?? "/past-papers/pp-1.pdf",
-          fromStaff: true as const,
-          uploadedBy: u.uploadedBy,
-          material: u,
-        })),
+  const papers = useMemo(
+    () => published.filter((u) => u.kind === "past_paper"),
     [published],
   );
 
-  const catalog: PaperRow[] = useMemo(
-    () => [
-      ...staffPapers,
-      ...pastPapers.map((p) => ({
-        ...p,
-        fromStaff: false as const,
-        uploadedBy: "Library",
-      })),
-    ],
-    [staffPapers],
-  );
-
   const years = useMemo(
-    () => Array.from(new Set(catalog.map((p) => p.year))).sort((a, b) => b - a),
-    [catalog],
+    () =>
+      Array.from(new Set(papers.map((p) => new Date(p.createdAt).getFullYear()))).sort(
+        (a, b) => b - a,
+      ),
+    [papers],
   );
 
   const activeFilterCount = [moduleId, type, year].filter((v) => v !== "all").length;
 
   const filtered = useMemo(() => {
-    return catalog.filter((p) => {
-      const module = getModule(p.moduleId);
+    return papers.filter((p) => {
+      const module = p.moduleId ? getModule(p.moduleId) : null;
+      const paperType = inferPaperType(p.title);
+      const paperYear = new Date(p.createdAt).getFullYear();
       const matchesQuery =
         !query ||
         p.title.toLowerCase().includes(query.toLowerCase()) ||
-        module?.name.toLowerCase().includes(query.toLowerCase());
+        (module?.name.toLowerCase().includes(query.toLowerCase()) ?? false);
       return (
         matchesQuery &&
         (moduleId === "all" || p.moduleId === moduleId) &&
-        (type === "all" || p.type === type) &&
-        (year === "all" || String(p.year) === year)
+        (type === "all" || paperType === type) &&
+        (year === "all" || String(paperYear) === year)
       );
     });
-  }, [catalog, query, moduleId, type, year]);
+  }, [papers, query, moduleId, type, year]);
 
   function clearFilters() {
     setModuleId("all");
@@ -97,22 +73,8 @@ export default function PastPapersPage() {
     <div>
       <PageHeader
         title="Past Papers"
-        description="Library papers plus new uploads from Admin and Class Rep."
+        description="Papers published by Admin or your Class Rep. Nothing else is listed here."
       />
-
-      {staffPapers.length > 0 ? (
-        <div className="mb-4 flex items-start gap-2 rounded-2xl border border-primary/25 bg-primary/[0.06] px-3.5 py-3">
-          <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-          <div>
-            <p className="text-[12px] font-semibold text-primary">
-              {staffPapers.length} new from staff
-            </p>
-            <p className="text-[11px] text-muted-foreground">
-              Published directly to your account.
-            </p>
-          </div>
-        </div>
-      ) : null}
 
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative min-w-0 flex-1">
@@ -224,68 +186,67 @@ export default function PastPapersPage() {
       ) : null}
 
       <p className="mb-3 text-[12px] text-muted-foreground">
-        {filtered.length} paper{filtered.length === 1 ? "" : "s"}
+        {ready
+          ? `${filtered.length} paper${filtered.length === 1 ? "" : "s"}`
+          : "Loading uploads…"}
       </p>
 
-      {filtered.length === 0 ? (
+      {!ready ? null : filtered.length === 0 ? (
         <EmptyState
           icon={Archive}
-          title="No past papers"
-          description="Try a different filter or check back after staff uploads more."
+          title="No past papers yet"
+          description="When Admin or your Class Rep uploads a past paper, it will show up here."
         />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {filtered.map((paper) => {
-            const module = getModule(paper.moduleId);
-            return (
-              <article
-                key={paper.id}
-                className="surface flex flex-col rounded-[18px] p-4 transition duration-200 hover:border-primary/40 sm:p-5"
-              >
-                <div className="mb-3 flex flex-wrap gap-1.5">
-                  <Badge tone="primary">{paper.type.toUpperCase()}</Badge>
-                  <Badge>{paper.year}</Badge>
-                  {paper.fromStaff ? <Badge tone="cyan">New</Badge> : null}
-                </div>
-                <h3 className="font-heading text-[15px] font-semibold tracking-tight">
-                  {module?.name}
-                </h3>
-                <p className="mt-1 line-clamp-2 text-[12px] text-muted-foreground">
-                  {paper.title}
-                </p>
-                <p className="mt-2 text-[11px] text-muted-foreground">
-                  {paper.size} · {paper.uploadedBy}
-                </p>
-                <div className="mt-auto flex flex-wrap gap-2 pt-4">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    type="button"
-                    onClick={() => {
-                      if (paper.fromStaff) void viewMaterial(paper.material);
-                      else viewPastPaper(paper);
-                    }}
-                  >
-                    <Eye className="h-4 w-4" />
-                    View
-                  </Button>
-                  <Button
-                    size="sm"
-                    type="button"
-                    onClick={() => {
-                      if (paper.fromStaff) void downloadMaterial(paper.material);
-                      else downloadPastPaper(paper);
-                    }}
-                  >
-                    <Download className="h-4 w-4" />
-                    Download
-                  </Button>
-                </div>
-              </article>
-            );
-          })}
+          {filtered.map((paper) => (
+            <PaperCard key={paper.id} paper={paper} />
+          ))}
         </div>
       )}
     </div>
+  );
+}
+
+function PaperCard({ paper }: { paper: MaterialUpload }) {
+  const module = paper.moduleId ? getModule(paper.moduleId) : null;
+  const paperType = inferPaperType(paper.title);
+  const paperYear = new Date(paper.createdAt).getFullYear();
+
+  return (
+    <article className="surface flex flex-col rounded-[18px] p-4 transition duration-200 hover:border-primary/40 sm:p-5">
+      <div className="mb-3 flex flex-wrap gap-1.5">
+        <Badge tone="primary">{paperType.toUpperCase()}</Badge>
+        <Badge>{paperYear}</Badge>
+      </div>
+      <h3 className="font-heading text-[15px] font-semibold tracking-tight">
+        {module?.name ?? "Module"}
+      </h3>
+      <p className="mt-1 line-clamp-2 text-[12px] text-muted-foreground">
+        {paper.title}
+      </p>
+      <p className="mt-2 text-[11px] text-muted-foreground">
+        {paper.size} · {paper.uploadedBy}
+      </p>
+      <div className="mt-auto flex flex-wrap gap-2 pt-4">
+        <Button
+          size="sm"
+          variant="outline"
+          type="button"
+          onClick={() => void viewMaterial(paper)}
+        >
+          <Eye className="h-4 w-4" />
+          View
+        </Button>
+        <Button
+          size="sm"
+          type="button"
+          onClick={() => void downloadMaterial(paper)}
+        >
+          <Download className="h-4 w-4" />
+          Download
+        </Button>
+      </div>
+    </article>
   );
 }

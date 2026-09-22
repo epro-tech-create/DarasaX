@@ -8,26 +8,17 @@ import {
   ChevronRight,
   Circle,
   ClipboardList,
-  Download,
-  Eye,
   FileText,
   ScrollText,
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { MaterialUploadCard } from "@/components/modules/material-upload-card";
-import { ResourceCard } from "@/components/modules/resource-card";
 import { AssignmentCard } from "@/components/assignments/assignment-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import {
-  getAssignmentsForModule,
-  getModule,
-  getPastPapersForModule,
-  getResourcesForModule,
-} from "@/data/mock";
+import { getAssignmentsForModule, getModule } from "@/data/mock";
 import { useAssignments } from "@/lib/assignment-progress-store";
-import { downloadPastPaper, viewPastPaper } from "@/lib/download";
 import { useMaterialsStore } from "@/lib/materials-store";
 import {
   enrichModule,
@@ -57,10 +48,6 @@ export default function ModuleDetailPage() {
     [base, published, topics],
   );
 
-  const catalogResources = useMemo(
-    () => (base ? getResourcesForModule(base.id) : []),
-    [base],
-  );
   const liveNotes = useMemo(
     () => (base ? noteMaterials(published, base.id) : []),
     [base, published],
@@ -78,16 +65,8 @@ export default function ModuleDetailPage() {
     const ids = new Set(getAssignmentsForModule(base.id).map((a) => a.id));
     return allAssignments.filter((a) => ids.has(a.id) || a.moduleId === base.id);
   }, [base, allAssignments]);
-  const catalogPapers = useMemo(
-    () => (base ? getPastPapersForModule(base.id) : []),
-    [base],
-  );
 
   if (!module || !base) notFound();
-
-  const notesOnly = catalogResources.filter(
-    (r) => r.type === "notes" || r.type === "pdf" || r.type === "slides",
-  );
 
   return (
     <div>
@@ -99,13 +78,9 @@ export default function ModuleDetailPage() {
 
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
-          ["Notes", liveNotes.length || notesOnly.length, "Notes"],
+          ["Notes", liveNotes.length, "Notes"],
           ["Assignments", moduleAssignments.length, "Assignments"],
-          [
-            "Past Papers",
-            livePapers.length + catalogPapers.length,
-            "Past Papers",
-          ],
+          ["Past Papers", livePapers.length, "Past Papers"],
           ["Topics", module.topicsTotal, "Overview"],
         ].map(([label, value, target]) => (
           <button
@@ -193,19 +168,17 @@ export default function ModuleDetailPage() {
               <p className="text-sm text-muted-foreground">Loading uploads…</p>
             ) : null}
           </div>
-          {liveNotes.length === 0 && notesOnly.length === 0 ? (
+          {liveNotes.length === 0 ? (
             <EmptyState
               icon={FileText}
               title="No notes yet"
               description="When your class rep or admin uploads notes for this module, they will appear here."
             />
-          ) : null}
-          {liveNotes.map((item) => (
-            <MaterialUploadCard key={item.id} item={item} />
-          ))}
-          {notesOnly.map((r) => (
-            <ResourceCard key={r.id} resource={r} />
-          ))}
+          ) : (
+            liveNotes.map((item) => (
+              <MaterialUploadCard key={item.id} item={item} />
+            ))
+          )}
         </section>
       ) : null}
 
@@ -227,65 +200,34 @@ export default function ModuleDetailPage() {
 
       {tab === "Past Papers" ? (
         <div className="space-y-3">
-          {livePapers.length === 0 && catalogPapers.length === 0 ? (
+          {livePapers.length === 0 ? (
             <EmptyState
               icon={ScrollText}
               title="No past papers yet"
               description="Published past papers for this module will appear here."
             />
-          ) : null}
-          {livePapers.map((item) => (
-            <MaterialUploadCard key={item.id} item={item} />
-          ))}
-          <div className="grid gap-3 sm:grid-cols-2">
-            {catalogPapers.map((p) => (
-              <div key={p.id} className="surface rounded-[18px] p-5">
-                <Badge tone="primary">{p.type.toUpperCase()}</Badge>
-                <h3 className="mt-3 font-heading font-semibold">{p.title}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {p.year} · {p.fileType.toUpperCase()} · {p.size}
-                </p>
-                <div className="mt-4 flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    type="button"
-                    onClick={() => viewPastPaper(p)}
-                  >
-                    <Eye className="h-4 w-4" />
-                    View
-                  </Button>
-                  <Button
-                    size="sm"
-                    type="button"
-                    onClick={() => downloadPastPaper(p)}
-                  >
-                    <Download className="h-4 w-4" />
-                    Download
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
+          ) : (
+            livePapers.map((item) => (
+              <MaterialUploadCard key={item.id} item={item} />
+            ))
+          )}
         </div>
       ) : null}
 
       {tab === "Resources" ? (
         <div className="space-y-3">
           <h3 className="font-heading text-lg font-semibold">All materials</h3>
-          {liveAll.map((item) => (
-            <MaterialUploadCard key={item.id} item={item} />
-          ))}
-          {catalogResources.map((r) => (
-            <ResourceCard key={r.id} resource={r} />
-          ))}
-          {liveAll.length === 0 && catalogResources.length === 0 ? (
+          {liveAll.length === 0 ? (
             <EmptyState
               icon={FileText}
               title="Nothing uploaded yet"
               description="Staff uploads for this module will show here for the whole class."
             />
-          ) : null}
+          ) : (
+            liveAll.map((item) => (
+              <MaterialUploadCard key={item.id} item={item} />
+            ))
+          )}
         </div>
       ) : null}
     </div>

@@ -9,21 +9,13 @@ import {
   ChevronRight,
   Circle,
   Clock3,
-  Download,
   FileText,
-  Sparkles,
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { MaterialUploadCard } from "@/components/modules/material-upload-card";
-import { ResourceCard } from "@/components/modules/resource-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  getModule,
-  getResourcesForTopic,
-  getTopicsForModule,
-} from "@/data/mock";
-import { downloadResource } from "@/lib/download";
+import { getModule, getTopicsForModule } from "@/data/mock";
 import { useMaterialsStore } from "@/lib/materials-store";
 import { noteMaterials } from "@/lib/module-stats";
 import { useTopicProgress } from "@/lib/topic-progress-store";
@@ -42,16 +34,17 @@ export default function TopicDetailPage() {
 
   if (!module || !topic || topic.moduleId !== module.id) notFound();
 
-  const catalogNotes = getResourcesForTopic(topic.id);
   const liveNotes = noteMaterials(published, module.id);
   const siblings = useMemo(() => {
     const list = topics.filter((t) => t.moduleId === module.id);
-    return list.length > 0 ? list.sort((a, b) => a.number - b.number) : getTopicsForModule(module.id);
+    return list.length > 0
+      ? list.sort((a, b) => a.number - b.number)
+      : getTopicsForModule(module.id);
   }, [topics, module.id]);
   const index = siblings.findIndex((t) => t.id === topic.id);
   const prev = index > 0 ? siblings[index - 1] : null;
-  const next = index >= 0 && index < siblings.length - 1 ? siblings[index + 1] : null;
-  const notesCount = catalogNotes.length + liveNotes.length;
+  const next =
+    index >= 0 && index < siblings.length - 1 ? siblings[index + 1] : null;
 
   return (
     <div className="space-y-6">
@@ -82,7 +75,7 @@ export default function TopicDetailPage() {
           </span>
           <span className="inline-flex items-center gap-1.5">
             <FileText className="h-3.5 w-3.5" />
-            {notesCount} note{notesCount === 1 ? "" : "s"}
+            {liveNotes.length} note{liveNotes.length === 1 ? "" : "s"}
           </span>
           <span className="inline-flex items-center gap-1.5">
             {topic.completed ? (
@@ -108,38 +101,19 @@ export default function TopicDetailPage() {
             <CheckCircle2 className="h-4 w-4" />
             {topic.completed ? "Undo complete" : "Mark topic done"}
           </Button>
-          <Button size="sm" href={`/ask?module=${module.id}&topic=${topic.id}`}>
-            <Sparkles className="h-4 w-4" />
-            Ask DarasaX about this topic
-          </Button>
-          {catalogNotes.length > 0 ? (
-            <Button
-              size="sm"
-              variant="outline"
-              type="button"
-              onClick={() => catalogNotes.forEach((note) => downloadResource(note))}
-            >
-              <Download className="h-4 w-4" />
-              Download catalog notes
-            </Button>
-          ) : null}
         </div>
       </section>
 
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="font-heading text-[15px] font-semibold">Notes & materials</h2>
+          <h2 className="font-heading text-[15px] font-semibold">
+            Notes & materials
+          </h2>
           <p className="text-[11px] text-muted-foreground">
-            Includes staff uploads for this module
+            Staff uploads for this module
           </p>
         </div>
-        {liveNotes.map((item) => (
-          <MaterialUploadCard key={item.id} item={item} />
-        ))}
-        {catalogNotes.map((resource) => (
-          <ResourceCard key={resource.id} resource={resource} showPreview />
-        ))}
-        {notesCount === 0 ? (
+        {liveNotes.length === 0 ? (
           <div className="surface rounded-[18px] px-5 py-10 text-center">
             <p className="text-[13px] font-medium">No notes uploaded yet</p>
             <p className="mt-1 text-[12px] text-muted-foreground">
@@ -147,7 +121,11 @@ export default function TopicDetailPage() {
               appear here.
             </p>
           </div>
-        ) : null}
+        ) : (
+          liveNotes.map((item) => (
+            <MaterialUploadCard key={item.id} item={item} />
+          ))
+        )}
       </section>
 
       <nav className="grid gap-3 sm:grid-cols-2">

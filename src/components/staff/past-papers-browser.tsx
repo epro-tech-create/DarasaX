@@ -5,18 +5,17 @@ import { Archive, Download, Eye, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StaffSection } from "@/components/staff/staff-ui";
-import { getModule, pastPapers } from "@/data/mock";
+import { getModule } from "@/data/mock";
 import {
   downloadMaterial,
   useMaterialsStore,
   viewMaterial,
 } from "@/lib/materials-store";
-import { downloadPastPaper, viewPastPaper } from "@/lib/download";
-import type { MaterialUpload, PastPaper } from "@/types";
+import type { MaterialUpload } from "@/types";
 
 export function PastPapersBrowser({
   title = "Published past papers",
-  description = "Library catalog plus papers uploaded by Admin or Class Rep.",
+  description = "Only papers uploaded here. Students see the same list.",
 }: {
   title?: string;
   description?: string;
@@ -30,49 +29,30 @@ export function PastPapersBrowser({
     [published],
   );
 
-  type Row =
-    | { source: "upload"; item: MaterialUpload }
-    | { source: "library"; item: PastPaper };
-
-  const catalog: Row[] = useMemo(
-    () => [
-      ...staffPapers.map((item) => ({ source: "upload" as const, item })),
-      ...pastPapers.map((item) => ({ source: "library" as const, item })),
-    ],
-    [staffPapers],
-  );
-
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return catalog;
-    return catalog.filter((row) => {
-      const titleText = row.item.title;
-      const module = row.item.moduleId ? getModule(row.item.moduleId) : null;
-      const by =
-        row.source === "upload" ? row.item.uploadedBy : "Library";
-      return `${titleText} ${module?.name ?? ""} ${module?.code ?? ""} ${by}`
+    if (!q) return staffPapers;
+    return staffPapers.filter((item) => {
+      const module = item.moduleId ? getModule(item.moduleId) : null;
+      return `${item.title} ${module?.name ?? ""} ${module?.code ?? ""} ${item.uploadedBy}`
         .toLowerCase()
         .includes(q);
     });
-  }, [catalog, query]);
+  }, [staffPapers, query]);
 
-  async function onView(row: Row) {
-    const id = row.item.id;
-    setBusyId(id);
+  async function onView(item: MaterialUpload) {
+    setBusyId(item.id);
     try {
-      if (row.source === "upload") await viewMaterial(row.item);
-      else viewPastPaper(row.item);
+      await viewMaterial(item);
     } finally {
       setBusyId(null);
     }
   }
 
-  async function onDownload(row: Row) {
-    const id = row.item.id;
-    setBusyId(id);
+  async function onDownload(item: MaterialUpload) {
+    setBusyId(item.id);
     try {
-      if (row.source === "upload") await downloadMaterial(row.item);
-      else downloadPastPaper(row.item);
+      await downloadMaterial(item);
     } finally {
       setBusyId(null);
     }
@@ -94,7 +74,7 @@ export function PastPapersBrowser({
         title={title}
         description={
           ready
-            ? `${filtered.length} papers · ${staffPapers.length} staff uploads · ${description}`
+            ? `${filtered.length} paper${filtered.length === 1 ? "" : "s"} · ${description}`
             : "Loading…"
         }
       >
@@ -102,58 +82,46 @@ export function PastPapersBrowser({
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-10 text-center">
               <Archive className="h-8 w-8 text-muted-foreground/50" />
-              <p className="text-[12px] text-muted-foreground">No past papers found.</p>
+              <p className="text-[12px] text-muted-foreground">
+                No past papers yet. Upload one from the Upload page.
+              </p>
             </div>
           ) : null}
-          {filtered.map((row) => {
-            const module = row.item.moduleId
-              ? getModule(row.item.moduleId)
-              : null;
-            const year =
-              row.source === "upload"
-                ? new Date(row.item.createdAt).getFullYear()
-                : row.item.year;
-            const size = row.item.size;
-            const uploadedBy =
-              row.source === "upload" ? row.item.uploadedBy : "Library";
-            const busy = busyId === row.item.id;
+          {filtered.map((item) => {
+            const module = item.moduleId ? getModule(item.moduleId) : null;
+            const year = new Date(item.createdAt).getFullYear();
+            const busy = busyId === item.id;
             return (
               <div
-                key={`${row.source}-${row.item.id}`}
+                key={item.id}
                 className="flex flex-col gap-3 rounded-xl border border-border/70 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-[12px] font-semibold">
-                    {row.item.title}
-                  </p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {module?.code ?? "General"} · {year} · {size} · {uploadedBy}
+                  <p className="truncate text-[13px] font-semibold">{item.title}</p>
+                  <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                    {module ? `${module.code} · ${module.name}` : "No module"} ·{" "}
+                    {item.uploadedBy} · {item.size}
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5">
-                  {row.source === "upload" ? (
-                    <Badge tone="success">New upload</Badge>
-                  ) : (
-                    <Badge>Library</Badge>
-                  )}
+                  <Badge>{year}</Badge>
                   <Button
                     size="sm"
-                    type="button"
                     variant="outline"
+                    type="button"
                     disabled={busy}
-                    onClick={() => onView(row)}
+                    onClick={() => void onView(item)}
                   >
-                    <Eye className="h-3 w-3" />
+                    <Eye className="h-3.5 w-3.5" />
                     View
                   </Button>
                   <Button
                     size="sm"
                     type="button"
-                    variant="outline"
                     disabled={busy}
-                    onClick={() => onDownload(row)}
+                    onClick={() => void onDownload(item)}
                   >
-                    <Download className="h-3 w-3" />
+                    <Download className="h-3.5 w-3.5" />
                     Download
                   </Button>
                 </div>
