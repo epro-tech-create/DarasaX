@@ -9,6 +9,7 @@ export default function LecturerTopicsPage() {
     <TopicsWorkspace
       role="lecturer"
       createdBy={session?.name ?? "Lecturer"}
+      allowedModuleIds={session?.moduleIds}
     />
   );
 }

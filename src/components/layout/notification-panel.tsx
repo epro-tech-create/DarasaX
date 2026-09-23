@@ -10,9 +10,13 @@ import { EmptyState } from "@/components/ui/empty-state";
 export function NotificationPanel({
   open,
   onClose,
+  resolveHref,
+  emptyDescription = "When staff upload notes, past papers, or topics, they show up here.",
 }: {
   open: boolean;
   onClose: () => void;
+  resolveHref?: (href: string) => string;
+  emptyDescription?: string;
 }) {
   const { items, ready, markRead, markAllRead } = useNotifications();
 
@@ -52,39 +56,44 @@ export function NotificationPanel({
             <EmptyState
               icon={Bell}
               title="No notifications yet"
-              description="When staff upload notes, past papers, or topics, they show up here."
+              description={emptyDescription}
               className="border-0 bg-transparent py-8"
             />
           </div>
         ) : (
           <ul className="max-h-[70vh] overflow-y-auto">
-            {items.map((n) => (
-              <li key={n.id} className="border-b border-border last:border-0">
-                <Link
-                  href={n.href || "#"}
-                  onClick={() => {
-                    markRead(n.id);
-                    onClose();
-                  }}
-                  className="flex gap-3 px-4 py-3 transition hover:bg-muted/70"
-                >
-                  <span
-                    className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
-                      n.read ? "bg-transparent" : "bg-primary"
-                    }`}
-                  />
-                  <span className="min-w-0">
-                    <span className="block text-sm font-medium">{n.title}</span>
-                    <span className="mt-0.5 block text-sm text-muted-foreground">
-                      {n.body}
+            {items.map((n) => {
+              const href = resolveHref
+                ? resolveHref(n.href || "#")
+                : n.href || "#";
+              return (
+                <li key={n.id} className="border-b border-border last:border-0">
+                  <Link
+                    href={href}
+                    onClick={() => {
+                      markRead(n.id);
+                      onClose();
+                    }}
+                    className="flex gap-3 px-4 py-3 transition hover:bg-muted/70"
+                  >
+                    <span
+                      className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
+                        n.read ? "bg-transparent" : "bg-primary"
+                      }`}
+                    />
+                    <span className="min-w-0">
+                      <span className="block text-sm font-medium">{n.title}</span>
+                      <span className="mt-0.5 block text-sm text-muted-foreground">
+                        {n.body}
+                      </span>
+                      <span className="mt-1 block text-xs text-muted-foreground">
+                        {formatRelativeTime(n.createdAt)}
+                      </span>
                     </span>
-                    <span className="mt-1 block text-xs text-muted-foreground">
-                      {formatRelativeTime(n.createdAt)}
-                    </span>
-                  </span>
-                </Link>
-              </li>
-            ))}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

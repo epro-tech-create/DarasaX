@@ -17,7 +17,11 @@ import {
 } from "@/lib/auth/profile";
 import { createClient } from "@/lib/supabase/client";
 import { APP_HOME, getAppRole } from "@/lib/app-role";
-import { loginStaff, useStaffSession } from "@/lib/staff-auth";
+import {
+  getLecturerEntryPath,
+  loginStaff,
+  useStaffSession,
+} from "@/lib/staff-auth";
 
 function StudentLoginForm() {
   const router = useRouter();
@@ -176,7 +180,13 @@ function StaffLoginForm({
   useEffect(() => {
     if (!ready || !session) return;
     if (session.role === role) {
-      router.replace(next && next.startsWith("/") ? next : APP_HOME[role]);
+      const dest =
+        role === "lecturer"
+          ? getLecturerEntryPath(session)
+          : next && next.startsWith("/")
+            ? next
+            : APP_HOME[role];
+      router.replace(dest);
     }
   }, [next, ready, role, router, session]);
 
@@ -195,8 +205,18 @@ function StaffLoginForm({
 
     setLoading(true);
     try {
-      await loginStaff({ role, email: normalized, password });
-      router.replace(next && next.startsWith("/") ? next : APP_HOME[role]);
+      const staffSession = await loginStaff({
+        role,
+        email: normalized,
+        password,
+      });
+      const dest =
+        role === "lecturer"
+          ? getLecturerEntryPath(staffSession)
+          : next && next.startsWith("/")
+            ? next
+            : APP_HOME[role];
+      router.replace(dest);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign in failed.");

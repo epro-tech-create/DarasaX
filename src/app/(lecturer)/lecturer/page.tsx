@@ -13,6 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StaffSection, StaffStatCard } from "@/components/staff/staff-ui";
 import { StaffFadeItem, StaffStagger } from "@/components/staff/staff-motion";
+import { classStreams } from "@/data/mock";
+import { getActiveLecturerStream } from "@/lib/lecturer-context";
 import { useMaterialsStore } from "@/lib/materials-store";
 import { useStaffSession } from "@/lib/staff-auth";
 import { useTopicsStore } from "@/lib/topics-store";
@@ -27,10 +29,25 @@ function greeting() {
 export default function LecturerOverviewPage() {
   const { session } = useStaffSession();
   const displayName = session?.name ?? "Lecturer";
+  const active = getActiveLecturerStream();
+  const activeLabel =
+    classStreams.find((s) => s.id === active)?.label ?? active ?? null;
+  const moduleCount = session?.moduleIds?.length ?? 0;
   const { items: uploads } = useMaterialsStore();
   const { rows: topics } = useTopicsStore();
-  const mine = uploads.filter((u) => u.role === "lecturer");
-  const myTopics = topics.filter((t) => t.role === "lecturer");
+  const moduleSet = new Set(session?.moduleIds ?? []);
+  const mine = uploads.filter(
+    (u) =>
+      u.role === "lecturer" ||
+      (u.moduleId && moduleSet.has(u.moduleId)) ||
+      (u.streamId && (session?.streamIds ?? []).includes(u.streamId)),
+  );
+  const myTopics = topics.filter(
+    (t) =>
+      t.role === "lecturer" ||
+      moduleSet.size === 0 ||
+      moduleSet.has(t.module_id),
+  );
   const notes = mine.filter((u) => u.kind === "notes" || u.kind === "slides");
   const assignments = mine.filter((u) => u.kind === "assignment");
 
@@ -39,7 +56,11 @@ export default function LecturerOverviewPage() {
       <PageHeader
         size="lg"
         title={`${greeting()}, ${displayName}`}
-        description="Lecturer · publish notes, assignments, and topics to students"
+        description={
+          activeLabel
+            ? `Lecturer · ${activeLabel} · ${moduleCount} module${moduleCount === 1 ? "" : "s"}`
+            : "Lecturer · publish notes, assignments, and topics to students"
+        }
         actions={
           <div className="flex flex-wrap gap-2">
             <Button href="/lecturer/uploads" size="sm">

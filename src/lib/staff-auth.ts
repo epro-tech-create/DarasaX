@@ -3,7 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ensureStaffProfile, getStaffProfile } from "@/lib/auth/staff-profile";
+import {
+  clearActiveLecturerStream,
+  getActiveLecturerStream,
+  setActiveLecturerStream,
+} from "@/lib/lecturer-context";
 import type { ClassStreamId, StaffRole } from "@/types";
+import type { StaffProfile } from "@/types/database";
 
 const SESSION_EVENT = "darasax:staff-session";
 
@@ -12,15 +18,36 @@ export type StaffSession = {
   email: string;
   name: string;
   streamId: ClassStreamId | null;
+  streamIds: ClassStreamId[];
+  moduleIds: string[];
+  onboardingCompleted: boolean;
 };
 
-function toSession(
-  role: StaffRole,
-  email: string,
-  name: string,
-  streamId: string | null,
-): StaffSession {
-  return { role, email, name, streamId: (streamId as ClassStreamId | null) ?? null };
+function asStreamIds(profile: StaffProfile): ClassStreamId[] {
+  const fromArray = (profile.stream_ids ?? []).filter(Boolean) as ClassStreamId[];
+  if (fromArray.length > 0) return fromArray;
+  if (profile.stream_id) return [profile.stream_id as ClassStreamId];
+  return [];
+}
+
+function toSession(profile: StaffProfile, emailFallback = ""): StaffSession {
+  const streamIds = asStreamIds(profile);
+  const moduleIds = Array.isArray(profile.module_ids) ? profile.module_ids : [];
+  const onboarded =
+    profile.role !== "lecturer"
+      ? true
+      : Boolean(profile.onboarding_completed) &&
+        streamIds.length > 0 &&
+        moduleIds.length > 0;
+  return {
+    role: profile.role,
+    email: profile.email ?? emailFallback,
+    name: profile.full_name ?? "Staff",
+    streamId: (profile.stream_id as ClassStreamId | null) ?? streamIds[0] ?? null,
+    streamIds,
+    moduleIds,
+    onboardingCompleted: onboarded,
+  };
 }
 
 function isConfigured() {
@@ -28,6 +55,22 @@ function isConfigured() {
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   );
+}
+
+/** Where a lecturer should land after auth (onboarding / class pick / desk). */
+export function getLecturerEntryPath(session: StaffSession): string {
+  if (!session.onboardingCompleted || session.streamIds.length === 0) {
+    return "/lecturer/onboarding";
+  }
+  if (session.streamIds.length === 1) {
+    setActiveLecturerStream(session.streamIds[0]);
+    return "/lecturer";
+  }
+  const active = getActiveLecturerStream();
+  if (active && session.streamIds.includes(active)) {
+    return "/lecturer";
+  }
+  return "/lecturer/select-class";
 }
 
 export async function loginStaff(input: {
@@ -48,6 +91,8 @@ export async function loginStaff(input: {
   if (error) throw error;
   if (!data.user) throw new Error("Sign in failed.");
 
+  clearActiveLecturerStream();
+
   const profile = await ensureStaffProfile(supabase, data.user, {
     role: input.role,
   });
@@ -66,12 +111,7 @@ export async function loginStaff(input: {
     throw new Error("This account has been deactivated.");
   }
 
-  const session = toSession(
-    profile.role,
-    profile.email ?? data.user.email ?? input.email,
-    profile.full_name ?? "Staff",
-    profile.stream_id,
-  );
+  const session = toSession(profile, data.user.email ?? input.email);
   window.dispatchEvent(new Event(SESSION_EVENT));
   return session;
 }
@@ -98,7 +138,6 @@ export async function registerClassRep(input: {
   if (!data.user) throw new Error("Registration failed.");
 
   if (!data.session) {
-    // Email confirmation is on — the code arrives by email.
     return { session: null, needsVerification: true };
   }
 
@@ -109,12 +148,7 @@ export async function registerClassRep(input: {
   });
   if (!profile) throw new Error("Registration failed.");
 
-  const session = toSession(
-    "class_rep",
-    profile.email ?? data.user.email ?? input.email,
-    profile.full_name ?? input.name,
-    profile.stream_id ?? input.streamId,
-  );
+  const session = toSession(profile, data.user.email ?? input.email);
   window.dispatchEvent(new Event(SESSION_EVENT));
   return { session, needsVerification: false };
 }
@@ -132,6 +166,7 @@ export async function registerLecturer(input: {
       data: {
         full_name: input.name,
         role: "lecturer",
+        email: input.email,
       },
     },
   });
@@ -142,23 +177,76 @@ export async function registerLecturer(input: {
     return { session: null, needsVerification: true };
   }
 
-  const profile = await ensureStaffProfile(supabase, data.user, {
+  let profile = await ensureStaffProfile(supabase, data.user, {
     role: "lecturer",
     fullName: input.name,
   });
   if (!profile) throw new Error("Registration failed.");
 
-  const session = toSession(
-    "lecturer",
-    profile.email ?? data.user.email ?? input.email,
-    profile.full_name ?? input.name,
-    profile.stream_id,
-  );
+  if (!profile.email || profile.email !== input.email) {
+    const { data: patched } = await supabase
+      .from("staff_profiles")
+      .update({ email: input.email, full_name: input.name })
+      .eq("id", data.user.id)
+      .select("*")
+      .maybeSingle();
+    if (patched) profile = patched;
+    else profile = { ...profile, email: input.email, full_name: input.name };
+  }
+
+  const session = toSession(profile, input.email);
   window.dispatchEvent(new Event(SESSION_EVENT));
   return { session, needsVerification: false };
 }
 
+export async function completeLecturerOnboarding(input: {
+  streamIds: ClassStreamId[];
+  moduleIds: string[];
+}): Promise<StaffSession> {
+  if (input.streamIds.length === 0) {
+    throw new Error("Select at least one class.");
+  }
+  if (input.moduleIds.length === 0) {
+    throw new Error("Select at least one module you teach.");
+  }
+
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not signed in.");
+
+  const { data, error } = await supabase
+    .from("staff_profiles")
+    .update({
+      stream_ids: input.streamIds,
+      module_ids: input.moduleIds,
+      stream_id: input.streamIds[0],
+      onboarding_completed: true,
+      email: user.email ?? undefined,
+      full_name:
+        (user.user_metadata?.full_name as string | undefined) ?? undefined,
+    })
+    .eq("id", user.id)
+    .eq("role", "lecturer")
+    .select("*")
+    .single();
+
+  if (error) throw error;
+  if (!data) throw new Error("Could not save teaching profile.");
+
+  clearActiveLecturerStream();
+  if (input.streamIds.length === 1) {
+    setActiveLecturerStream(input.streamIds[0]);
+  }
+
+  const session = toSession(data, user.email ?? "");
+  window.dispatchEvent(new Event(SESSION_EVENT));
+  return session;
+}
+
 export async function logoutStaff() {
+  clearActiveLecturerStream();
   const supabase = createClient();
   await supabase.auth.signOut();
   window.dispatchEvent(new Event(SESSION_EVENT));
@@ -181,12 +269,7 @@ export async function fetchStaffSession(): Promise<StaffSession | null> {
     ) {
       return null;
     }
-    return toSession(
-      profile.role,
-      profile.email ?? user.email ?? "",
-      profile.full_name ?? "Staff",
-      profile.stream_id,
-    );
+    return toSession(profile, user.email ?? "");
   } catch {
     return null;
   }

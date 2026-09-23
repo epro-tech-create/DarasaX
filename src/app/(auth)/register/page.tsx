@@ -11,6 +11,7 @@ import { classStreams } from "@/data/mock";
 import { APP_HOME, getAppRole } from "@/lib/app-role";
 import { isValidEmail, normalizeEmail } from "@/lib/auth/email";
 import {
+  getLecturerEntryPath,
   registerClassRep,
   registerLecturer,
   useStaffSession,
@@ -41,7 +42,9 @@ export default function StaffRegisterPage() {
       return;
     }
     if (ready && session?.role === role) {
-      router.replace(APP_HOME[role]);
+      router.replace(
+        role === "lecturer" ? getLecturerEntryPath(session) : APP_HOME[role],
+      );
     }
   }, [isCr, isLecturer, ready, role, router, session]);
 
@@ -85,7 +88,11 @@ export default function StaffRegisterPage() {
         router.push("/verify-email");
         return;
       }
-      router.replace(APP_HOME[role]);
+      router.replace(
+        isLecturer
+          ? getLecturerEntryPath(result.session)
+          : APP_HOME[role],
+      );
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed.");

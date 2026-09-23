@@ -89,6 +89,13 @@ on conflict (id) do update set role = 'admin', status = 'active';
 Class reps self-register on the Class Rep portal (`/register`); an admin
 then sets their stream/status on the Admin → Class reps page.
 
+Lecturers self-register on the Lecturer portal, then complete onboarding
+(classes + modules). Run these migrations in the SQL Editor if not applied yet:
+
+- `supabase/migrations/20260923140000_lecturer_onboarding.sql`
+- `supabase/migrations/20260923150000_staff_email_and_update_policy.sql`
+  (keeps `staff_profiles.email` filled from Auth; fixes lecturer self-update RLS)
+
 ---
 
 ## 4) Enable Email authentication

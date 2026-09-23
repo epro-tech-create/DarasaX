@@ -25,6 +25,8 @@ export function UploadWorkspace({
   uploadedBy,
   role,
   footerNote,
+  allowedModuleIds,
+  allowedStreamIds,
 }: {
   title: string;
   description: string;
@@ -34,12 +36,29 @@ export function UploadWorkspace({
   uploadedBy: string;
   role: StaffRole;
   footerNote?: ReactNode;
+  allowedModuleIds?: string[];
+  allowedStreamIds?: ClassStreamId[];
 }) {
   const { publish } = useMaterialsStore();
+  const catalog = (() => {
+    if (!allowedModuleIds || allowedModuleIds.length === 0) return modules;
+    const allowed = new Set(allowedModuleIds);
+    return modules.filter((m) => allowed.has(m.id));
+  })();
+  const streamOptions = (() => {
+    if (!allowedStreamIds || allowedStreamIds.length === 0) return classStreams;
+    const allowed = new Set(allowedStreamIds);
+    return classStreams.filter((s) => allowed.has(s.id));
+  })();
   const [kind, setKind] = useState<UploadKind>(defaultKind);
-  const [moduleId, setModuleId] = useState(modules[0]?.id ?? "");
+  const [moduleId, setModuleId] = useState(catalog[0]?.id ?? "");
   const [streamId, setStreamId] = useState<ClassStreamId | "all">(
-    lockedStream ?? classStreams[0]?.id ?? "all",
+    lockedStream ??
+      (streamOptions.length === 1
+        ? streamOptions[0].id
+        : allowedStreamIds && allowedStreamIds.length > 0
+          ? allowedStreamIds[0]
+          : classStreams[0]?.id ?? "all"),
   );
   const [titleValue, setTitleValue] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -57,6 +76,10 @@ export function UploadWorkspace({
 
   async function handlePublish() {
     if (!titleValue.trim() || !file) return;
+    if (!moduleId) {
+      setError("Select a module you teach.");
+      return;
+    }
     setPublishing(true);
     setError("");
     try {
@@ -142,8 +165,12 @@ export function UploadWorkspace({
               value={moduleId}
               onChange={(e) => setModuleId(e.target.value)}
               className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+              disabled={catalog.length === 0}
             >
-              {modules.map((m) => (
+              {catalog.length === 0 ? (
+                <option value="">No modules assigned</option>
+              ) : null}
+              {catalog.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.code} · {m.name}
                 </option>
@@ -163,8 +190,10 @@ export function UploadWorkspace({
                 }
                 className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               >
-                <option value="all">All streams</option>
-                {classStreams.map((s) => (
+                {!allowedStreamIds || allowedStreamIds.length === 0 ? (
+                  <option value="all">All streams</option>
+                ) : null}
+                {streamOptions.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.label}
                     {s.isEvening ? " (Evening)" : ""}
@@ -183,7 +212,7 @@ export function UploadWorkspace({
           <Button
             type="button"
             onClick={handlePublish}
-            disabled={!file || !titleValue.trim() || publishing}
+            disabled={!file || !titleValue.trim() || publishing || !moduleId}
           >
             <FileUp className="h-3.5 w-3.5" />
             {publishing ? "Publishing…" : "Publish to students"}

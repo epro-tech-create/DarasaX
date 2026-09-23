@@ -21,7 +21,7 @@ type FormState = {
   published: boolean;
 };
 
-const emptyForm = (moduleId = modules[0]?.id ?? ""): FormState => ({
+const emptyForm = (moduleId = ""): FormState => ({
   moduleId,
   number: "1",
   title: "",
@@ -33,31 +33,47 @@ const emptyForm = (moduleId = modules[0]?.id ?? ""): FormState => ({
 export function TopicsWorkspace({
   role,
   createdBy,
+  allowedModuleIds,
 }: {
   role: StaffRole;
   createdBy: string;
+  /** When set (e.g. lecturer), only these modules appear in filters/forms. */
+  allowedModuleIds?: string[];
 }) {
   const { rows, ready, createTopic, updateTopic, deleteTopic } = useTopicsStore();
+  const catalog = useMemo(() => {
+    if (!allowedModuleIds || allowedModuleIds.length === 0) return modules;
+    const allowed = new Set(allowedModuleIds);
+    return modules.filter((m) => allowed.has(m.id));
+  }, [allowedModuleIds]);
   const [moduleFilter, setModuleFilter] = useState("all");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<FormState>(emptyForm);
+  const [form, setForm] = useState<FormState>(() =>
+    emptyForm(catalog[0]?.id ?? ""),
+  );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
+  const scopedRows = useMemo(() => {
+    if (!allowedModuleIds || allowedModuleIds.length === 0) return rows;
+    const allowed = new Set(allowedModuleIds);
+    return rows.filter((t) => allowed.has(t.module_id));
+  }, [rows, allowedModuleIds]);
+
   const filtered = useMemo(() => {
-    return rows
+    return scopedRows
       .filter((t) => moduleFilter === "all" || t.module_id === moduleFilter)
       .sort(
         (a, b) =>
           a.module_id.localeCompare(b.module_id) || a.number - b.number,
       );
-  }, [rows, moduleFilter]);
+  }, [scopedRows, moduleFilter]);
 
   function nextNumberFor(moduleId: string) {
     return (
-      rows
+      scopedRows
         .filter((t) => t.module_id === moduleId)
         .reduce((max, t) => Math.max(max, t.number), 0) + 1
     );
@@ -65,7 +81,9 @@ export function TopicsWorkspace({
 
   function openAdd() {
     const moduleId =
-      moduleFilter !== "all" ? moduleFilter : (modules[0]?.id ?? "");
+      moduleFilter !== "all"
+        ? moduleFilter
+        : (catalog[0]?.id ?? "");
     setEditingId(null);
     setForm({
       ...emptyForm(moduleId),
@@ -166,7 +184,12 @@ export function TopicsWorkspace({
         title="Module topics"
         description="Add the course outline per module. Students mark topics done to drive progress — this is not a file upload."
         actions={
-          <Button size="sm" type="button" onClick={openAdd}>
+          <Button
+            size="sm"
+            type="button"
+            onClick={openAdd}
+            disabled={catalog.length === 0}
+          >
             <Plus className="h-3.5 w-3.5" />
             Add topic
           </Button>
@@ -190,7 +213,7 @@ export function TopicsWorkspace({
             className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
           >
             <option value="all">All modules</option>
-            {modules.map((m) => (
+            {catalog.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.code} · {m.name}
               </option>
@@ -203,6 +226,13 @@ export function TopicsWorkspace({
             : "Loading…"}
         </p>
       </div>
+
+      {catalog.length === 0 ? (
+        <p className="rounded-xl border border-warning/30 bg-warning/10 px-3 py-2 text-[12px] text-warning">
+          No modules assigned to your profile. Complete lecturer onboarding or
+          ask an admin to assign modules.
+        </p>
+      ) : null}
 
       <StaffSection
         title="Course outline"
@@ -222,7 +252,8 @@ export function TopicsWorkspace({
         ) : (
           <div className="space-y-2">
             {filtered.map((row) => {
-              const module = modules.find((m) => m.id === row.module_id);
+              const module = catalog.find((m) => m.id === row.module_id) ??
+                modules.find((m) => m.id === row.module_id);
               return (
                 <div
                   key={row.id}
@@ -294,7 +325,7 @@ export function TopicsWorkspace({
               className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px]"
               required
             >
-              {modules.map((m) => (
+              {catalog.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.code} · {m.name}
                 </option>

@@ -82,6 +82,9 @@ export type Database = {
           full_name: string | null;
           email: string | null;
           stream_id: string | null;
+          stream_ids: string[];
+          module_ids: string[];
+          onboarding_completed: boolean;
           phone: string | null;
           status: string;
           created_at: string;
@@ -93,6 +96,9 @@ export type Database = {
           full_name?: string | null;
           email?: string | null;
           stream_id?: string | null;
+          stream_ids?: string[];
+          module_ids?: string[];
+          onboarding_completed?: boolean;
           phone?: string | null;
           status?: string;
           created_at?: string;
@@ -104,6 +110,9 @@ export type Database = {
           full_name?: string | null;
           email?: string | null;
           stream_id?: string | null;
+          stream_ids?: string[];
+          module_ids?: string[];
+          onboarding_completed?: boolean;
           phone?: string | null;
           status?: string;
           created_at?: string;

@@ -25,12 +25,15 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
+import { NotificationPanel } from "@/components/layout/notification-panel";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { StaffPageMotion } from "@/components/staff/staff-page-motion";
 import { APP_PORTS } from "@/lib/app-role";
+import { clearActiveLecturerStream } from "@/lib/lecturer-context";
+import { useNotifications } from "@/lib/notifications-store";
 import { logoutStaff } from "@/lib/staff-auth";
 import { cn } from "@/lib/utils";
-import type { StaffRole } from "@/types";
+import type { ClassStreamId, StaffRole } from "@/types";
 
 export type StaffNavItem = {
   href: string;
@@ -77,20 +80,56 @@ const lecturerNav: StaffNavItem[] = [
   { href: "/lecturer/timetable", label: "Timetable", icon: CalendarDays },
 ];
 
+function roleLabel(role: StaffRole) {
+  if (role === "admin") return "Administration";
+  if (role === "lecturer") return "Lecturer";
+  return "Class Representative";
+}
+
+function RoleIcon({ role }: { role: StaffRole }) {
+  if (role === "admin") return <Shield className="h-3.5 w-3.5" />;
+  if (role === "lecturer") return <BookOpen className="h-3.5 w-3.5" />;
+  return <GraduationCap className="h-3.5 w-3.5" />;
+}
+
+function staffNotificationHref(href: string, role: StaffRole): string {
+  const base =
+    role === "admin" ? "/admin" : role === "class_rep" ? "/cr" : "/lecturer";
+  if (href.startsWith("/past-papers")) return `${base}/past-papers`;
+  if (href.startsWith("/announcements")) {
+    return role === "class_rep" ? `${base}/materials` : `${base}/announcements`;
+  }
+  if (href.startsWith("/assignments")) {
+    return role === "lecturer" ? "/lecturer/assignments" : `${base}/materials`;
+  }
+  if (href.startsWith("/modules")) {
+    if (href.includes("/topics") || role === "lecturer") {
+      return `${base}/topics`;
+    }
+    return `${base}/materials`;
+  }
+  return `${base}/materials`;
+}
+
 export function StaffShell({
   role,
   userName,
   userMeta,
+  streamIds,
   children,
 }: {
   role: StaffRole;
   userName: string;
   userMeta: string;
+  streamIds?: ClassStreamId[];
+  moduleIds?: string[];
   children: ReactNode;
 }) {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const { unreadCount } = useNotifications();
   const nav =
     role === "admin"
       ? adminNav
@@ -109,10 +148,18 @@ export function StaffShell({
   const isActive = (href: string) =>
     href === home ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
 
+  const canSwitchClass =
+    role === "lecturer" && (streamIds?.length ?? 0) > 1;
+
   async function onSignOut() {
     await logoutStaff();
     router.replace("/login");
     router.refresh();
+  }
+
+  function onSwitchClass() {
+    clearActiveLecturerStream();
+    router.replace("/lecturer/select-class");
   }
 
   return (
@@ -160,11 +207,7 @@ export function StaffShell({
           >
             <div className={cn("flex items-center gap-2", collapsed && "justify-center")}>
               <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-primary/15 text-primary">
-                {role === "admin" ? (
-                  <Shield className="h-3.5 w-3.5" />
-                ) : (
-                  <GraduationCap className="h-3.5 w-3.5" />
-                )}
+                <RoleIcon role={role} />
               </span>
               {!collapsed ? (
                 <div className="min-w-0">
@@ -216,18 +259,33 @@ export function StaffShell({
           </div>
           <div className="hidden min-w-0 lg:block">
             <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-              {role === "admin" ? "Administration" : "Class Representative"}
+              {roleLabel(role)}
             </p>
             <p className="truncate text-[13px] font-semibold">{userMeta}</p>
           </div>
           <div className="flex items-center gap-2">
+            {canSwitchClass ? (
+              <button
+                type="button"
+                onClick={onSwitchClass}
+                className="focus-ring hidden h-9 items-center rounded-xl border border-border px-2.5 text-[11px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground sm:inline-flex"
+              >
+                Switch class
+              </button>
+            ) : null}
             <ThemeToggle />
             <button
               type="button"
-              className="focus-ring inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+              onClick={() => setNotificationsOpen(true)}
+              className="focus-ring relative inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
               aria-label="Notifications"
             >
               <Bell className="h-4 w-4" />
+              {unreadCount > 0 ? (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-semibold text-primary-foreground">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              ) : null}
             </button>
             <button
               type="button"
@@ -248,7 +306,6 @@ export function StaffShell({
           </div>
         </main>
 
-        {/* Mobile bottom nav */}
         <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-2 py-2 backdrop-blur lg:hidden">
           <div className="mx-auto flex max-w-lg items-center justify-around gap-1">
             {nav.slice(0, 5).map((item) => {
@@ -271,6 +328,13 @@ export function StaffShell({
           </div>
         </nav>
       </div>
+
+      <NotificationPanel
+        open={notificationsOpen}
+        onClose={() => setNotificationsOpen(false)}
+        resolveHref={(href) => staffNotificationHref(href, role)}
+        emptyDescription="When materials, topics, or assignments are published, they show up here."
+      />
     </div>
   );
 }
