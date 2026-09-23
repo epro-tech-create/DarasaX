@@ -46,6 +46,7 @@ In **Supabase → SQL Editor**, run each file in order
 
 1. `supabase/migrations/20260917000000_profiles.sql` — student `profiles`
 2. `supabase/migrations/20260922000000_academic_data.sql` — everything else
+3. `supabase/migrations/20260923100000_module_topics.sql` — staff-managed module topics
 
 Do **not** paste `supabase/migrations/...sql` as the query — that is a path, not SQL.
 
@@ -63,6 +64,12 @@ Migration 2 creates:
 - `increment_material_downloads()` RPC for download counting
 - Private storage bucket `materials` (+ storage RLS; app mints signed URLs)
 - Starter seed rows (timetable, students, issues, demo materials)
+
+Migration 3 creates:
+
+- `module_topics` — Admin/CR course outline per module (students mark done for progress)
+- RLS: authenticated users read published topics; staff can create/edit/delete
+- Seed topics for Sensor Networks, Database Admin, and Software Engineering
 
 ### 3a) Create the admin login
 

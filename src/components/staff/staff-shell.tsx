@@ -21,6 +21,7 @@ import {
   ScrollText,
   Shield,
   Users,
+  ListOrdered,
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
@@ -40,6 +41,7 @@ export type StaffNavItem = {
 const adminNav: StaffNavItem[] = [
   { href: "/admin", label: "Overview", icon: Home },
   { href: "/admin/uploads", label: "Upload", icon: FileUp },
+  { href: "/admin/topics", label: "Topics", icon: ListOrdered },
   { href: "/admin/materials", label: "Library", icon: BookOpen },
   { href: "/admin/past-papers", label: "Past papers", icon: ClipboardList },
   { href: "/admin/timetable", label: "Timetable", icon: CalendarDays },
@@ -55,6 +57,7 @@ const adminNav: StaffNavItem[] = [
 const crNav: StaffNavItem[] = [
   { href: "/cr", label: "Overview", icon: Home },
   { href: "/cr/uploads", label: "Upload", icon: FileUp },
+  { href: "/cr/topics", label: "Topics", icon: ListOrdered },
   { href: "/cr/materials", label: "Library", icon: BookOpen },
   { href: "/cr/past-papers", label: "Past papers", icon: ClipboardList },
   { href: "/cr/timetable", label: "Timetable", icon: CalendarDays },

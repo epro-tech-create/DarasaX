@@ -12,6 +12,8 @@ export type StaffProfile =
 export type TimetableRow =
   Database["public"]["Tables"]["timetable_entries"]["Row"];
 export type MaterialRow = Database["public"]["Tables"]["materials"]["Row"];
+export type ModuleTopicRow =
+  Database["public"]["Tables"]["module_topics"]["Row"];
 export type MonitoredStudentRow =
   Database["public"]["Tables"]["monitored_students"]["Row"];
 export type IssueRow = Database["public"]["Tables"]["issues"]["Row"];
@@ -209,6 +211,51 @@ export type Database = {
           size_bytes?: number | null;
           size_label?: string | null;
           downloads?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      module_topics: {
+        Row: {
+          id: string;
+          module_id: string;
+          number: number;
+          title: string;
+          duration_minutes: number;
+          summary: string | null;
+          published: boolean;
+          created_by: string;
+          created_by_id: string | null;
+          role: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          module_id: string;
+          number: number;
+          title: string;
+          duration_minutes?: number;
+          summary?: string | null;
+          published?: boolean;
+          created_by?: string;
+          created_by_id?: string | null;
+          role?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          module_id?: string;
+          number?: number;
+          title?: string;
+          duration_minutes?: number;
+          summary?: string | null;
+          published?: boolean;
+          created_by?: string;
+          created_by_id?: string | null;
+          role?: string | null;
           created_at?: string;
           updated_at?: string;
         };

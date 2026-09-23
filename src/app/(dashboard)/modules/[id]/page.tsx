@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { notFound, useParams } from "next/navigation";
 import {
+  BookOpen,
   CheckCircle2,
   ChevronRight,
   Circle,
@@ -117,46 +118,57 @@ export default function ModuleDetailPage() {
         <section id="topics" className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h3 className="font-heading text-lg font-semibold">Topics</h3>
-            <p className="text-sm text-muted-foreground">
-              Mark topics done to update module progress
-            </p>
+            {topics.length > 0 ? (
+              <p className="text-sm text-muted-foreground">
+                Mark topics done to update module progress
+              </p>
+            ) : null}
           </div>
-          {topics.map((topic) => (
-            <div
-              key={topic.id}
-              className="surface flex items-center justify-between gap-3 rounded-[18px] p-4"
-            >
-              <Link
-                href={`/modules/${module.id}/topics/${topic.id}`}
-                className="group flex min-w-0 flex-1 items-center gap-3"
+          {topics.length === 0 ? (
+            <EmptyState
+              icon={BookOpen}
+              title="No topics yet"
+              description="Admin or your Class Rep adds the course outline under Topics. Once published, they appear here and drive your progress %."
+            />
+          ) : (
+            topics.map((topic) => (
+              <div
+                key={topic.id}
+                className="surface flex items-center justify-between gap-3 rounded-[18px] p-4"
               >
-                {topic.completed ? (
-                  <CheckCircle2 className="h-5 w-5 shrink-0 text-success" />
-                ) : (
-                  <Circle className="h-5 w-5 shrink-0 text-muted-foreground" />
-                )}
-                <div className="min-w-0">
-                  <p className="font-medium group-hover:text-primary">
-                    Topic {String(topic.number).padStart(2, "0")} — {topic.title}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {topic.durationMinutes} min
-                  </p>
-                </div>
-              </Link>
-              <div className="flex shrink-0 items-center gap-2">
-                <Button
-                  size="sm"
-                  variant={topic.completed ? "secondary" : "outline"}
-                  type="button"
-                  onClick={() => setCompleted(topic.id, !topic.completed)}
+                <Link
+                  href={`/modules/${module.id}/topics/${topic.id}`}
+                  className="group flex min-w-0 flex-1 items-center gap-3"
                 >
-                  {topic.completed ? "Done" : "Mark done"}
-                </Button>
-                <ChevronRight className="hidden h-4 w-4 text-muted-foreground sm:block" />
+                  {topic.completed ? (
+                    <CheckCircle2 className="h-5 w-5 shrink-0 text-success" />
+                  ) : (
+                    <Circle className="h-5 w-5 shrink-0 text-muted-foreground" />
+                  )}
+                  <div className="min-w-0">
+                    <p className="font-medium group-hover:text-primary">
+                      Topic {String(topic.number).padStart(2, "0")} —{" "}
+                      {topic.title}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {topic.durationMinutes} min
+                    </p>
+                  </div>
+                </Link>
+                <div className="flex shrink-0 items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant={topic.completed ? "secondary" : "outline"}
+                    type="button"
+                    onClick={() => setCompleted(topic.id, !topic.completed)}
+                  >
+                    {topic.completed ? "Done" : "Mark done"}
+                  </Button>
+                  <ChevronRight className="hidden h-4 w-4 text-muted-foreground sm:block" />
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </section>
       ) : null}
 

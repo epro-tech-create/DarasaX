@@ -32,7 +32,8 @@ export function enrichModule(
   topics: Topic[],
 ): Module {
   const moduleTopics = topics.filter((t) => t.moduleId === module.id);
-  const topicsTotal = moduleTopics.length || module.topicsTotal;
+  // Only count real topic rows — never fall back to a stale mock total.
+  const topicsTotal = moduleTopics.length;
   const topicsCompleted = moduleTopics.filter((t) => t.completed).length;
   const notes = noteMaterials(materials, module.id);
   const papers = pastPaperMaterials(materials, module.id);

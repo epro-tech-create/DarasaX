@@ -15,7 +15,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { MaterialUploadCard } from "@/components/modules/material-upload-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getModule, getTopicsForModule } from "@/data/mock";
+import { getModule } from "@/data/mock";
 import { useMaterialsStore } from "@/lib/materials-store";
 import { noteMaterials } from "@/lib/module-stats";
 import { useTopicProgress } from "@/lib/topic-progress-store";
@@ -35,12 +35,13 @@ export default function TopicDetailPage() {
   if (!module || !topic || topic.moduleId !== module.id) notFound();
 
   const liveNotes = noteMaterials(published, module.id);
-  const siblings = useMemo(() => {
-    const list = topics.filter((t) => t.moduleId === module.id);
-    return list.length > 0
-      ? list.sort((a, b) => a.number - b.number)
-      : getTopicsForModule(module.id);
-  }, [topics, module.id]);
+  const siblings = useMemo(
+    () =>
+      topics
+        .filter((t) => t.moduleId === module.id)
+        .sort((a, b) => a.number - b.number),
+    [topics, module.id],
+  );
   const index = siblings.findIndex((t) => t.id === topic.id);
   const prev = index > 0 ? siblings[index - 1] : null;
   const next =
