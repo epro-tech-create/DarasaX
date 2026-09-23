@@ -158,7 +158,11 @@ function StudentLoginForm() {
   );
 }
 
-function StaffLoginForm({ role }: { role: "admin" | "class_rep" }) {
+function StaffLoginForm({
+  role,
+}: {
+  role: "admin" | "class_rep" | "lecturer";
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next");
@@ -201,17 +205,26 @@ function StaffLoginForm({ role }: { role: "admin" | "class_rep" }) {
     }
   }
 
-  const isAdmin = role === "admin";
+  const title =
+    role === "admin"
+      ? "Admin sign in"
+      : role === "lecturer"
+        ? "Lecturer sign in"
+        : "Class Rep sign in";
+  const blurb =
+    role === "admin"
+      ? "Restricted access for programme administrators only."
+      : role === "lecturer"
+        ? "Sign in to publish notes, assignments, and topics to students."
+        : "Sign in to manage your stream’s materials and timetable.";
 
   return (
     <>
       <h1 className="font-heading text-xl font-semibold tracking-tight sm:text-lg">
-        {isAdmin ? "Admin sign in" : "Class Rep sign in"}
+        {title}
       </h1>
       <p className="mt-1 text-sm text-muted-foreground sm:mt-0.5 sm:text-xs">
-        {isAdmin
-          ? "Restricted access for programme administrators only."
-          : "Sign in to manage your stream’s materials and timetable."}
+        {blurb}
       </p>
 
       <form className="mt-5 space-y-3.5 sm:mt-4 sm:space-y-3" onSubmit={onSubmit} noValidate>
@@ -242,13 +255,13 @@ function StaffLoginForm({ role }: { role: "admin" | "class_rep" }) {
         </AuthSubmitButton>
       </form>
 
-      {isAdmin ? (
+      {role === "admin" ? (
         <p className="mt-5 text-center text-sm text-muted-foreground sm:mt-4 sm:text-[11px]">
           No public registration. Contact the system owner for credentials.
         </p>
       ) : (
         <p className="mt-5 text-center text-sm text-muted-foreground sm:mt-4 sm:text-xs">
-          New class representative?{" "}
+          {role === "lecturer" ? "New lecturer?" : "New class representative?"}{" "}
           <Link href="/register" className="font-medium text-primary">
             Create an account
           </Link>
@@ -260,7 +273,7 @@ function StaffLoginForm({ role }: { role: "admin" | "class_rep" }) {
 
 function LoginRouter() {
   const role = getAppRole();
-  if (role === "admin" || role === "class_rep") {
+  if (role === "admin" || role === "class_rep" || role === "lecturer") {
     return <StaffLoginForm role={role} />;
   }
   return <StudentLoginForm />;
@@ -268,7 +281,8 @@ function LoginRouter() {
 
 export default function LoginPage() {
   const role = getAppRole();
-  const staff = role === "admin" || role === "class_rep";
+  const staff =
+    role === "admin" || role === "class_rep" || role === "lecturer";
 
   return (
     <AuthShell
@@ -279,6 +293,12 @@ export default function LoginPage() {
               Admin desk,
               <br />
               secure access.
+            </>
+          ) : role === "lecturer" ? (
+            <>
+              Lecturer desk,
+              <br />
+              teach and publish.
             </>
           ) : (
             <>
@@ -299,7 +319,9 @@ export default function LoginPage() {
         staff
           ? role === "admin"
             ? "Sign in to manage students, class reps, timetable, and materials."
-            : "Sign in to upload materials, edit the timetable, and support your class."
+            : role === "lecturer"
+              ? "Sign in to upload notes, assign work, and manage module topics."
+              : "Sign in to upload materials, edit the timetable, and support your class."
           : "Modules, deadlines, notes and AI study help — ready when you open DarasaX."
       }
     >

@@ -22,6 +22,7 @@ import { Logo } from "@/components/brand/logo";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { currentUser } from "@/data/mock";
+import { useNotifications } from "@/lib/notifications-store";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
@@ -187,16 +188,31 @@ export function TopBar({
         >
           Search
         </button>
-        <button
-          type="button"
-          onClick={onOpenNotifications}
-          className="focus-ring relative inline-flex h-8 w-8 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground hover:text-foreground"
-          aria-label="Notifications"
-        >
-          <Bell className="h-4 w-4" />
-          <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-danger" />
-        </button>
+        <NotificationBellButton onOpen={onOpenNotifications} />
       </div>
     </header>
+  );
+}
+
+function NotificationBellButton({ onOpen }: { onOpen: () => void }) {
+  const { unreadCount } = useNotifications();
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="focus-ring relative inline-flex h-8 w-8 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground hover:text-foreground"
+      aria-label={
+        unreadCount > 0
+          ? `Notifications, ${unreadCount} unread`
+          : "Notifications"
+      }
+    >
+      <Bell className="h-4 w-4" />
+      {unreadCount > 0 ? (
+        <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[9px] font-semibold text-white">
+          {unreadCount > 9 ? "9+" : unreadCount}
+        </span>
+      ) : null}
+    </button>
   );
 }

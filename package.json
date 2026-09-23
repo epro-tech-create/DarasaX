@@ -7,10 +7,12 @@
     "dev:student": "node scripts/run-app.mjs student dev",
     "dev:admin": "node scripts/run-app.mjs admin dev",
     "dev:cr": "node scripts/run-app.mjs class_rep dev",
+    "dev:lecturer": "node scripts/run-app.mjs lecturer dev",
     "start": "node scripts/run-app.mjs student start",
     "start:student": "node scripts/run-app.mjs student start",
     "start:admin": "node scripts/run-app.mjs admin start",
     "start:cr": "node scripts/run-app.mjs class_rep start",
+    "start:lecturer": "node scripts/run-app.mjs lecturer start",
     "build": "next build",
     "lint": "eslint"
   },

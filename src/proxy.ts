@@ -44,8 +44,12 @@ function isStudentProtected(pathname: string) {
   return roots.some((root) => pathname === root || pathname.startsWith(`${root}/`));
 }
 
-function isStaffProtected(pathname: string, role: "admin" | "class_rep") {
-  const root = role === "admin" ? "/admin" : "/cr";
+function isStaffProtected(
+  pathname: string,
+  role: "admin" | "class_rep" | "lecturer",
+) {
+  const root =
+    role === "admin" ? "/admin" : role === "class_rep" ? "/cr" : "/lecturer";
   return pathname === root || pathname.startsWith(`${root}/`);
 }
 
@@ -77,7 +81,7 @@ export async function proxy(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   // Staff apps: gate protected routes with the Supabase staff session.
-  if (appRole === "admin" || appRole === "class_rep") {
+  if (appRole === "admin" || appRole === "class_rep" || appRole === "lecturer") {
     if (!hasEnv) {
       const res = NextResponse.next();
       res.headers.set("x-darasax-role", appRole);

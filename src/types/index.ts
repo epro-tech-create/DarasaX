@@ -215,7 +215,7 @@ export interface UpdateFeedItem {
   icon: string;
 }
 
-export type StaffRole = "admin" | "class_rep";
+export type StaffRole = "admin" | "class_rep" | "lecturer";
 
 export type IssueStatus = "open" | "in_progress" | "resolved";
 export type IssueSeverity = "low" | "medium" | "high";

@@ -66,6 +66,17 @@ const crNav: StaffNavItem[] = [
   { href: "/cr/attendance", label: "Attendance", icon: Activity },
 ];
 
+const lecturerNav: StaffNavItem[] = [
+  { href: "/lecturer", label: "Overview", icon: Home },
+  { href: "/lecturer/uploads", label: "Upload", icon: FileUp },
+  { href: "/lecturer/topics", label: "Topics", icon: ListOrdered },
+  { href: "/lecturer/materials", label: "Library", icon: BookOpen },
+  { href: "/lecturer/past-papers", label: "Past papers", icon: ClipboardList },
+  { href: "/lecturer/assignments", label: "Assignments", icon: GraduationCap },
+  { href: "/lecturer/announcements", label: "Announce", icon: Megaphone },
+  { href: "/lecturer/timetable", label: "Timetable", icon: CalendarDays },
+];
+
 export function StaffShell({
   role,
   userName,
@@ -80,9 +91,20 @@ export function StaffShell({
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
-  const nav = role === "admin" ? adminNav : crNav;
-  const home = role === "admin" ? "/admin" : "/cr";
-  const port = role === "admin" ? APP_PORTS.admin : APP_PORTS.class_rep;
+  const nav =
+    role === "admin"
+      ? adminNav
+      : role === "class_rep"
+        ? crNav
+        : lecturerNav;
+  const home =
+    role === "admin" ? "/admin" : role === "class_rep" ? "/cr" : "/lecturer";
+  const port =
+    role === "admin"
+      ? APP_PORTS.admin
+      : role === "class_rep"
+        ? APP_PORTS.class_rep
+        : APP_PORTS.lecturer;
 
   const isActive = (href: string) =>
     href === home ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);

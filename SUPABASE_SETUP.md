@@ -47,6 +47,7 @@ In **Supabase → SQL Editor**, run each file in order
 1. `supabase/migrations/20260917000000_profiles.sql` — student `profiles`
 2. `supabase/migrations/20260922000000_academic_data.sql` — everything else
 3. `supabase/migrations/20260923100000_module_topics.sql` — staff-managed module topics
+4. `supabase/migrations/20260923120000_lecturer_role.sql` — add `lecturer` staff role
 
 Do **not** paste `supabase/migrations/...sql` as the query — that is a path, not SQL.
 

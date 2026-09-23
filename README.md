@@ -4,13 +4,14 @@
 
 DarasaX is a modern academic workspace for university students. It organizes modules, notes, assignments, past papers, timetables, announcements, study planning, and AI-assisted study tools in one responsive web app.
 
-The same Next.js codebase serves three role-isolated web portals from one repository:
+The same Next.js codebase serves four role-isolated web portals from one repository:
 
 | Portal | Production URL | Role | Home | Auth |
 |---|---|---|---|---|
 | Student | https://darasax.vercel.app | `student` | `/dashboard` | Supabase email OTP + Google |
-| Admin | https://darasax-admin.vercel.app | `admin` | `/admin` | Staff cookie session |
-| Class Rep | https://darasax-cr.vercel.app | `class_rep` | `/cr` | Staff cookie session, self-register |
+| Admin | https://darasax-admin.vercel.app | `admin` | `/admin` | Supabase staff session |
+| Class Rep | https://darasax-cr.vercel.app | `class_rep` | `/cr` | Supabase staff session, self-register |
+| Lecturer | https://darasax-lecturer.vercel.app | `lecturer` | `/lecturer` | Supabase staff session, self-register |
 
 ## Features
 
@@ -136,7 +137,7 @@ cp .env.example .env.local
 |---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | All | Public Supabase project URL (one project for all portals). |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | All | Public anon key only. Never use service_role in the app. |
-| `APP_ROLE` | All | Build-time role: `student`, `admin`, or `class_rep`. Set this on Vercel. Do not add `NEXT_PUBLIC_APP_ROLE` manually. |
+| `APP_ROLE` | All | Build-time role: `student`, `admin`, `class_rep`, or `lecturer`. Set this on Vercel. Do not add `NEXT_PUBLIC_APP_ROLE` manually. |
 
 Class Rep accounts self-register at `/register` on the Class Rep app. The admin account is created once in Supabase Auth + `staff_profiles` (see `SUPABASE_SETUP.md` §3a).
 
@@ -161,6 +162,7 @@ One GitHub repository deploys to three Vercel projects under the `epro-tech` tea
 - `darasax` with `APP_ROLE=student`
 - `darasax-admin` with `APP_ROLE=admin`
 - `darasax-cr` with `APP_ROLE=class_rep`
+- `darasax-lecturer` with `APP_ROLE=lecturer`
 
 Pushes to `main` trigger production deployments for all three portals. `next.config.ts` uses the default `.next` output on Vercel and role-specific `.next-*` directories only for local development.
 

@@ -33,7 +33,9 @@ export async function ensureStaffProfile(
 
   const meta = user.user_metadata ?? {};
   const role = (meta.role as StaffRole | undefined) ?? fallback?.role;
-  if (role !== "admin" && role !== "class_rep") return null;
+  if (role !== "admin" && role !== "class_rep" && role !== "lecturer") {
+    return null;
+  }
 
   const streamId =
     (meta.stream_id as string | undefined) ?? fallback?.streamId ?? null;

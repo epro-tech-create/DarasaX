@@ -56,7 +56,9 @@ export async function loginStaff(input: {
     throw new Error(
       input.role === "admin"
         ? "This account is not an admin account."
-        : "This account is not a class rep account.",
+        : input.role === "lecturer"
+          ? "This account is not a lecturer account."
+          : "This account is not a class rep account.",
     );
   }
   if (profile.status !== "active") {
@@ -117,6 +119,45 @@ export async function registerClassRep(input: {
   return { session, needsVerification: false };
 }
 
+export async function registerLecturer(input: {
+  name: string;
+  email: string;
+  password: string;
+}): Promise<{ session: StaffSession | null; needsVerification: boolean }> {
+  const supabase = createClient();
+  const { data, error } = await supabase.auth.signUp({
+    email: input.email,
+    password: input.password,
+    options: {
+      data: {
+        full_name: input.name,
+        role: "lecturer",
+      },
+    },
+  });
+  if (error) throw error;
+  if (!data.user) throw new Error("Registration failed.");
+
+  if (!data.session) {
+    return { session: null, needsVerification: true };
+  }
+
+  const profile = await ensureStaffProfile(supabase, data.user, {
+    role: "lecturer",
+    fullName: input.name,
+  });
+  if (!profile) throw new Error("Registration failed.");
+
+  const session = toSession(
+    "lecturer",
+    profile.email ?? data.user.email ?? input.email,
+    profile.full_name ?? input.name,
+    profile.stream_id,
+  );
+  window.dispatchEvent(new Event(SESSION_EVENT));
+  return { session, needsVerification: false };
+}
+
 export async function logoutStaff() {
   const supabase = createClient();
   await supabase.auth.signOut();
@@ -133,7 +174,13 @@ export async function fetchStaffSession(): Promise<StaffSession | null> {
     if (!user) return null;
     const profile = await getStaffProfile(supabase, user.id).catch(() => null);
     if (!profile || profile.status !== "active") return null;
-    if (profile.role !== "admin" && profile.role !== "class_rep") return null;
+    if (
+      profile.role !== "admin" &&
+      profile.role !== "class_rep" &&
+      profile.role !== "lecturer"
+    ) {
+      return null;
+    }
     return toSession(
       profile.role,
       profile.email ?? user.email ?? "",

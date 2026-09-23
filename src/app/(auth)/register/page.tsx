@@ -10,10 +10,14 @@ import { PasswordField } from "@/components/auth/password-field";
 import { classStreams } from "@/data/mock";
 import { APP_HOME, getAppRole } from "@/lib/app-role";
 import { isValidEmail, normalizeEmail } from "@/lib/auth/email";
-import { registerClassRep, useStaffSession } from "@/lib/staff-auth";
+import {
+  registerClassRep,
+  registerLecturer,
+  useStaffSession,
+} from "@/lib/staff-auth";
 import type { ClassStreamId } from "@/types";
 
-export default function ClassRepRegisterPage() {
+export default function StaffRegisterPage() {
   const router = useRouter();
   const role = getAppRole();
   const { session, ready } = useStaffSession();
@@ -28,15 +32,18 @@ export default function ClassRepRegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const isCr = role === "class_rep";
+  const isLecturer = role === "lecturer";
+
   useEffect(() => {
-    if (role !== "class_rep") {
+    if (!isCr && !isLecturer) {
       router.replace("/login");
       return;
     }
-    if (ready && session?.role === "class_rep") {
-      router.replace(APP_HOME.class_rep);
+    if (ready && session?.role === role) {
+      router.replace(APP_HOME[role]);
     }
-  }, [ready, role, router, session]);
+  }, [isCr, isLecturer, ready, role, router, session]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -61,18 +68,24 @@ export default function ClassRepRegisterPage() {
 
     setLoading(true);
     try {
-      const { session: crSession, needsVerification } = await registerClassRep({
-        name: name.trim(),
-        email: normalized,
-        password,
-        streamId,
-      });
-      if (needsVerification || !crSession) {
+      const result = isLecturer
+        ? await registerLecturer({
+            name: name.trim(),
+            email: normalized,
+            password,
+          })
+        : await registerClassRep({
+            name: name.trim(),
+            email: normalized,
+            password,
+            streamId,
+          });
+      if (result.needsVerification || !result.session) {
         sessionStorage.setItem("darasax_verify_email", normalized);
         router.push("/verify-email");
         return;
       }
-      router.replace(APP_HOME.class_rep);
+      router.replace(APP_HOME[role]);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed.");
@@ -81,34 +94,48 @@ export default function ClassRepRegisterPage() {
     }
   }
 
-  if (role !== "class_rep") {
+  if (!isCr && !isLecturer) {
     return null;
   }
 
   return (
     <AuthShell
       title={
-        <>
-          Join as Class
-          <br />
-          Representative.
-        </>
+        isLecturer ? (
+          <>
+            Join as
+            <br />
+            Lecturer.
+          </>
+        ) : (
+          <>
+            Join as Class
+            <br />
+            Representative.
+          </>
+        )
       }
-      subtitle="Register once for your stream, then manage uploads and the class timetable."
+      subtitle={
+        isLecturer
+          ? "Register to publish notes, assignments, and module topics to students."
+          : "Register once for your stream, then manage uploads and the class timetable."
+      }
     >
       <h1 className="font-heading text-xl font-semibold tracking-tight sm:text-lg">
-        Create CR account
+        {isLecturer ? "Create lecturer account" : "Create CR account"}
       </h1>
-      <p className="mt-1 text-sm text-muted-foreground sm:mt-0.5 sm:text-xs">
-        For appointed class representatives only.
-      </p>
 
-      <form className="mt-5 space-y-3.5 sm:mt-4 sm:space-y-3" onSubmit={onSubmit} noValidate>
+      <form
+        className="mt-5 space-y-3.5 sm:mt-4 sm:space-y-3"
+        onSubmit={onSubmit}
+        noValidate
+      >
         {error ? <AuthAlert message={error} /> : null}
 
         <label className="block text-sm font-medium sm:text-xs">
           Full name
           <input
+            type="text"
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -128,38 +155,40 @@ export default function ClassRepRegisterPage() {
           />
         </label>
 
-        <label className="block text-sm font-medium sm:text-xs">
-          Stream
-          <select
-            value={streamId}
-            onChange={(e) => setStreamId(e.target.value as ClassStreamId)}
-            className="focus-ring mt-1.5 h-11 w-full rounded-[10px] border border-border bg-card px-3 text-[15px] sm:mt-1 sm:h-10 sm:text-sm"
-          >
-            {classStreams.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.label}
-                {s.isEvening ? " (Evening)" : ""}
-              </option>
-            ))}
-          </select>
-        </label>
+        {isCr ? (
+          <label className="block text-sm font-medium sm:text-xs">
+            Stream
+            <select
+              value={streamId}
+              onChange={(e) => setStreamId(e.target.value as ClassStreamId)}
+              className="focus-ring mt-1.5 h-11 w-full rounded-[10px] border border-border bg-card px-3 text-[15px] sm:mt-1 sm:h-10 sm:text-sm"
+            >
+              {classStreams.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.label}
+                  {s.isEvening ? " (Evening)" : ""}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
 
         <PasswordField
-          id="cr-register-password"
+          id="staff-register-password"
           label="Password"
           value={password}
           onChange={setPassword}
           autoComplete="new-password"
         />
         <PasswordField
-          id="cr-register-confirm"
+          id="staff-register-confirm"
           label="Confirm password"
           value={confirm}
           onChange={setConfirm}
           autoComplete="new-password"
         />
 
-        <AuthSubmitButton loading={loading} loadingText="Creating account...">
+        <AuthSubmitButton loading={loading} loadingText="Creating...">
           Create account
         </AuthSubmitButton>
       </form>

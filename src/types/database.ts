@@ -78,7 +78,7 @@ export type Database = {
       staff_profiles: {
         Row: {
           id: string;
-          role: "admin" | "class_rep";
+          role: "admin" | "class_rep" | "lecturer";
           full_name: string | null;
           email: string | null;
           stream_id: string | null;
@@ -89,7 +89,7 @@ export type Database = {
         };
         Insert: {
           id: string;
-          role: "admin" | "class_rep";
+          role: "admin" | "class_rep" | "lecturer";
           full_name?: string | null;
           email?: string | null;
           stream_id?: string | null;
@@ -100,7 +100,7 @@ export type Database = {
         };
         Update: {
           id?: string;
-          role?: "admin" | "class_rep";
+          role?: "admin" | "class_rep" | "lecturer";
           full_name?: string | null;
           email?: string | null;
           stream_id?: string | null;

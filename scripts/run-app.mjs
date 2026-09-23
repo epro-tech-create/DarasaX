@@ -9,10 +9,13 @@ const ports = {
   student: 3005,
   admin: 3006,
   class_rep: 3007,
+  lecturer: 3008,
 };
 
 if (!role || !(role in ports)) {
-  console.error("Usage: node scripts/run-app.mjs <student|admin|class_rep> [dev|start]");
+  console.error(
+    "Usage: node scripts/run-app.mjs <student|admin|class_rep|lecturer> [dev|start]",
+  );
   process.exit(1);
 }
 

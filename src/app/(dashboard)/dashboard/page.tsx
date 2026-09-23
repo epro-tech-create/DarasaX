@@ -1,34 +1,18 @@
-import {
-  Archive,
-  CalendarClock,
-  ClipboardList,
-  FileText,
-} from "lucide-react";
 import { ExamCountdown } from "@/components/dashboard/exam-countdown";
 import {
   DashboardModulesPreview,
   DashboardUpcoming,
 } from "@/components/dashboard/live-sections";
+import { DashboardLiveUpdates } from "@/components/dashboard/live-updates";
 import { NextClassCard, StatCard } from "@/components/dashboard/next-class-card";
 import { DashboardAssignmentStatCard } from "@/components/dashboard/assignment-stat-card";
-import {
-  currentUser,
-  modules,
-  updateFeed,
-} from "@/data/mock";
+import { currentUser, modules } from "@/data/mock";
 import { getNextClass } from "@/lib/academic";
 import { formatCountdownParts, getMsUntilSchoolOpen } from "@/lib/school";
 import { formatDate, getGreeting } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/server";
 import { DEFAULT_CLASS_STREAM, timetable as seedTimetable } from "@/data/mock";
 import type { TimetableEntry } from "@/types";
-
-const feedIcons = {
-  FileText,
-  CalendarClock,
-  ClipboardList,
-  Archive,
-};
 
 function displayFirstName(name: string) {
   const cleaned = name.replace(/\s+/g, " ").trim();
@@ -147,39 +131,7 @@ export default async function DashboardPage() {
 
       <DashboardModulesPreview />
 
-      <section>
-        <h2 className="mb-3.5 font-heading text-[15px] font-semibold">
-          Latest updates
-        </h2>
-        <div className="surface divide-y divide-border overflow-hidden rounded-[20px]">
-          {updateFeed.map((item) => {
-            const Icon =
-              feedIcons[item.icon as keyof typeof feedIcons] || FileText;
-            return (
-              <div
-                key={item.id}
-                className="flex items-start gap-3 px-4 py-3.5 transition hover:bg-muted/40 sm:px-5 sm:py-4"
-              >
-                <span className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <Icon className="h-4 w-4" />
-                </span>
-                <div className="min-w-0">
-                  <p className="text-[13px] font-medium">{item.title}</p>
-                  <p className="mt-1 text-[11px] text-muted-foreground">
-                    {item.category} ·{" "}
-                    {new Date(item.createdAt).toLocaleString("en-GB", {
-                      day: "numeric",
-                      month: "short",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
+      <DashboardLiveUpdates />
     </div>
   );
 }

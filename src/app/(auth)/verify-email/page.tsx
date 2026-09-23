@@ -24,7 +24,10 @@ import { createClient } from "@/lib/supabase/client";
 export default function VerifyEmailPage() {
   const router = useRouter();
   const appRole = getAppRole();
-  const staffRole = appRole === "admin" || appRole === "class_rep" ? appRole : null;
+  const staffRole =
+    appRole === "admin" || appRole === "class_rep" || appRole === "lecturer"
+      ? appRole
+      : null;
   const cooldown = useResendCooldown(60);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -38,7 +41,13 @@ export default function VerifyEmailPage() {
   useEffect(() => {
     const stored = sessionStorage.getItem("darasax_verify_email");
     if (!stored) {
-      router.replace(staffRole === "class_rep" ? "/register" : staffRole ? "/login" : "/signup");
+      router.replace(
+        staffRole === "class_rep" || staffRole === "lecturer"
+          ? "/register"
+          : staffRole
+            ? "/login"
+            : "/signup",
+      );
       return;
     }
     setEmail(normalizeEmail(stored));
@@ -202,7 +211,13 @@ export default function VerifyEmailPage() {
             <p className="text-center text-[11px] text-muted-foreground">
               Wrong email?{" "}
               <Link
-                href={staffRole === "class_rep" ? "/register" : staffRole ? "/login" : "/signup"}
+                href={
+                  staffRole === "class_rep" || staffRole === "lecturer"
+                    ? "/register"
+                    : staffRole
+                      ? "/login"
+                      : "/signup"
+                }
                 className="font-medium text-primary"
               >
                 Go back

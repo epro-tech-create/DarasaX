@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { Bell, CheckCheck } from "lucide-react";
-import { notifications as initial } from "@/data/mock";
 import { formatRelativeTime } from "@/lib/utils";
-import { useState } from "react";
+import { useNotifications } from "@/lib/notifications-store";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export function NotificationPanel({
   open,
@@ -14,7 +14,7 @@ export function NotificationPanel({
   open: boolean;
   onClose: () => void;
 }) {
-  const [items, setItems] = useState(initial);
+  const { items, ready, markRead, markAllRead } = useNotifications();
 
   if (!open) return null;
 
@@ -35,40 +35,58 @@ export function NotificationPanel({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() =>
-              setItems((prev) => prev.map((n) => ({ ...n, read: true })))
-            }
+            type="button"
+            onClick={markAllRead}
+            disabled={items.every((n) => n.read)}
           >
             <CheckCheck className="h-4 w-4" />
             Mark all read
           </Button>
         </div>
-        <ul className="max-h-[70vh] overflow-y-auto">
-          {items.map((n) => (
-            <li key={n.id} className="border-b border-border last:border-0">
-              <Link
-                href={n.href || "#"}
-                onClick={onClose}
-                className="flex gap-3 px-4 py-3 transition hover:bg-muted/70"
-              >
-                <span
-                  className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
-                    n.read ? "bg-transparent" : "bg-primary"
-                  }`}
-                />
-                <span className="min-w-0">
-                  <span className="block text-sm font-medium">{n.title}</span>
-                  <span className="mt-0.5 block text-sm text-muted-foreground">
-                    {n.body}
+        {!ready ? (
+          <p className="px-4 py-8 text-center text-[12px] text-muted-foreground">
+            Loading updates…
+          </p>
+        ) : items.length === 0 ? (
+          <div className="p-4">
+            <EmptyState
+              icon={Bell}
+              title="No notifications yet"
+              description="When staff upload notes, past papers, or topics, they show up here."
+              className="border-0 bg-transparent py-8"
+            />
+          </div>
+        ) : (
+          <ul className="max-h-[70vh] overflow-y-auto">
+            {items.map((n) => (
+              <li key={n.id} className="border-b border-border last:border-0">
+                <Link
+                  href={n.href || "#"}
+                  onClick={() => {
+                    markRead(n.id);
+                    onClose();
+                  }}
+                  className="flex gap-3 px-4 py-3 transition hover:bg-muted/70"
+                >
+                  <span
+                    className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
+                      n.read ? "bg-transparent" : "bg-primary"
+                    }`}
+                  />
+                  <span className="min-w-0">
+                    <span className="block text-sm font-medium">{n.title}</span>
+                    <span className="mt-0.5 block text-sm text-muted-foreground">
+                      {n.body}
+                    </span>
+                    <span className="mt-1 block text-xs text-muted-foreground">
+                      {formatRelativeTime(n.createdAt)}
+                    </span>
                   </span>
-                  <span className="mt-1 block text-xs text-muted-foreground">
-                    {formatRelativeTime(n.createdAt)}
-                  </span>
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );
