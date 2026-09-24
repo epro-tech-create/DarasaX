@@ -67,7 +67,7 @@
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-ring: var(--ring);
   --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
-  --font-heading: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
   --radius-card: 1.25rem;
   --radius-button: 0.875rem;
   --radius-input: 0.75rem;
@@ -110,7 +110,7 @@ h2,
 h3,
 h4,
 .font-heading {
-  font-family: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
   letter-spacing: -0.02em;
 }
 

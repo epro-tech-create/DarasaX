@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Figtree } from "next/font/google";
+import { Figtree, Outfit } from "next/font/google";
 import Script from "next/script";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import "./globals.css";
@@ -8,6 +8,12 @@ const figtree = Figtree({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-figtree",
+});
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-outfit",
 });
 
 const themeInitScript = `(function(){try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark"){var d=document.documentElement;d.classList.remove("light","dark");d.classList.add(t);d.style.colorScheme=t;}}catch(e){}})();`;
@@ -38,7 +44,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${figtree.variable} ${figtree.className} h-full dark`}
+      className={`${figtree.variable} ${outfit.variable} ${figtree.className} h-full dark`}
     >
       <body className="min-h-full bg-background font-sans text-[14px] antialiased sm:text-[15px]">
         <Script
