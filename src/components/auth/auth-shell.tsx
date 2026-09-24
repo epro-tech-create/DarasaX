@@ -26,9 +26,7 @@ export function AuthShell({
           sizes="50vw"
           quality={90}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0B1B2B] via-[#0B1B2B]/55 to-[#1565C0]/25" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0B1B2B]/70 via-transparent to-[#1E88E5]/35" />
-        <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-[#0B1B2B] to-transparent" />
+        <div className="absolute inset-0 bg-[#0B1B2B]/70" />
 
         <div className="relative z-10 flex items-center justify-between">
           <Logo variant="dark" className="drop-shadow-sm" href="/" />

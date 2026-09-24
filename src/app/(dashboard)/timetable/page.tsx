@@ -83,7 +83,7 @@ function ClassBlock({
         isNext && "border-primary/50 ring-1 ring-primary/30",
       )}
       style={{
-        backgroundImage: `linear-gradient(135deg, color-mix(in oklab, ${accent} 18%, transparent), transparent 70%)`,
+        backgroundColor: `color-mix(in oklab, ${accent} 12%, transparent)`,
       }}
     >
       <span

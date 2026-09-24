@@ -149,8 +149,7 @@ export default function LandingPage() {
             sizes="100vw"
           />
         </motion.div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/25" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-[#1565C0]/25" />
+        <div className="absolute inset-0 bg-black/45" />
 
         <motion.div
           style={{ opacity: heroOpacity }}
@@ -247,7 +246,7 @@ export default function LandingPage() {
             className="object-cover"
             sizes="(max-width: 1024px) 100vw, 50vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+          <div className="absolute inset-0 bg-black/15" />
         </motion.div>
       </section>
 
@@ -377,7 +376,7 @@ export default function LandingPage() {
             className="object-cover"
             sizes="(max-width: 1024px) 100vw, 1152px"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0B1B2B]/92 via-[#1565C0]/75 to-[#1E88E5]/45" />
+          <div className="absolute inset-0 bg-[#0B1B2B]/85" />
           <div className="relative z-10 flex h-full min-h-[280px] flex-col justify-end p-6 sm:min-h-[340px] sm:p-9">
             <h2 className="font-heading text-2xl font-semibold text-white sm:text-[1.65rem]">
               What Did I Miss?

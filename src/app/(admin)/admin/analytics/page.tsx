@@ -48,7 +48,7 @@ export default function AdminAnalyticsPage() {
             <div key={day.label} className="flex flex-1 flex-col items-center gap-2">
               <div className="relative flex h-40 w-full items-end justify-center">
                 <div
-                  className="w-[70%] rounded-t-xl bg-gradient-to-t from-[#1565C0] to-[#4FC3F7]"
+                  className="w-[70%] rounded-t-xl bg-[#1565C0]"
                   style={{ height: `${(day.views / max) * 100}%` }}
                 />
               </div>

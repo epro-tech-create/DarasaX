@@ -127,20 +127,12 @@ h4,
 }
 
 .brand-x {
-  background: linear-gradient(180deg, #4fc3f7 0%, #1e88e5 48%, #1565c0 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
+  color: #1e88e5;
 }
 
 .text-white .brand-x,
 .brand-x-on-dark {
-  background: linear-gradient(180deg, #81d4fa 0%, #4fc3f7 40%, #42a5f5 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
+  color: #4fc3f7;
 }
 
 .surface {
@@ -150,12 +142,11 @@ h4,
 }
 
 .gradient-primary {
-  background: linear-gradient(135deg, #1565c0 0%, #1e88e5 48%, #4fc3f7 100%);
+  background: #1565c0;
 }
 
 .btn-gradient {
-  background-image: linear-gradient(135deg, #1565c0 0%, #1e88e5 48%, #4fc3f7 100%);
-  background-color: transparent;
+  background-color: #1e88e5;
   color: #ffffff;
 }
 
@@ -164,17 +155,11 @@ h4,
 }
 
 .gradient-mesh {
-  background:
-    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(30, 136, 229, 0.16), transparent),
-    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(79, 195, 247, 0.12), transparent),
-    var(--background);
+  background: var(--background);
 }
 
 .dark .gradient-mesh {
-  background:
-    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(30, 136, 229, 0.22), transparent),
-    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(79, 195, 247, 0.1), transparent),
-    var(--background);
+  background: var(--background);
 }
 
 .scrollbar-thin {
