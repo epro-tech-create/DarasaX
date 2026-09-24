@@ -36,25 +36,8 @@ export function NextClassCard({
             ? "Happening now"
             : "Coming up";
 
-  const accent = module.accent || "#1E88E5";
-
   return (
-    <section className="relative overflow-hidden rounded-[22px] text-white">
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(135deg, #0a3d8f 0%, ${accent} 55%, #0ea5e9 100%)`,
-        }}
-      />
-      <div
-        className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full opacity-30 blur-3xl"
-        style={{ background: accent }}
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute -bottom-24 left-1/3 h-48 w-48 rounded-full bg-cyan-300/25 blur-3xl"
-        aria-hidden
-      />
+    <section className="relative overflow-hidden rounded-[22px] bg-[#1565C0] text-white">
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.12]"
         style={{
