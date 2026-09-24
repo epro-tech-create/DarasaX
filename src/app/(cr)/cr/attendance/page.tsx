@@ -73,7 +73,7 @@ export default function ClassRepAttendancePage() {
                 <p className="w-28 shrink-0 truncate text-[12px] font-medium">{s.name}</p>
                 <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-muted">
                   <div
-                    className="h-full rounded-full bg-primary"
+                    className="h-full rounded-full bg-gradient-to-r from-primary to-cyan"
                     style={{ width: `${s.attendancePct}%` }}
                   />
                 </div>

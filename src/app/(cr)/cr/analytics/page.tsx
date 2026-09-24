@@ -50,7 +50,7 @@ export default function ClassRepAnalyticsPage() {
           {weeklyAnalytics.map((day) => (
             <div key={day.label} className="flex flex-1 flex-col items-center gap-1.5">
               <div
-                className="w-full rounded-t-lg bg-primary/80"
+                className="w-full rounded-t-lg bg-gradient-to-t from-primary/80 to-cyan/70"
                 style={{ height: `${Math.max((day.views / max) * 100, 8)}%` }}
               />
               <span className="text-[10px] text-muted-foreground">{day.label}</span>

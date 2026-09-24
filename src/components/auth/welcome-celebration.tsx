@@ -133,7 +133,9 @@ export function WelcomeCelebration({
         aria-hidden
         className={cn(
           "pointer-events-none absolute inset-0",
-          isDark ? "bg-[#4FC3F7]/15" : "bg-[#4FC3F7]/10",
+          isDark
+            ? "bg-[radial-gradient(ellipse_at_center,rgba(79,195,247,0.22),transparent_65%)]"
+            : "bg-[radial-gradient(ellipse_at_center,rgba(79,195,247,0.18),transparent_65%)]",
         )}
       />
 
