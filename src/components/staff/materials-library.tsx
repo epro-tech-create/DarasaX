@@ -251,15 +251,15 @@ export function MaterialsLibrary({
   }
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+    <div className="space-y-4">
+      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
         <div className="relative min-w-0 flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search…"
-            className="h-10 w-full rounded-xl border border-border bg-transparent pl-9 pr-3 text-[13px] outline-none focus:border-primary"
+            placeholder="Search by title, module, or uploader…"
+            className="h-10 w-full rounded-xl border border-border bg-background pl-9 pr-3 text-[13px] outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
           />
         </div>
         <select
@@ -267,7 +267,7 @@ export function MaterialsLibrary({
           onChange={(e) =>
             setKindFilter(e.target.value as "all" | UploadKind)
           }
-          className="h-10 rounded-xl border border-border bg-transparent px-3 text-[13px] outline-none focus:border-primary sm:w-44"
+          className="h-10 rounded-xl border border-border bg-background px-3 text-[13px] outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 sm:w-44"
         >
           <option value="all">All types</option>
           {kinds.map((k) => (
@@ -315,21 +315,29 @@ export function MaterialsLibrary({
       </div>
 
       {message ? (
-        <p className="text-[12px] text-success">{message}</p>
+        <p className="rounded-xl border border-success/30 bg-success/10 px-3 py-2 text-[12px] font-medium text-success">
+          {message}
+        </p>
       ) : null}
 
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-[13px] font-medium text-muted-foreground">
-          {title}
-        </h2>
+        <h2 className="font-heading text-[13px] font-semibold">{title}</h2>
         <p className="text-[12px] tabular-nums text-muted-foreground">
-          {ready ? filtered.length : "…"}
+          {ready ? `${filtered.length} file${filtered.length === 1 ? "" : "s"}` : "Loading…"}
         </p>
       </div>
 
       {filtered.length === 0 ? (
-        <div className="py-16 text-center text-[13px] text-muted-foreground">
-          No files
+        <div className="surface flex flex-col items-center gap-2 rounded-2xl px-4 py-14 text-center">
+          <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+            <FolderOpen className="h-4 w-4" />
+          </span>
+          <p className="text-[13px] font-medium">No files found</p>
+          <p className="max-w-xs text-[12px] text-muted-foreground">
+            {query || kindFilter !== "all"
+              ? "Try a different search or filter."
+              : "Publish your first file above — it will appear here and on student accounts."}
+          </p>
         </div>
       ) : view === "cards" ? (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -340,18 +348,18 @@ export function MaterialsLibrary({
             return (
               <article
                 key={item.id}
-                className="group flex flex-col rounded-2xl border border-border/70 bg-card p-4"
+                className="group surface flex flex-col rounded-2xl p-4 transition duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
               >
                 <div className="flex items-start gap-3">
                   <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
                     <Icon className="h-4 w-4" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <h3 className="line-clamp-2 text-[13px] font-medium leading-snug">
+                    <h3 className="line-clamp-2 text-[13px] font-semibold leading-snug">
                       {item.title}
                     </h3>
-                    <p className="mt-1 text-[11px] text-muted-foreground">
-                      {module?.code ?? "General"} · {item.size}
+                    <p className="mt-1 truncate text-[11px] text-muted-foreground">
+                      {module?.code ?? "General"} · {item.size} · {item.uploadedBy}
                     </p>
                   </div>
                 </div>
@@ -368,7 +376,7 @@ export function MaterialsLibrary({
           })}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-border/70">
+        <div className="surface overflow-hidden rounded-2xl">
           <ul className="divide-y divide-border/60">
             {filtered.map((item) => {
               const module = item.moduleId ? getModule(item.moduleId) : null;
@@ -377,17 +385,17 @@ export function MaterialsLibrary({
               return (
                 <li
                   key={item.id}
-                  className="flex items-center gap-3 px-3 py-2.5 sm:px-4"
+                  className="flex items-center gap-3 px-3 py-2.5 transition hover:bg-muted/50 sm:px-4"
                 >
-                  <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                    <Icon className="h-3.5 w-3.5" />
+                  <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <Icon className="h-4 w-4" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-medium">
+                    <p className="truncate text-[13px] font-semibold">
                       {item.title}
                     </p>
                     <p className="truncate text-[11px] text-muted-foreground">
-                      {module?.code ?? "General"} · {item.size}
+                      {module?.code ?? "General"} · {item.size} · {item.uploadedBy}
                     </p>
                   </div>
                   <FileActions

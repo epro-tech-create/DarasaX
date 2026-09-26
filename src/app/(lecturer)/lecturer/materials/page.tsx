@@ -33,10 +33,11 @@ export default function LecturerMaterialsPage() {
   );
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <PageHeader
+        size="lg"
         title="Teaching library"
-        description="Shared published files for your modules and classes — including uploads from admin and class reps."
+        description="Published files for your modules and classes — including uploads from admin and class reps."
         actions={
           <Button href="/lecturer/uploads" size="sm">
             Upload more

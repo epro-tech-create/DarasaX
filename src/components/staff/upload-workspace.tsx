@@ -106,30 +106,32 @@ export function UploadWorkspace({
     <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)]">
       <div className="surface min-w-0 rounded-[20px] p-4 sm:p-5">
         <div className="mb-4">
-          <h2 className="font-heading text-[15px] font-semibold">{title}</h2>
-          <p className="mt-1 text-[12px] text-muted-foreground">{description}</p>
+          <h2 className="font-heading text-[15px] font-semibold tracking-tight">{title}</h2>
+          <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-muted-foreground">{description}</p>
         </div>
 
         <label
           className={cn(
-            "flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-muted/30 px-4 py-10 text-center transition hover:border-primary/50 hover:bg-primary/[0.04]",
+            "focus-ring flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-muted/30 px-4 py-8 text-center transition hover:border-primary/50 hover:bg-primary/[0.04] sm:py-10",
             file && "border-primary/40 bg-primary/[0.05]",
           )}
         >
           <input
             type="file"
-            className="hidden"
+            className="sr-only"
             accept=".pdf,.ppt,.pptx,.doc,.docx,.png,.jpg,.jpeg,.zip,.txt,.md"
             onChange={(e) => onFileChange(e.target.files?.[0])}
           />
           <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/12 text-primary">
             <UploadCloud className="h-5 w-5" />
           </span>
-          <p className="mt-3 text-[13px] font-semibold">
-            {file ? file.name : "Drop file or browse"}
+          <p className="mt-3 max-w-full truncate text-[13px] font-semibold">
+            {file ? file.name : "Drop a file here or click to browse"}
           </p>
-          <p className="mt-1 max-w-sm text-[11px] text-muted-foreground">
-            The real file is stored so students (and you) can view or download it.
+          <p className="mt-1 max-w-sm text-[11px] leading-snug text-muted-foreground">
+            {file
+              ? `${(file.size / 1024).toFixed(1)} KB · stored so students (and you) can view or download it.`
+              : "PDF, slides, docs, images, or ZIP. The real file is stored so students can view or download it."}
           </p>
         </label>
 
@@ -205,7 +207,9 @@ export function UploadWorkspace({
         </div>
 
         {error ? (
-          <p className="mt-3 text-[12px] font-medium text-danger">{error}</p>
+          <p className="mt-3 rounded-xl border border-danger/30 bg-danger/10 px-3 py-2 text-[12px] font-medium text-danger">
+            {error}
+          </p>
         ) : null}
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -230,31 +234,39 @@ export function UploadWorkspace({
             Clear
           </Button>
           {published ? (
-            <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-success">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-[12px] font-medium text-success">
               <CheckCircle2 className="h-3.5 w-3.5" />
               Live on student Modules / Past Papers
             </span>
           ) : null}
         </div>
-        {footerNote}
+        {footerNote ? <div className="mt-3">{footerNote}</div> : null}
       </div>
 
       <aside className="flex min-w-0 flex-col gap-3">
-        <div className="gradient-primary relative overflow-hidden rounded-[20px] p-4 text-white shadow-lg shadow-primary/20">
-          <div className="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
-          <p className="relative text-[11px] font-medium uppercase tracking-[0.12em] text-white/75">
+        <div className="relative overflow-hidden rounded-[20px] bg-[#1565C0] p-4 text-white shadow-lg shadow-primary/20 sm:p-5">
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.12]"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
+              backgroundSize: "22px 22px",
+            }}
+            aria-hidden
+          />
+          <p className="relative text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70">
             Student delivery
           </p>
-          <p className="relative mt-2 font-heading text-[15px] font-semibold leading-snug">
+          <p className="relative mt-2 font-heading text-[16px] font-semibold leading-snug tracking-tight">
             One publish → student accounts
           </p>
-          <p className="relative mt-2 text-[12px] text-white/80">
+          <p className="relative mt-2 text-[12px] leading-relaxed text-white/85">
             Pick the module carefully. Notes and slides appear on that module’s
             Notes tab; past papers appear under Past Papers for the whole class.
           </p>
         </div>
-        <div className="surface rounded-[20px] p-4">
-          <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+        <div className="surface rounded-[20px] p-4 sm:p-5">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
             Before you publish
           </p>
           <ul className="mt-3 space-y-2.5 text-[12px] text-muted-foreground">

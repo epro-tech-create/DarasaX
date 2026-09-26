@@ -14,10 +14,11 @@ export default function LecturerPastPapersPage() {
     active && session?.streamIds.includes(active) ? active : undefined;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <PageHeader
+        size="lg"
         title="Past papers"
-        description="Upload exam papers for your modules. Students find them under Past Papers."
+        description="Upload exam papers for your modules. Students find them under Past Papers the moment you publish."
         actions={
           <Button href="/lecturer/uploads" size="sm" variant="outline">
             Full upload desk

@@ -12,9 +12,10 @@ export default function LecturerUploadsPage() {
     active && session?.streamIds.includes(active) ? active : undefined;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <PageHeader
-        title="Upload"
+        size="lg"
+        title="Upload materials"
         description="Publish notes, slides, past papers, or assignment files for the modules you teach — students see them immediately."
       />
       <UploadWorkspace

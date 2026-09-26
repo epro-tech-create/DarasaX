@@ -17,10 +17,11 @@ export default function LecturerTimetablePage() {
     classStreams.find((s) => s.id === streamId)?.label ?? streamId;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <PageHeader
+        size="lg"
         title="Timetable"
-        description={`Sessions for ${label}. Prefer coordinating with the class rep for stream-wide changes.`}
+        description={`Sessions for ${label}. Coordinate with the class rep for stream-wide changes — edits go live to students.`}
       />
       <TimetableEditor
         streamId={streamId}

@@ -181,6 +181,7 @@ export function TopicsWorkspace({
   return (
     <div className="space-y-5">
       <PageHeader
+        size="lg"
         title="Module topics"
         description="Add the course outline per module. Students mark topics done to drive progress — this is not a file upload."
         actions={
@@ -197,22 +198,27 @@ export function TopicsWorkspace({
       />
 
       {message ? (
-        <p className="rounded-xl border border-success/30 bg-success/10 px-3 py-2 text-[12px] font-medium text-success">
+        <p className="rounded-xl border border-success/30 bg-success/10 px-3 py-2.5 text-[12px] font-medium text-success">
           {message}
         </p>
       ) : null}
+      {error && !modalOpen ? (
+        <p className="rounded-xl border border-danger/30 bg-danger/10 px-3 py-2.5 text-[12px] font-medium text-danger">
+          {error}
+        </p>
+      ) : null}
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <label className="block min-w-0 flex-1 space-y-1">
+      <div className="surface flex flex-col gap-3 rounded-2xl p-4 sm:flex-row sm:items-end sm:p-5">
+        <label className="block min-w-0 flex-1 space-y-1.5">
           <span className="text-[11px] font-medium text-muted-foreground">
             Filter by module
           </span>
           <select
             value={moduleFilter}
             onChange={(e) => setModuleFilter(e.target.value)}
-            className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+            className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px] outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
           >
-            <option value="all">All modules</option>
+            <option value="all">All modules ({scopedRows.length})</option>
             {catalog.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.code} · {m.name}
@@ -220,7 +226,7 @@ export function TopicsWorkspace({
             ))}
           </select>
         </label>
-        <p className="text-[12px] text-muted-foreground sm:pt-5">
+        <p className="rounded-full bg-muted/70 px-3 py-1.5 text-[11px] font-medium tabular-nums text-muted-foreground sm:mb-0.5">
           {ready
             ? `${filtered.length} topic${filtered.length === 1 ? "" : "s"}`
             : "Loading…"}
@@ -228,7 +234,7 @@ export function TopicsWorkspace({
       </div>
 
       {catalog.length === 0 ? (
-        <p className="rounded-xl border border-warning/30 bg-warning/10 px-3 py-2 text-[12px] text-warning">
+        <p className="rounded-xl border border-warning/30 bg-warning/10 px-3 py-2.5 text-[12px] leading-relaxed text-warning">
           No modules assigned to your profile. Complete lecturer onboarding or
           ask an admin to assign modules.
         </p>
@@ -240,11 +246,14 @@ export function TopicsWorkspace({
       >
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-10 text-center">
-            <ListOrdered className="h-8 w-8 text-muted-foreground/50" />
-            <p className="text-[12px] text-muted-foreground">
-              No topics yet. Add the first one for a module.
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+              <ListOrdered className="h-4 w-4" />
+            </span>
+            <p className="text-[13px] font-medium">No topics yet</p>
+            <p className="max-w-xs text-[12px] text-muted-foreground">
+              Add the first topic for a module — students use it to track progress.
             </p>
-            <Button size="sm" type="button" onClick={openAdd}>
+            <Button size="sm" type="button" onClick={openAdd} className="mt-1">
               <Plus className="h-3.5 w-3.5" />
               Add topic
             </Button>
@@ -257,7 +266,7 @@ export function TopicsWorkspace({
               return (
                 <div
                   key={row.id}
-                  className="flex flex-col gap-3 rounded-xl border border-border/70 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col gap-3 rounded-xl border border-border/70 bg-card px-3 py-3 transition hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="min-w-0">
                     <div className="mb-1 flex flex-wrap items-center gap-1.5">

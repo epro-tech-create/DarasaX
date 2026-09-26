@@ -28,10 +28,11 @@ export default function LecturerAnnouncementsPage() {
   );
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <PageHeader
+        size="lg"
         title="Announcements"
-        description="Post class notices for your streams. Students see them in notifications and Announcements."
+        description="Post class notices for your streams. Students see them in notifications and on the Announcements page."
       />
       <UploadWorkspace
         title="Post an announcement"

@@ -133,14 +133,34 @@ export default function LecturerOnboardingPage() {
       }
       subtitle="Pick the module(s) you teach, then say whether you cover one stream or more."
     >
-      <h1 className="font-heading text-xl font-semibold tracking-tight sm:text-lg">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        Lecturer setup
+      </p>
+      <h1 className="mt-1 font-heading text-xl font-semibold tracking-tight sm:text-2xl">
         Lecturer onboarding
       </h1>
-      <p className="mt-1 text-sm text-muted-foreground sm:text-xs">
+      <p className="mt-1.5 text-sm text-muted-foreground sm:text-[13px]">
         Step{" "}
         {step === "module" ? "1" : step === "stream-count" ? "2" : "3"} of 3 ·
         Module names are fixed for this programme.
       </p>
+
+      <div className="mt-4 flex items-center gap-1.5" aria-hidden>
+        {(["module", "stream-count", "streams"] as Step[]).map((s) => (
+          <span
+            key={s}
+            className={cn(
+              "h-1.5 flex-1 rounded-full transition",
+              (step === "module" && s === "module") ||
+                (step === "stream-count" &&
+                  (s === "module" || s === "stream-count")) ||
+                step === "streams"
+                ? "bg-primary"
+                : "bg-muted",
+            )}
+          />
+        ))}
+      </div>
 
       {error ? (
         <div className="mt-4">
@@ -151,14 +171,14 @@ export default function LecturerOnboardingPage() {
       {step === "module" ? (
         <div className="mt-5 space-y-4">
           <fieldset>
-            <legend className="text-sm font-medium sm:text-xs">
+            <legend className="text-[13px] font-semibold">
               Which module(s) do you teach?
             </legend>
-            <p className="mt-1 text-[11px] text-muted-foreground">
+            <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
               Choose one or more. Notes, topics, and assignments stay limited to
               these modules.
             </p>
-            <div className="mt-2 max-h-64 space-y-1.5 overflow-y-auto rounded-xl border border-border p-2">
+            <div className="mt-3 max-h-72 space-y-1.5 overflow-y-auto rounded-2xl border border-border bg-card p-2 scrollbar-thin">
               {LECTURER_MODULE_OPTIONS.map((m) => {
                 const on = moduleIds.includes(m.id);
                 return (
@@ -166,18 +186,22 @@ export default function LecturerOnboardingPage() {
                     key={m.id}
                     type="button"
                     onClick={() => toggleModule(m.id)}
+                    aria-pressed={on}
                     className={cn(
-                      "flex w-full items-center gap-2.5 rounded-lg px-2 py-2.5 text-left text-[12px] transition",
-                      on ? "bg-primary/12 text-primary" : "hover:bg-muted",
+                      "focus-ring flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-left text-[12px] transition",
+                      on
+                        ? "bg-primary/[0.08] text-primary ring-1 ring-primary/30"
+                        : "hover:bg-muted",
                     )}
                   >
                     <span
                       className={cn(
-                        "flex h-4 w-4 shrink-0 items-center justify-center rounded border text-[10px]",
+                        "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border text-[11px] font-bold transition",
                         on
                           ? "border-primary bg-primary text-white"
-                          : "border-border",
+                          : "border-border bg-background",
                       )}
+                      aria-hidden
                     >
                       {on ? "✓" : ""}
                     </span>
@@ -191,8 +215,9 @@ export default function LecturerOnboardingPage() {
                 );
               })}
             </div>
-            <p className="mt-1.5 text-[11px] text-muted-foreground">
+            <p className="mt-2 rounded-full bg-muted/70 px-3 py-1 text-center text-[11px] font-medium text-muted-foreground">
               {moduleIds.length} selected
+              {moduleIds.length > 0 ? " · you can add more later" : ""}
             </p>
           </fieldset>
 

@@ -145,14 +145,14 @@ export function TimetableEditor({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h2 className="font-heading text-[15px] font-semibold">{title}</h2>
-          <p className="mt-0.5 max-w-xl text-[12px] text-muted-foreground">
+      <div className="surface flex flex-col gap-3 rounded-2xl p-4 sm:flex-row sm:items-end sm:justify-between sm:p-5">
+        <div className="min-w-0">
+          <h2 className="font-heading text-[15px] font-semibold tracking-tight">{title}</h2>
+          <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-muted-foreground">
             {description}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-end gap-2">
           {!lockedStream ? (
             <label className="block min-w-[200px]">
               <span className="mb-1 block text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
@@ -193,14 +193,27 @@ export function TimetableEditor({
       </div>
 
       {flash ? (
-        <p className="text-[12px] font-medium text-success">{flash}</p>
+        <p
+          className={cn(
+            "rounded-xl border px-3 py-2.5 text-[12px] font-medium",
+            flash.toLowerCase().includes("could not")
+              ? "border-danger/30 bg-danger/10 text-danger"
+              : "border-success/30 bg-success/10 text-success",
+          )}
+          role="status"
+        >
+          {flash}
+        </p>
       ) : null}
 
       {showAdd ? (
-        <form onSubmit={onAdd} className="surface space-y-3 rounded-[20px] p-4">
-          <h3 className="font-heading text-[13px] font-semibold">
-            New session · {activeStream}
-          </h3>
+        <form onSubmit={onAdd} className="surface space-y-4 rounded-[20px] p-4 sm:p-5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="font-heading text-[13px] font-semibold">
+              New session · {activeStream}
+            </h3>
+            <Badge tone="primary">Live to students on save</Badge>
+          </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <label className="block space-y-1">
               <span className="text-[11px] text-muted-foreground">Module</span>
@@ -283,16 +296,21 @@ export function TimetableEditor({
               />
             </label>
           </div>
-          <Button type="submit">Save to student timetable</Button>
+          <Button type="submit" className="w-full sm:w-auto">
+            Save to student timetable
+          </Button>
         </form>
       ) : null}
 
       <div className="surface overflow-hidden rounded-[20px]">
-        <div className="border-b border-border/70 bg-muted/25 px-4 py-3">
-          <p className="text-[12px] font-semibold">{activeStream}</p>
-          <p className="text-[11px] text-muted-foreground">
-            {ready ? `${entries.length} sessions` : "Loading…"} · shared with students
-          </p>
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/70 bg-muted/25 px-4 py-3 sm:px-5">
+          <div>
+            <p className="text-[12px] font-semibold">{activeStream}</p>
+            <p className="text-[11px] text-muted-foreground">
+              {ready ? `${entries.length} session${entries.length === 1 ? "" : "s"}` : "Loading…"} · shared with students
+            </p>
+          </div>
+          <Badge>{ready ? `${entries.length} total` : "…"}</Badge>
         </div>
 
         <div className="overflow-x-auto">

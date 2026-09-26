@@ -32,10 +32,11 @@ export default function LecturerAssignmentsPage() {
   );
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <PageHeader
+        size="lg"
         title="Assignments"
-        description="Upload coursework briefs for your modules. Students get a notification and can open them from Modules."
+        description="Publish coursework briefs for your modules. Students get a notification and can open them from Modules."
       />
       <UploadWorkspace
         title="Publish assignment file"

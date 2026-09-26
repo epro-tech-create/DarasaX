@@ -39,39 +39,57 @@ export default function LecturerSelectClassPage() {
       }
       subtitle="You teach more than one stream. Pick the class desk to open for this session."
     >
-      <h1 className="font-heading text-xl font-semibold tracking-tight sm:text-lg">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        Lecturer setup · Step 2 of 2
+      </p>
+      <h1 className="mt-1 font-heading text-xl font-semibold tracking-tight sm:text-2xl">
         Choose a class
       </h1>
-      <p className="mt-1 text-sm text-muted-foreground sm:text-xs">
+      <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground sm:text-[13px]">
         Uploads and topics in this session target the class you select. You can
         switch later from the header.
       </p>
 
-      <div className="mt-5 space-y-2">
+      <div className="mt-5 space-y-2" role="radiogroup" aria-label="Choose a class">
         {options.map((s) => {
           const on = selected === s.id;
           return (
             <button
               key={s.id}
               type="button"
+              role="radio"
+              aria-checked={on}
               onClick={() => setSelected(s.id)}
               className={cn(
-                "flex w-full flex-col rounded-xl border px-3 py-3 text-left transition",
+                "focus-ring flex w-full items-start gap-3 rounded-2xl border px-3.5 py-3.5 text-left transition",
                 on
-                  ? "border-primary bg-primary/10"
-                  : "border-border hover:border-primary/40",
+                  ? "border-primary bg-primary/[0.07] shadow-sm shadow-primary/10"
+                  : "border-border bg-card hover:border-primary/40 hover:shadow-sm",
               )}
             >
-              <span className="text-[13px] font-semibold">{s.label}</span>
-              <span className="text-[11px] text-muted-foreground">
-                {s.id}
-                {s.isEvening ? " · Evening" : ""}
+              <span
+                className={cn(
+                  "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[11px] font-bold transition",
+                  on
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border text-transparent",
+                )}
+                aria-hidden
+              >
+                ✓
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[13px] font-semibold">{s.label}</span>
+                <span className="mt-0.5 block text-[11px] text-muted-foreground">
+                  {s.description ?? s.id}
+                  {s.isEvening ? " · Evening" : ""}
+                </span>
               </span>
             </button>
           );
         })}
         {options.length === 0 ? (
-          <p className="text-[12px] text-muted-foreground">
+          <p className="rounded-xl border border-warning/30 bg-warning/10 px-3 py-2.5 text-[12px] text-warning">
             No classes on your profile. Complete onboarding first.
           </p>
         ) : null}
@@ -86,6 +104,11 @@ export default function LecturerSelectClassPage() {
         >
           Enter teaching desk
         </AuthSubmitButton>
+        <p className="mt-2 text-center text-[11px] text-muted-foreground">
+          {options.length > 1 && !selected
+            ? "Select a class above to continue."
+            : "Your desk opens with this class active."}
+        </p>
       </div>
     </AuthShell>
   );
