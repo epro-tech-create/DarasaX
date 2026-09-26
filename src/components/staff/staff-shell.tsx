@@ -232,7 +232,7 @@ export function StaffShell({
                   "focus-ring flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[12px] font-medium transition",
                   collapsed && "justify-center px-0",
                   active
-                    ? "bg-primary/12 text-primary"
+                    ? "bg-primary/12 font-semibold text-primary"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
@@ -300,15 +300,15 @@ export function StaffShell({
           </div>
         </header>
 
-        <main className="flex-1 px-4 pb-24 pt-5 sm:px-5 lg:pb-8 lg:pt-6">
+        <main className="gradient-mesh flex-1 px-4 pb-28 pt-5 sm:px-5 lg:pb-10 lg:pt-6">
           <div className="mx-auto w-full max-w-7xl">
             <StaffPageMotion>{children}</StaffPageMotion>
           </div>
         </main>
 
-        <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-2 py-2 backdrop-blur lg:hidden">
-          <div className="mx-auto flex max-w-lg items-center justify-around gap-1">
-            {nav.slice(0, 5).map((item) => {
+        <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur lg:hidden">
+          <div className="scrollbar-thin flex items-stretch gap-1 overflow-x-auto px-3 py-2">
+            {nav.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href);
               return (
@@ -316,12 +316,14 @@ export function StaffShell({
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[9px] font-medium",
-                    active ? "text-primary" : "text-muted-foreground",
+                    "flex min-w-[64px] flex-1 flex-col items-center gap-0.5 rounded-xl px-2 py-1.5 text-[9px] font-medium transition",
+                    active
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                 >
                   <Icon className="h-4 w-4" />
-                  <span className="truncate">{item.label.split(" ")[0]}</span>
+                  <span className="max-w-full truncate">{item.label}</span>
                 </Link>
               );
             })}
