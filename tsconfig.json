@@ -40,7 +40,9 @@
     ".next-admin/types/**/*.ts",
     ".next-admin/dev/types/**/*.ts",
     ".next-class_rep/types/**/*.ts",
-    ".next-class_rep/dev/types/**/*.ts"
+    ".next-class_rep/dev/types/**/*.ts",
+    ".next-lecturer/types/**/*.ts",
+    ".next-lecturer/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"
