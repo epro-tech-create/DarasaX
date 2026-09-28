@@ -7,9 +7,9 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 const sizeMap = {
-  sm: { width: 132, height: 28, className: "h-[22px] w-auto", mark: 22 },
-  md: { width: 160, height: 34, className: "h-7 w-auto", mark: 28 },
-  lg: { width: 210, height: 44, className: "h-9 w-auto", mark: 36 },
+  sm: { width: 100, height: 30, className: "h-[20px] w-auto", mark: 20 },
+  md: { width: 160, height: 48, className: "h-7 w-auto", mark: 28 },
+  lg: { width: 210, height: 63, className: "h-9 w-auto", mark: 36 },
 } as const;
 
 function useLogoVariant(variant: "auto" | "light" | "dark") {
@@ -64,10 +64,10 @@ export function Logo({
       aria-label="DarasaX"
     >
       <Image
-        src={useDark ? "/brand/logo-dark.png" : "/brand/logo-light.png"}
-        alt="DarasaX"
-        width={dims.width * 3}
-        height={dims.height * 3}
+          src={useDark ? "/brand/logo-dark.svg" : "/brand/logo-light.svg"}
+          alt="DarasaX"
+          width={dims.width * 3}
+          height={dims.height * 3}
         quality={100}
         className={cn("object-contain object-left", dims.className)}
         priority
@@ -110,7 +110,7 @@ export function LogoImage({
 
   return (
     <Image
-      src={useDark ? "/brand/logo-dark.png" : "/brand/logo-light.png"}
+      src={useDark ? "/brand/logo-dark.svg" : "/brand/logo-light.svg"}
       alt="DarasaX"
       width={dims.width * 3}
       height={dims.height * 3}
