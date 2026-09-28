@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   BookOpen,
@@ -38,13 +39,20 @@ export function NextClassCard({
 
   return (
     <section className="relative overflow-hidden rounded-[22px] bg-[#1565C0] text-white">
+      <Image
+        src="/next-class-students.jpg"
+        alt=""
+        fill
+        priority
+        sizes="(max-width: 1280px) 100vw, 1152px"
+        className="object-cover object-center"
+      />
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.12]"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
-          backgroundSize: "22px 22px",
-        }}
+        className="absolute inset-0 bg-gradient-to-r from-[#0B1B2B]/95 via-[#0B1B2B]/70 to-[#1565C0]/30"
+        aria-hidden
+      />
+      <div
+        className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#0B1B2B]/60 to-transparent"
         aria-hidden
       />
 

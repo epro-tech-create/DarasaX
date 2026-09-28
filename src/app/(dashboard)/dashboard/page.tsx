@@ -6,6 +6,7 @@ import {
 import { DashboardLiveUpdates } from "@/components/dashboard/live-updates";
 import { NextClassCard, StatCard } from "@/components/dashboard/next-class-card";
 import { DashboardAssignmentStatCard } from "@/components/dashboard/assignment-stat-card";
+import { StudyChart } from "@/components/dashboard/study-chart";
 import { currentUser, modules } from "@/data/mock";
 import { getNextClass } from "@/lib/academic";
 import { formatCountdownParts, getMsUntilSchoolOpen } from "@/lib/school";
@@ -123,6 +124,8 @@ export default async function DashboardPage() {
           href="/planner"
         />
       </div>
+
+      <StudyChart />
 
       <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
         <DashboardUpcoming />
