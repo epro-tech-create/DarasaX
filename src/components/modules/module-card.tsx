@@ -118,35 +118,33 @@ export function ModuleCard({
     <Link
       href={`/modules/${module.id}`}
       className={cn(
-        "surface group block rounded-[20px] p-4 transition duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md hover:shadow-primary/10 sm:p-5",
+        "surface group block rounded-[20px] p-5 transition duration-200 hover:-translate-y-0.5 hover:border-primary/25",
         className,
       )}
     >
-      <div className="mb-3.5 flex items-start justify-between gap-3">
+      <div className="mb-4 flex items-start justify-between gap-3">
         <div
-          className="flex h-10 w-10 items-center justify-center rounded-xl text-white"
+          className="flex h-11 w-11 items-center justify-center rounded-2xl text-white"
           style={{ backgroundColor: module.accent }}
         >
           <Icon className="h-5 w-5" />
         </div>
-        <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+        <span className="text-xs font-medium text-muted-foreground">
           {module.code}
           {module.credits ? ` · ${module.credits} cr` : ""}
         </span>
       </div>
-      <h3 className="truncate font-heading text-base font-semibold tracking-tight group-hover:text-primary">
+      <h3 className="font-heading text-lg font-semibold tracking-tight group-hover:text-primary">
         {module.name}
       </h3>
-      <p className="mt-0.5 truncate text-[13px] text-muted-foreground">
-        {module.lecturer}
-      </p>
-      <div className="mt-3.5 flex items-center justify-between text-[12px] text-muted-foreground">
+      <p className="mt-1 text-sm text-muted-foreground">{module.lecturer}</p>
+      <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
         <span>{module.notesCount} Notes</span>
-        <span className="tabular-nums">
+        <span>
           {module.topicsCompleted}/{module.topicsTotal} topics
         </span>
       </div>
-      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
         <div
           className="h-full rounded-full transition-all"
           style={{
@@ -155,11 +153,8 @@ export function ModuleCard({
           }}
         />
       </div>
-      <p
-        className="mt-1.5 text-[12px] font-semibold tabular-nums"
-        style={{ color: module.accent }}
-      >
-        {module.progress}%
+      <p className="mt-2 text-xs font-medium" style={{ color: module.accent }}>
+        {module.progress}% progress
       </p>
     </Link>
   );

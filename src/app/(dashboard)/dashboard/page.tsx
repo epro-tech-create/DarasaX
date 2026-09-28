@@ -4,13 +4,11 @@ import {
   DashboardUpcoming,
 } from "@/components/dashboard/live-sections";
 import { DashboardLiveUpdates } from "@/components/dashboard/live-updates";
-import { NextClassCard } from "@/components/dashboard/next-class-card";
-import { DashboardStats } from "@/components/dashboard/dashboard-stats";
-import { StudyActivity } from "@/components/dashboard/study-activity";
-import { SemesterProgress } from "@/components/dashboard/semester-progress";
-import { Button } from "@/components/ui/button";
-import { currentUser } from "@/data/mock";
+import { NextClassCard, StatCard } from "@/components/dashboard/next-class-card";
+import { DashboardAssignmentStatCard } from "@/components/dashboard/assignment-stat-card";
+import { currentUser, modules } from "@/data/mock";
 import { getNextClass } from "@/lib/academic";
+import { formatCountdownParts, getMsUntilSchoolOpen } from "@/lib/school";
 import { formatDate, getGreeting } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/server";
 import { DEFAULT_CLASS_STREAM, timetable as seedTimetable } from "@/data/mock";
@@ -55,6 +53,7 @@ export default async function DashboardPage() {
     // Fall back to bundled timetable
   }
   const next = getNextClass(new Date(), DEFAULT_CLASS_STREAM, liveTimetable);
+  const examDays = formatCountdownParts(getMsUntilSchoolOpen()).days;
 
   let displayName = currentUser.name;
   try {
@@ -86,25 +85,19 @@ export default async function DashboardPage() {
   const firstName = displayFirstName(displayName);
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0">
+    <div className="space-y-7">
+      <div className="flex flex-col gap-1.5 sm:flex-row sm:items-end sm:justify-between">
+        <div>
           <h1 className="font-heading text-xl font-semibold tracking-tight">
-            Dashboard
+            {getGreeting()}, {firstName} 👋
           </h1>
           <p className="mt-1 text-[12px] text-muted-foreground sm:text-[13px]">
-            {getGreeting()}, {firstName} — here&apos;s your semester at a
-            glance.
+            Ready to continue your semester?
           </p>
         </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
-          <p className="rounded-full bg-muted/70 px-3 py-1.5 text-[11px] font-medium text-muted-foreground">
-            {formatDate(new Date())}
-          </p>
-          <Button size="sm" href="/planner">
-            Open planner
-          </Button>
-        </div>
+        <p className="rounded-full bg-muted/70 px-3 py-1 text-[11px] font-medium text-muted-foreground">
+          {formatDate(new Date())}
+        </p>
       </div>
 
       {next ? (
@@ -115,18 +108,25 @@ export default async function DashboardPage() {
         />
       ) : null}
 
-      <DashboardStats />
-
-      <div className="grid gap-3 xl:grid-cols-2">
-        <StudyActivity />
-        <SemesterProgress />
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <DashboardAssignmentStatCard />
+        <StatCard
+          label="Exams"
+          value={`${examDays} days`}
+          hint="Until school opens"
+          href="/planner"
+        />
+        <StatCard label="Modules" value={`${modules.length}`} href="/modules" />
+        <StatCard
+          label="Study streak"
+          value={`${currentUser.studyStreak} days`}
+          href="/planner"
+        />
       </div>
 
-      <div className="grid items-start gap-3 xl:grid-cols-[1.25fr_0.75fr]">
+      <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
         <DashboardUpcoming />
-        <div className="space-y-3">
-          <ExamCountdown />
-        </div>
+        <ExamCountdown />
       </div>
 
       <DashboardModulesPreview />
