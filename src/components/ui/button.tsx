@@ -15,10 +15,10 @@ const variants: Record<Variant, string> = {
 };
 
 const sizes: Record<Size, string> = {
-  sm: "h-8 px-2.5 text-[12px] rounded-none",
-  md: "h-9 px-3.5 text-[12px] rounded-none",
-  lg: "h-10 px-4 text-[13px] rounded-none",
-  icon: "h-9 w-9 rounded-none p-0",
+  sm: "h-8 px-2.5 text-[12px] rounded-lg",
+  md: "h-9 px-3.5 text-[12px] rounded-lg",
+  lg: "h-10 px-4 text-[13px] rounded-lg",
+  icon: "h-9 w-9 rounded-lg p-0",
 };
 
 const base =

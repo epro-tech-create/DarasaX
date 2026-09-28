@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   description:
     "DarasaX helps university students organize modules, notes, assignments, past papers, timetables and study resources in one modern academic workspace.",
   icons: {
-    icon: [{ url: "/brand/icon-x.png", type: "image/png" }],
+    icon: [{ url: "/brand/icon-x.svg", type: "image/svg+xml" }],
     apple: [{ url: "/apple-touch-icon.png" }],
     shortcut: ["/favicon.ico"],
   },

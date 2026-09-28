@@ -44,7 +44,7 @@ export function Logo({
         aria-label="DarasaX"
       >
         <Image
-          src="/brand/icon-x.png"
+          src="/brand/icon-x.svg"
           alt=""
           width={dims.mark * 2}
           height={dims.mark * 2}
@@ -85,7 +85,7 @@ export function BrandMark({
 }) {
   return (
     <Image
-      src="/brand/icon-x.png"
+      src="/brand/icon-x.svg"
       alt="DarasaX"
       width={size * 2}
       height={size * 2}
