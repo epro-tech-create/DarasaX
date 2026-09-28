@@ -94,11 +94,11 @@ export function AppSidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "focus-ring group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium transition-colors",
+                "focus-ring group flex items-center gap-2.5 rounded-full px-3.5 py-2 text-[13px] font-medium transition-all",
                 active
-                  ? "btn-gradient shadow-sm shadow-primary/25"
+                  ? "bg-primary text-white shadow-md shadow-primary/30"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                collapsed && "justify-center px-0",
+                collapsed && "justify-center rounded-2xl px-0",
               )}
               title={collapsed ? item.label : undefined}
             >
@@ -119,11 +119,11 @@ export function AppSidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "focus-ring flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium transition-colors",
+                  "focus-ring flex items-center gap-2.5 rounded-full px-3.5 py-2 text-[13px] font-medium transition-all",
                   active
-                    ? "bg-muted text-foreground"
+                    ? "bg-primary text-white shadow-md shadow-primary/30"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                  collapsed && "justify-center px-0",
+                  collapsed && "justify-center rounded-2xl px-0",
                 )}
                 title={collapsed ? item.label : undefined}
               >
@@ -171,7 +171,7 @@ export function TopBar({
       <button
         type="button"
         onClick={onOpenSearch}
-        className="focus-ring hidden min-w-0 flex-1 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-left text-[13px] text-muted-foreground transition hover:border-primary/30 md:flex md:max-w-md"
+        className="focus-ring hidden min-w-0 flex-1 items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-left text-[13px] text-muted-foreground transition hover:border-primary/40 md:flex md:max-w-md"
       >
         <span className="truncate">Search modules, notes, assignments...</span>
         <kbd className="ml-auto rounded-md border border-border bg-muted px-1.5 py-0.5 text-[11px] font-medium">

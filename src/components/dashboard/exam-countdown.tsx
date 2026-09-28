@@ -62,7 +62,7 @@ export function ExamCountdown() {
           Exam countdown
         </h2>
       </div>
-      <p className="relative mt-3 font-heading text-3xl font-semibold tabular-nums text-primary">
+      <p className="relative mt-3 font-heading text-2xl font-semibold tabular-nums text-primary">
         {days}
         <span className="ml-1.5 text-[13px] font-medium text-muted-foreground">
           days

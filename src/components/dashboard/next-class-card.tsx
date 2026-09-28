@@ -5,6 +5,7 @@ import {
   Clock,
   Flame,
   GraduationCap,
+  ListChecks,
   MapPin,
   UserRound,
 } from "lucide-react";
@@ -37,7 +38,7 @@ export function NextClassCard({
             : "Coming up";
 
   return (
-    <section className="relative overflow-hidden rounded-[22px] bg-[#1565C0] text-white">
+    <section className="gradient-primary relative overflow-hidden rounded-[22px] text-white shadow-lg shadow-primary/25">
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.12]"
         style={{
@@ -58,7 +59,7 @@ export function NextClassCard({
             <p className="text-[12px] font-medium text-white/90">{startsLabel}</p>
           </div>
 
-          <h2 className="mt-3 font-heading text-[1.65rem] font-semibold leading-[1.15] tracking-tight sm:text-[2rem]">
+          <h2 className="mt-3 font-heading text-xl font-semibold leading-[1.2] tracking-tight sm:text-2xl">
             {module.name}
           </h2>
 
@@ -85,7 +86,7 @@ export function NextClassCard({
         <div className="flex shrink-0 flex-wrap gap-2.5">
           <Button
             variant="secondary"
-            className="h-10 bg-white px-4 text-sm font-semibold text-[#0a3d8f] shadow-none hover:bg-white/90"
+            className="h-10 bg-white px-4 text-sm font-semibold text-[#152fb4] shadow-none hover:bg-white/90"
             href={`/modules/${module.id}`}
           >
             View Module
@@ -107,6 +108,7 @@ const statIcons = {
   Assignments: ClipboardList,
   Exams: GraduationCap,
   Modules: BookOpen,
+  Topics: ListChecks,
   "Study streak": Flame,
 } as const;
 
@@ -115,39 +117,77 @@ export function StatCard({
   value,
   hint,
   href,
+  highlight = false,
 }: {
   label: string;
   value: string;
   hint?: string;
   href?: string;
+  highlight?: boolean;
 }) {
   const Icon = statIcons[label as keyof typeof statIcons] || BookOpen;
 
   const body = (
-    <div className="flex items-start gap-3">
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-        <Icon className="h-4 w-4" />
-      </span>
+    <div className="flex items-start justify-between gap-3">
       <div className="min-w-0">
-        <p className="text-[11px] text-muted-foreground">{label}</p>
-        <p className="mt-0.5 font-heading text-[17px] font-semibold tracking-tight">
+        <p
+          className={
+            highlight
+              ? "text-[12px] font-medium text-white/75"
+              : "text-[12px] text-muted-foreground"
+          }
+        >
+          {label}
+        </p>
+        <p className="mt-1 font-heading text-xl font-semibold tracking-tight tabular-nums">
           {value}
         </p>
         {hint ? (
-          <p className="mt-0.5 text-[10px] text-muted-foreground">{hint}</p>
+          <p
+            className={
+              highlight
+                ? "mt-1 text-[11px] text-white/70"
+                : "mt-1 text-[11px] text-muted-foreground"
+            }
+          >
+            {hint}
+          </p>
         ) : null}
       </div>
+      <span
+        className={
+          highlight
+            ? "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/20 text-white"
+            : "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"
+        }
+      >
+        <Icon className="h-4 w-4" />
+      </span>
     </div>
   );
 
   if (!href) {
-    return <div className="surface rounded-[16px] p-3.5 sm:p-4">{body}</div>;
+    return (
+      <div
+        className={
+          highlight
+            ? "gradient-primary rounded-[18px] p-4 text-white shadow-md shadow-primary/25"
+            : "surface rounded-[18px] p-4"
+        }
+      >
+        {body}
+      </div>
+    );
   }
 
   return (
     <Link
       href={href}
-      className="surface block rounded-[16px] p-3.5 transition duration-200 hover:scale-[1.03] hover:border-primary hover:shadow-lg hover:shadow-primary/25 sm:p-4"
+      className={
+        highlight
+          ? "gradient-primary block rounded-[18px] p-4 text-white shadow-md shadow-primary/25 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/30"
+          : "surface block rounded-[18px] p-4 transition duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md hover:shadow-primary/10"
+      }
     >
       {body}
     </Link>

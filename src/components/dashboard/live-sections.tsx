@@ -29,19 +29,23 @@ export function DashboardUpcoming() {
   const pendingCount = items.filter((a) => a.status === "upcoming").length;
 
   return (
-    <section>
-      <div className="mb-3.5 flex items-center justify-between">
-        <h2 className="font-heading text-[15px] font-semibold">Upcoming</h2>
+    <section className="surface flex h-full flex-col rounded-[20px] p-4 sm:p-5">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="font-heading text-[15px] font-semibold tracking-tight">
+            Upcoming assignments
+          </h2>
+          <p className="mt-0.5 text-[12px] text-muted-foreground">
+            {pendingCount} pending · completed work stays off this list
+          </p>
+        </div>
         <Button variant="ghost" size="sm" href="/assignments">
           View all
         </Button>
       </div>
-      <p className="mb-2.5 text-[11px] text-muted-foreground">
-        {pendingCount} pending · completed work stays off this list
-      </p>
-      <div className="space-y-2.5">
+      <div className="mt-3 flex-1 space-y-1.5">
         {upcoming.length === 0 ? (
-          <div className="surface rounded-[16px] px-4 py-6 text-center text-[12px] text-muted-foreground">
+          <div className="rounded-[14px] bg-muted/50 px-4 py-8 text-center text-[12px] text-muted-foreground">
             No upcoming assignments. Nice work.
           </div>
         ) : (
@@ -51,18 +55,20 @@ export function DashboardUpcoming() {
               <Link
                 key={item.id}
                 href={`/assignments/${item.id}`}
-                className="surface group flex items-center justify-between gap-4 rounded-[16px] p-3.5 transition hover:border-primary/30 hover:shadow-md hover:shadow-primary/10 sm:p-4"
+                className="group flex items-center justify-between gap-3 rounded-[14px] border border-border/60 px-3.5 py-3 transition hover:border-primary/40 hover:bg-muted/40"
               >
                 <div className="flex min-w-0 items-center gap-3">
                   <span
-                    className="hidden h-9 w-1.5 shrink-0 rounded-full sm:block"
-                    style={{ backgroundColor: module?.accent || "#1E88E5" }}
-                  />
+                    className="h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[11px] font-bold text-white hidden sm:inline-flex"
+                    style={{ backgroundColor: module?.accent || "#1E40FF" }}
+                  >
+                    {module?.code.slice(0, 2) || "DX"}
+                  </span>
                   <div className="min-w-0">
                     <p className="truncate text-[13px] font-medium group-hover:text-primary">
                       {item.title}
                     </p>
-                    <p className="mt-0.5 text-[11px] text-muted-foreground">
+                    <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
                       {module?.name}
                     </p>
                   </div>
@@ -91,12 +97,19 @@ export function DashboardModulesPreview() {
   return (
     <section>
       <div className="mb-3.5 flex items-center justify-between">
-        <h2 className="font-heading text-[15px] font-semibold">Your modules</h2>
+        <div className="min-w-0">
+          <h2 className="font-heading text-[15px] font-semibold tracking-tight">
+            Your modules
+          </h2>
+          <p className="mt-0.5 text-[12px] text-muted-foreground">
+            Jump back into a course
+          </p>
+        </div>
         <Button variant="ghost" size="sm" href="/modules">
           See all
         </Button>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {enriched.map((module) => (
           <ModuleCard key={module.id} module={module} />
         ))}
