@@ -8,11 +8,11 @@
   --muted: #e8eef6;
   --muted-foreground: #64748b;
   --border: #dbe4f0;
-  --primary: #ff1840;
+  --primary: #3c0386;
   --primary-foreground: #ffffff;
-  --brand-blue-light: #ff8a5c;
-  --brand-blue: #ff1840;
-  --brand-blue-deep: #b30d2e;
+  --brand-blue-light: #8b5cf6;
+  --brand-blue: #4b1097;
+  --brand-blue-deep: #2a025f;
   --success: #22c55e;
   --warning: #f59e0b;
   --danger: #ef4444;
@@ -20,7 +20,7 @@
   --lime: #a3e635;
   --sidebar: #ffffff;
   --sidebar-foreground: #0f172a;
-  --ring: #ff1840;
+  --ring: #3c0386;
   --shadow-soft: 0 8px 28px rgba(15, 23, 42, 0.06);
 }
 
@@ -32,11 +32,11 @@
   --muted: #1a1e26;
   --muted-foreground: #94a3b8;
   --border: #232833;
-  --primary: #ff6b6b;
+  --primary: #a78bfa;
   --primary-foreground: #ffffff;
-  --brand-blue-light: #ff8a5c;
-  --brand-blue: #ff1840;
-  --brand-blue-deep: #b30d2e;
+  --brand-blue-light: #8b5cf6;
+  --brand-blue: #4b1097;
+  --brand-blue-deep: #2a025f;
   --success: #22c55e;
   --warning: #f59e0b;
   --danger: #ef4444;
@@ -44,7 +44,7 @@
   --lime: #a3e635;
   --sidebar: #0e1116;
   --sidebar-foreground: #f1f5f9;
-  --ring: #ff6b6b;
+  --ring: #a78bfa;
   --shadow-soft: 0 8px 28px rgba(0, 0, 0, 0.4);
 }
 
@@ -123,7 +123,7 @@ h4,
 }
 
 .brand-x {
-  background: linear-gradient(180deg, #ff9a6b 0%, #ff1840 48%, #b30d2e 100%);
+  background: linear-gradient(180deg, #8b5cf6 0%, #4b1097 48%, #3c0386 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -132,7 +132,7 @@ h4,
 
 .text-white .brand-x,
 .brand-x-on-dark {
-  background: linear-gradient(180deg, #ffc4ad 0%, #ff6b6b 40%, #ff3d5e 100%);
+  background: linear-gradient(180deg, #d6c6ff 0%, #a78bfa 40%, #7c5cfc 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -146,11 +146,11 @@ h4,
 }
 
 .gradient-primary {
-  background: linear-gradient(135deg, #ff6b35 0%, #ff1840 55%, #d60f36 100%);
+  background: linear-gradient(135deg, #4b1097 0%, #3c0386 55%, #2a0260 100%);
 }
 
 .btn-gradient {
-  background-image: linear-gradient(135deg, #ff6b35 0%, #ff1840 55%, #d60f36 100%);
+  background-image: linear-gradient(135deg, #4b1097 0%, #3c0386 55%, #2a0260 100%);
   background-color: transparent;
   color: #ffffff;
 }
@@ -161,15 +161,15 @@ h4,
 
 .gradient-mesh {
   background:
-    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(255, 107, 53, 0.14), transparent),
-    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(255, 24, 64, 0.1), transparent),
+    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(75, 16, 151, 0.14), transparent),
+    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(60, 3, 134, 0.1), transparent),
     var(--background);
 }
 
 .dark .gradient-mesh {
   background:
-    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(255, 107, 53, 0.2), transparent),
-    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(255, 24, 64, 0.12), transparent),
+    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(75, 16, 151, 0.25), transparent),
+    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(60, 3, 134, 0.15), transparent),
     var(--background);
 }
 

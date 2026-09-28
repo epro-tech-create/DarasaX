@@ -53,13 +53,14 @@ export function AppSidebar() {
   return (
     <aside
       className={cn(
-        "sticky top-0 hidden h-screen shrink-0 flex-col border-r border-border bg-sidebar text-sidebar-foreground transition-all duration-300 lg:flex",
+        "relative sticky top-0 hidden h-screen shrink-0 flex-col overflow-hidden border-r border-white/10 bg-[#3c0386] text-white transition-all duration-300 lg:flex",
         collapsed ? "w-[76px]" : "w-[232px]",
       )}
     >
+      <div className="pointer-events-none absolute -left-10 top-24 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
       <div
         className={cn(
-          "flex border-b border-border",
+          "flex border-b border-white/10",
           collapsed
             ? "h-auto flex-col items-center gap-2 px-2 py-3"
             : "h-14 items-center justify-between gap-1 px-3",
@@ -69,12 +70,13 @@ export function AppSidebar() {
           href="/dashboard"
           size="sm"
           markOnly={collapsed}
+          variant="dark"
           className={cn(!collapsed && "min-w-0 pl-0.5")}
         />
         <button
           type="button"
           onClick={() => setCollapsed((v) => !v)}
-          className="focus-ring inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground"
+          className="focus-ring inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-white/60 hover:bg-white/10 hover:text-white"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? (
@@ -96,8 +98,8 @@ export function AppSidebar() {
               className={cn(
                 "focus-ring group flex items-center gap-2.5 rounded-full px-3.5 py-2 text-[13px] font-medium transition-all",
                 active
-                  ? "bg-primary text-white shadow-md shadow-primary/30"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  ? "bg-white font-semibold text-[#3c0386] shadow-md shadow-black/20"
+                  : "text-white/65 hover:bg-white/10 hover:text-white",
                 collapsed && "justify-center rounded-2xl px-0",
               )}
               title={collapsed ? item.label : undefined}
@@ -109,7 +111,7 @@ export function AppSidebar() {
         })}
       </nav>
 
-      <div className="border-t border-border px-2.5 py-2.5">
+      <div className="border-t border-white/10 px-2.5 py-2.5">
         <div className="mb-1.5 space-y-0.5">
           {bottomNav.map((item) => {
             const Icon = item.icon;
@@ -121,8 +123,8 @@ export function AppSidebar() {
                 className={cn(
                   "focus-ring flex items-center gap-2.5 rounded-full px-3.5 py-2 text-[13px] font-medium transition-all",
                   active
-                    ? "bg-primary text-white shadow-md shadow-primary/30"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    ? "bg-white font-semibold text-[#3c0386] shadow-md shadow-black/20"
+                    : "text-white/65 hover:bg-white/10 hover:text-white",
                   collapsed && "justify-center rounded-2xl px-0",
                 )}
                 title={collapsed ? item.label : undefined}
@@ -135,13 +137,17 @@ export function AppSidebar() {
         </div>
 
         {!collapsed ? (
-          <div className="mt-1.5 flex items-center gap-2.5 rounded-xl bg-muted/60 px-2.5 py-2">
-            <UserAvatar name={currentUser.name} size="sm" />
+          <div className="mt-1.5 flex items-center gap-2.5 rounded-xl bg-white/10 px-2.5 py-2">
+            <UserAvatar
+              name={currentUser.name}
+              size="sm"
+              className="bg-white/20 text-white"
+            />
             <div className="min-w-0">
-              <p className="truncate text-[13px] font-semibold">
+              <p className="truncate text-[13px] font-semibold text-white">
                 {currentUser.name}
               </p>
-              <p className="truncate text-[11px] text-muted-foreground">
+              <p className="truncate text-[11px] text-white/60">
                 Year {currentUser.year} · Sem {currentUser.semester}
               </p>
             </div>
