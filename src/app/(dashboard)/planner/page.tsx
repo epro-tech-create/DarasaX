@@ -8,13 +8,14 @@ import {
   getModule,
   modules,
   studySessions,
-  topics,
 } from "@/data/mock";
+import { enrichModules } from "@/lib/module-stats";
 import {
   formatCountdownParts,
   getMsUntilSchoolOpen,
   getSchoolOpenDate,
 } from "@/lib/school";
+import { useTopicProgress } from "@/lib/topic-progress-store";
 import { cn } from "@/lib/utils";
 import {
   CalendarDays,
@@ -48,6 +49,7 @@ function localISODate(date = new Date()) {
 }
 
 export default function PlannerPage() {
+  const { topics } = useTopicProgress();
   const today = localISODate();
   const weekEnd = (() => {
     const d = new Date();
@@ -84,7 +86,11 @@ export default function PlannerPage() {
 
   const moduleTopics = useMemo(
     () => topics.filter((t) => t.moduleId === form.moduleId),
-    [form.moduleId],
+    [form.moduleId, topics],
+  );
+  const modulesWithProgress = useMemo(
+    () => enrichModules(modules, [], topics),
+    [topics],
   );
 
   const { days, hours, minutes, seconds } = formatCountdownParts(msLeft);
@@ -461,7 +467,7 @@ export default function PlannerPage() {
             Module progress
           </h2>
           <div className="space-y-2">
-            {modules.slice(0, 5).map((module) => (
+            {modulesWithProgress.slice(0, 5).map((module) => (
               <div
                 key={module.id}
                 className="surface rounded-[14px] p-3 transition hover:border-primary/40"

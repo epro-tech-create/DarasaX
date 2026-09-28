@@ -5,7 +5,8 @@ import { createClient } from "@/lib/supabase/client";
 import type { Database, ModuleTopicRow } from "@/types/database";
 import type { StaffRole, Topic } from "@/types";
 
-const PROGRESS_KEY = "darasax_topic_progress_v1";
+// v1 was prefilled from demo data, so use a clean key for real student progress.
+const PROGRESS_KEY = "darasax_topic_progress_v2";
 
 function isConfigured() {
   return Boolean(

@@ -266,6 +266,8 @@ export interface MaterialUpload {
   downloads: number;
   /** Public path or blob/data URL when available */
   fileUrl?: string;
+  /** Object path in the private materials bucket */
+  filePath?: string;
   fileName?: string;
   mimeType?: string;
 }

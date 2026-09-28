@@ -35,6 +35,7 @@ function toUpload(row: MaterialRow): MaterialUpload {
     createdAt: row.created_at,
     downloads: row.downloads,
     fileUrl: row.file_url ?? undefined,
+    filePath: row.file_path ?? undefined,
     fileName: row.file_name ?? undefined,
     mimeType: row.mime_type ?? undefined,
   };
@@ -55,6 +56,7 @@ function storagePath(streamId: string | null, id: string, fileName: string) {
 
 export async function resolveMaterialObjectUrl(
   item: MaterialUpload,
+  options?: { download?: boolean },
 ): Promise<{ url: string; revoke: boolean; fileName: string; mimeType: string } | null> {
   if (item.fileUrl?.startsWith("http") || item.fileUrl?.startsWith("/")) {
     return {
@@ -72,26 +74,38 @@ export async function resolveMaterialObjectUrl(
       mimeType: item.mimeType ?? "application/octet-stream",
     };
   }
-  // Storage-backed file: no file_path is carried on MaterialUpload, so look
-  // the row up to find it, then mint a signed URL.
   try {
     const supabase = createClient();
-    const { data, error } = await supabase
-      .from("materials")
-      .select("file_path,file_name,mime_type")
-      .eq("id", item.id)
-      .maybeSingle();
-    if (error || !data?.file_path) return null;
+    let filePath = item.filePath;
+    let fileName = item.fileName;
+    let mimeType = item.mimeType;
+
+    if (!filePath) {
+      const { data, error } = await supabase
+        .from("materials")
+        .select("file_path,file_name,mime_type")
+        .eq("id", item.id)
+        .maybeSingle();
+      if (error || !data?.file_path) return null;
+      filePath = data.file_path;
+      fileName ??= data.file_name ?? undefined;
+      mimeType ??= data.mime_type ?? undefined;
+    }
+
+    const resolvedFileName = fileName ?? `${slugify(item.title)}.bin`;
     const { data: signed, error: signError } = await supabase.storage
       .from(BUCKET)
-      .createSignedUrl(data.file_path, SIGNED_URL_SECONDS);
+      .createSignedUrl(
+        filePath,
+        SIGNED_URL_SECONDS,
+        options?.download ? { download: resolvedFileName } : undefined,
+      );
     if (signError || !signed) return null;
     return {
       url: signed.signedUrl,
       revoke: false,
-      fileName:
-        item.fileName ?? data.file_name ?? `${slugify(item.title)}.bin`,
-      mimeType: item.mimeType ?? data.mime_type ?? "application/octet-stream",
+      fileName: resolvedFileName,
+      mimeType: mimeType ?? "application/octet-stream",
     };
   } catch {
     return null;
@@ -99,14 +113,35 @@ export async function resolveMaterialObjectUrl(
 }
 
 export async function viewMaterial(item: MaterialUpload) {
-  const resolved = await resolveMaterialObjectUrl(item);
-  if (!resolved) return;
-  window.open(resolved.url, "_blank", "noopener,noreferrer");
+  const previewWindow = window.open("about:blank", "_blank");
+  if (!previewWindow) {
+    window.alert("The preview was blocked. Allow pop-ups for DarasaX and try again.");
+    return false;
+  }
+
+  previewWindow.opener = null;
+  try {
+    const resolved = await resolveMaterialObjectUrl(item);
+    if (!resolved) {
+      previewWindow.close();
+      window.alert("This file is unavailable. Ask the uploader to attach it again.");
+      return false;
+    }
+    previewWindow.location.replace(resolved.url);
+    return true;
+  } catch {
+    previewWindow.close();
+    window.alert("The file could not be opened. Check your connection and try again.");
+    return false;
+  }
 }
 
 export async function downloadMaterial(item: MaterialUpload) {
-  const resolved = await resolveMaterialObjectUrl(item);
-  if (!resolved) return;
+  const resolved = await resolveMaterialObjectUrl(item, { download: true });
+  if (!resolved) {
+    window.alert("This file is unavailable. Ask the uploader to attach it again.");
+    return false;
+  }
   const anchor = document.createElement("a");
   anchor.href = resolved.url;
   anchor.download = resolved.fileName;
@@ -120,6 +155,7 @@ export async function downloadMaterial(item: MaterialUpload) {
   } catch {
     // Download counting is best-effort.
   }
+  return true;
 }
 
 export type PublishMaterialInput = {
@@ -303,16 +339,10 @@ export function useMaterialsStore() {
     setItems((prev) => prev.filter((i) => i.id !== id));
   }, []);
 
-  const bumpDownloads = useCallback(async (id: string) => {
-    try {
-      const supabase = createClient();
-      await supabase.rpc("increment_material_downloads", { mid: id });
-      setItems((prev) =>
-        prev.map((i) => (i.id === id ? { ...i, downloads: i.downloads + 1 } : i)),
-      );
-    } catch {
-      // Best-effort.
-    }
+  const bumpDownloads = useCallback((id: string) => {
+    setItems((prev) =>
+      prev.map((i) => (i.id === id ? { ...i, downloads: i.downloads + 1 } : i)),
+    );
   }, []);
 
   const published = items.filter((i) => i.status === "published");

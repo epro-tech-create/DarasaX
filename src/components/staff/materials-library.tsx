@@ -232,8 +232,7 @@ export function MaterialsLibrary({
   async function onDownload(item: MaterialUpload) {
     setBusyId(item.id);
     try {
-      await downloadMaterial(item);
-      bumpDownloads(item.id);
+      if (await downloadMaterial(item)) bumpDownloads(item.id);
     } finally {
       setBusyId(null);
     }

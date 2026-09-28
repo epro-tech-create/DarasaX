@@ -40,9 +40,7 @@ export function enrichModule(
   const liveNotes = notes.length;
   const livePapers = papers.length;
   const progress =
-    topicsTotal > 0
-      ? Math.round((topicsCompleted / topicsTotal) * 100)
-      : module.progress;
+    topicsTotal > 0 ? Math.round((topicsCompleted / topicsTotal) * 100) : 0;
 
   return {
     ...module,

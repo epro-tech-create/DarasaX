@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -20,6 +19,7 @@ export default function ResetPasswordPage() {
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [leaving, setLeaving] = useState(false);
   const [done, setDone] = useState(false);
   const [ready, setReady] = useState(false);
 
@@ -71,6 +71,20 @@ export default function ResetPasswordPage() {
       setError(getAuthErrorMessage(err));
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function backToSignIn() {
+    if (leaving) return;
+    setLeaving(true);
+    sessionStorage.removeItem("darasax_recovery_email");
+    sessionStorage.removeItem("darasax_recovery_verified");
+
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut({ scope: "local" });
+    } finally {
+      window.location.replace("/login");
     }
   }
 
@@ -142,9 +156,14 @@ export default function ResetPasswordPage() {
           </form>
 
           <p className="mt-5 text-center text-xs text-muted-foreground">
-            <Link href="/login" className="font-medium text-primary">
-              Back to sign in
-            </Link>
+            <button
+              type="button"
+              onClick={() => void backToSignIn()}
+              disabled={leaving || loading}
+              className="font-medium text-primary disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {leaving ? "Returning to sign in..." : "Back to sign in"}
+            </button>
           </p>
         </>
       )}
