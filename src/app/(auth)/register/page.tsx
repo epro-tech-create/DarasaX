@@ -128,7 +128,7 @@ export default function StaffRegisterPage() {
           : "Register once for your stream, then manage uploads and the class timetable."
       }
     >
-      <h1 className="font-heading text-xl font-semibold tracking-tight sm:text-lg">
+      <h1 className="font-heading text-xl font-semibold tracking-tight">
         {isLecturer ? "Create lecturer account" : "Create CR account"}
       </h1>
 

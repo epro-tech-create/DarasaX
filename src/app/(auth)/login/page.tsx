@@ -102,7 +102,7 @@ function StudentLoginForm() {
 
   return (
     <>
-      <h1 className="font-heading text-xl font-semibold tracking-tight sm:text-lg">
+      <h1 className="font-heading text-xl font-semibold tracking-tight">
         Welcome back
       </h1>
       <p className="mt-1 text-sm text-muted-foreground sm:mt-0.5 sm:text-xs">
@@ -240,7 +240,7 @@ function StaffLoginForm({
 
   return (
     <>
-      <h1 className="font-heading text-xl font-semibold tracking-tight sm:text-lg">
+      <h1 className="font-heading text-xl font-semibold tracking-tight">
         {title}
       </h1>
       <p className="mt-1 text-sm text-muted-foreground sm:mt-0.5 sm:text-xs">

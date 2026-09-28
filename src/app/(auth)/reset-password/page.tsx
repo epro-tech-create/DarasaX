@@ -120,7 +120,7 @@ export default function ResetPasswordPage() {
         </motion.div>
       ) : (
         <>
-          <h1 className="font-heading text-xl font-semibold tracking-tight sm:text-[1.35rem]">
+          <h1 className="font-heading text-xl font-semibold tracking-tight">
             Reset password
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">

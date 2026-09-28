@@ -88,7 +88,7 @@ export default async function DashboardPage() {
     <div className="space-y-7">
       <div className="flex flex-col gap-1.5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="font-heading text-xl font-semibold tracking-tight sm:text-2xl">
+          <h1 className="font-heading text-xl font-semibold tracking-tight">
             {getGreeting()}, {firstName} 👋
           </h1>
           <p className="mt-1 text-[12px] text-muted-foreground sm:text-[13px]">

@@ -92,7 +92,7 @@ export default function ForgotPasswordVerifyPage() {
       title="Check your email"
       subtitle="Enter the recovery code to continue resetting your password."
     >
-      <h1 className="font-heading text-xl font-semibold tracking-tight sm:text-[1.35rem]">
+      <h1 className="font-heading text-xl font-semibold tracking-tight">
         Check your email
       </h1>
       <p className="mt-1 text-sm text-muted-foreground">

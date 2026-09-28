@@ -44,7 +44,7 @@ export function MobileNavigation() {
                 <Link
                   href={item.href}
                   className={cn(
-                    "flex flex-col items-center gap-0.5 px-1 py-2 text-[10px] font-medium transition-colors",
+                    "flex flex-col items-center gap-0.5 px-1 py-2 text-[11px] font-medium transition-colors",
                     active ? "text-primary" : "text-muted-foreground",
                   )}
                 >

@@ -35,7 +35,7 @@ export function AuthShell({
           <ThemeToggle lightOnDark />
         </div>
         <div className="relative z-10">
-          <h1 className="font-heading text-2xl font-semibold leading-tight tracking-tight xl:text-[1.85rem]">
+          <h1 className="font-heading text-2xl font-semibold leading-tight tracking-tight">
             {title}
           </h1>
           {subtitle ? (
@@ -53,7 +53,7 @@ export function AuthShell({
         <div className="absolute right-4 top-4 lg:hidden">
           <ThemeToggle />
         </div>
-        <div className="w-full max-w-[400px] text-[15px] sm:text-[13px]">
+        <div className="w-full max-w-[400px] text-sm">
           <div className="mb-6 lg:hidden">
             <Logo href="/" />
           </div>

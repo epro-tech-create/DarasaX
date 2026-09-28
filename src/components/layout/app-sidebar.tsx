@@ -94,7 +94,7 @@ export function AppSidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "focus-ring group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[12px] font-medium transition-colors",
+                "focus-ring group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium transition-colors",
                 active
                   ? "btn-gradient shadow-sm shadow-primary/25"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -119,7 +119,7 @@ export function AppSidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "focus-ring flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[12px] font-medium transition-colors",
+                  "focus-ring flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium transition-colors",
                   active
                     ? "bg-muted text-foreground"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -138,10 +138,10 @@ export function AppSidebar() {
           <div className="mt-1.5 flex items-center gap-2.5 rounded-xl bg-muted/60 px-2.5 py-2">
             <UserAvatar name={currentUser.name} size="sm" />
             <div className="min-w-0">
-              <p className="truncate text-[12px] font-semibold">
+              <p className="truncate text-[13px] font-semibold">
                 {currentUser.name}
               </p>
-              <p className="truncate text-[10px] text-muted-foreground">
+              <p className="truncate text-[11px] text-muted-foreground">
                 Year {currentUser.year} · Sem {currentUser.semester}
               </p>
             </div>
@@ -171,10 +171,10 @@ export function TopBar({
       <button
         type="button"
         onClick={onOpenSearch}
-        className="focus-ring hidden min-w-0 flex-1 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-left text-[12px] text-muted-foreground transition hover:border-primary/30 md:flex md:max-w-md"
+        className="focus-ring hidden min-w-0 flex-1 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-left text-[13px] text-muted-foreground transition hover:border-primary/30 md:flex md:max-w-md"
       >
         <span className="truncate">Search modules, notes, assignments...</span>
-        <kbd className="ml-auto rounded-md border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium">
+        <kbd className="ml-auto rounded-md border border-border bg-muted px-1.5 py-0.5 text-[11px] font-medium">
           Ctrl K
         </kbd>
       </button>
@@ -183,7 +183,7 @@ export function TopBar({
         <button
           type="button"
           onClick={onOpenSearch}
-          className="focus-ring inline-flex h-8 items-center justify-center rounded-xl border border-border bg-card px-2.5 text-[11px] font-medium text-muted-foreground hover:text-foreground md:hidden"
+          className="focus-ring inline-flex h-8 items-center justify-center rounded-xl border border-border bg-card px-2.5 text-xs font-medium text-muted-foreground hover:text-foreground md:hidden"
           aria-label="Search"
         >
           Search
@@ -209,7 +209,7 @@ function NotificationBellButton({ onOpen }: { onOpen: () => void }) {
     >
       <Bell className="h-4 w-4" />
       {unreadCount > 0 ? (
-        <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[9px] font-semibold text-white">
+        <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-semibold text-white">
           {unreadCount > 9 ? "9+" : unreadCount}
         </span>
       ) : null}

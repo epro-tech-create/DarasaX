@@ -74,7 +74,7 @@ export default function ForgotPasswordPage() {
       title="Forgot your password?"
       subtitle="Enter your email and we’ll send a verification code to reset it."
     >
-      <h1 className="font-heading text-xl font-semibold tracking-tight sm:text-[1.35rem]">
+      <h1 className="font-heading text-xl font-semibold tracking-tight">
         Forgot your password?
       </h1>
       <p className="mt-1 text-sm text-muted-foreground">

@@ -25,9 +25,7 @@ export function PageHeader({
         <h1
           className={cn(
             "font-heading font-semibold tracking-tight",
-            size === "lg"
-              ? "text-xl sm:text-2xl"
-              : "text-[15px] sm:text-base",
+            size === "lg" ? "text-xl" : "text-[15px]",
           )}
         >
           {title}
@@ -38,7 +36,7 @@ export function PageHeader({
               "max-w-2xl text-muted-foreground",
               size === "lg"
                 ? "mt-1 text-[12px] sm:text-[13px]"
-                : "mt-0.5 text-[11px] sm:text-[12px]",
+                : "mt-0.5 text-xs sm:text-[13px]",
             )}
           >
             {description}

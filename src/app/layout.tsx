@@ -46,7 +46,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
       className={`${figtree.variable} ${outfit.variable} ${figtree.className} h-full dark`}
     >
-      <body className="min-h-full bg-background font-sans text-[14px] antialiased sm:text-[15px]">
+      <body className="min-h-full bg-background font-sans text-sm antialiased">
         <Script
           id="theme-init"
           strategy="beforeInteractive"

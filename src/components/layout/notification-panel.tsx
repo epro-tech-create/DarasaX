@@ -83,7 +83,7 @@ export function NotificationPanel({
                     />
                     <span className="min-w-0">
                       <span className="block text-sm font-medium">{n.title}</span>
-                      <span className="mt-0.5 block text-sm text-muted-foreground">
+                      <span className="mt-0.5 block text-[13px] text-muted-foreground">
                         {n.body}
                       </span>
                       <span className="mt-1 block text-xs text-muted-foreground">

@@ -429,7 +429,7 @@ export default function PlannerPage() {
                 School opens
               </p>
             </div>
-            <p className="relative mt-2 font-heading text-3xl font-semibold tabular-nums">
+            <p className="relative mt-2 font-heading text-2xl font-semibold tabular-nums">
               {days}
               <span className="ml-1 text-[12px] font-medium text-white/75">
                 days

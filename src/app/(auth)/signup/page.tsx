@@ -111,7 +111,7 @@ export default function SignupPage() {
       subtitle="Sign up in minutes, join your class, and keep every module organized from day one."
     >
       <AuthSteps current="account" />
-      <h1 className="font-heading text-xl font-semibold tracking-tight sm:text-[15px]">
+      <h1 className="font-heading text-xl font-semibold tracking-tight">
         Create account
       </h1>
       <p className="mt-1 text-sm text-muted-foreground sm:mt-0.5 sm:text-[11px]">

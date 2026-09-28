@@ -217,14 +217,14 @@ export default function LandingPage() {
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.5 }}
         >
-          <h2 className="font-heading text-2xl font-semibold tracking-tight sm:text-[1.65rem]">
+          <h2 className="font-heading text-2xl font-semibold tracking-tight">
             University life is scattered.
           </h2>
           <p className="mt-2.5 text-base text-muted-foreground">
             Notes in chat groups. Deadlines on paper. Past papers in random folders.
             Students lose time hunting for what they already have.
           </p>
-          <h2 className="mt-8 font-heading text-2xl font-semibold tracking-tight sm:text-[1.65rem]">
+          <h2 className="mt-8 font-heading text-2xl font-semibold tracking-tight">
             DarasaX brings it together.
           </h2>
           <p className="mt-2.5 text-base text-muted-foreground">
@@ -258,7 +258,7 @@ export default function LandingPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="font-heading text-2xl font-semibold tracking-tight sm:text-[1.65rem]">
+            <h2 className="font-heading text-2xl font-semibold tracking-tight">
               Built for how students actually study
             </h2>
             <p className="mt-1.5 max-w-xl text-base text-muted-foreground">
@@ -379,7 +379,7 @@ export default function LandingPage() {
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#0B1B2B]/92 via-[#1565C0]/75 to-[#1E88E5]/45" />
           <div className="relative z-10 flex h-full min-h-[280px] flex-col justify-end p-6 sm:min-h-[340px] sm:p-9">
-            <h2 className="font-heading text-2xl font-semibold text-white sm:text-[1.65rem]">
+            <h2 className="font-heading text-2xl font-semibold text-white">
               What Did I Miss?
             </h2>
             <p className="mt-2 max-w-lg text-base text-white/85">
@@ -398,7 +398,7 @@ export default function LandingPage() {
 
       <section id="how" className="bg-muted/40 py-16 sm:py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <h2 className="font-heading text-2xl font-semibold tracking-tight sm:text-[1.65rem]">
+          <h2 className="font-heading text-2xl font-semibold tracking-tight">
             How it works
           </h2>
           <div className="mt-7 grid gap-3 md:grid-cols-3">
@@ -423,7 +423,7 @@ export default function LandingPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
-        <h2 className="font-heading text-2xl font-semibold tracking-tight sm:text-[1.65rem]">
+        <h2 className="font-heading text-2xl font-semibold tracking-tight">
           Students are already feeling the difference
         </h2>
         <div className="mt-7 grid gap-3 md:grid-cols-3">
@@ -465,7 +465,7 @@ export default function LandingPage() {
             />
             <div className="absolute inset-0 bg-[#0B1B2B]/88" />
             <div className="relative z-10">
-              <h2 className="font-heading text-2xl font-semibold tracking-tight text-white sm:text-[1.65rem]">
+              <h2 className="font-heading text-2xl font-semibold tracking-tight text-white">
                 Your student journey, simplified.
               </h2>
               <p className="mx-auto mt-2 max-w-md text-base text-white/75">

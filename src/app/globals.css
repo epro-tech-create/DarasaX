@@ -80,20 +80,16 @@
 
 html {
   scroll-behavior: smooth;
-  /* Small screens keep the current base size */
-  font-size: 14px;
-}
-
-@media (min-width: 640px) {
-  html {
-    font-size: 15.5px;
-  }
-}
-
-@media (min-width: 1024px) {
-  html {
-    font-size: 16px;
-  }
+  /*
+   * Vercel/Geist dashboard scale (font families unchanged — Outfit headings,
+   * Figtree body):
+   *   headings 20px (page/section titles) · 24px max (hero/countdown)
+   *   section/card titles 14–16px · body/menus/buttons 14px
+   *   secondary text 13px · tertiary/captions 12px · pills/kbd 11px min
+   * A fixed 16px root keeps rem-based Tailwind sizes (text-xs/sm/base/lg/xl)
+   * on the same 12/14/16/18/20px ladder at every breakpoint.
+   */
+  font-size: 16px;
 }
 
 body {

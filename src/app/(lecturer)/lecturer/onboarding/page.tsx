@@ -136,7 +136,7 @@ export default function LecturerOnboardingPage() {
       <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
         Lecturer setup
       </p>
-      <h1 className="mt-1 font-heading text-xl font-semibold tracking-tight sm:text-2xl">
+      <h1 className="mt-1 font-heading text-xl font-semibold tracking-tight">
         Lecturer onboarding
       </h1>
       <p className="mt-1.5 text-sm text-muted-foreground sm:text-[13px]">

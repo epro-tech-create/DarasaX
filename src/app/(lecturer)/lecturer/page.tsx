@@ -97,7 +97,7 @@ export default function LecturerOverviewPage() {
     <div className="space-y-6 sm:space-y-7">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
-          <h1 className="font-heading text-xl font-semibold tracking-tight sm:text-2xl">
+          <h1 className="font-heading text-xl font-semibold tracking-tight">
             {getGreeting()}, {displayName}
           </h1>
           <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-muted-foreground sm:text-[13px]">

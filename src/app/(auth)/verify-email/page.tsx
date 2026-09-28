@@ -167,7 +167,7 @@ export default function VerifyEmailPage() {
       ) : (
         <>
           <AuthSteps current="verify" />
-          <h1 className="font-heading text-[15px] font-semibold tracking-tight">
+          <h1 className="font-heading text-xl font-semibold tracking-tight">
             Verify your email
           </h1>
           <p className="mt-0.5 text-[11px] text-muted-foreground">

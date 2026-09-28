@@ -27,14 +27,14 @@ export function StaffStatCard({
       <div className="pointer-events-none absolute -right-4 -top-6 h-20 w-20 rounded-full bg-primary/10 blur-2xl" />
       <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[11px] font-medium text-muted-foreground">
+          <p className="text-xs font-medium text-muted-foreground">
             {label}
           </p>
-          <p className="mt-1 truncate font-heading text-[22px] font-semibold leading-none tracking-tight">
+          <p className="mt-1 truncate font-heading text-xl font-semibold leading-none tracking-tight">
             {value}
           </p>
           {hint ? (
-            <p className="mt-1.5 truncate text-[11px] text-muted-foreground">{hint}</p>
+            <p className="mt-1.5 truncate text-xs text-muted-foreground">{hint}</p>
           ) : null}
         </div>
         <span
@@ -67,9 +67,9 @@ export function StaffSection({
     <section className={cn("surface overflow-hidden rounded-[20px]", className)}>
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border/70 px-4 py-3.5 sm:px-5">
         <div className="min-w-0 flex-1">
-          <h2 className="font-heading text-[14px] font-semibold tracking-tight">{title}</h2>
+          <h2 className="font-heading text-sm font-semibold tracking-tight">{title}</h2>
           {description ? (
-            <p className="mt-1 max-w-xl text-[11px] leading-snug text-muted-foreground sm:text-[12px]">
+            <p className="mt-1 max-w-xl text-xs leading-snug text-muted-foreground sm:text-[13px]">
               {description}
             </p>
           ) : null}

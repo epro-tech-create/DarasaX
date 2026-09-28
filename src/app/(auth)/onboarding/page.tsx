@@ -163,7 +163,7 @@ export default function OnboardingPage() {
           <p className="text-[9px] font-medium uppercase tracking-[0.14em] text-primary">
             Profile setup
           </p>
-          <h1 className="mt-1 font-heading text-[15px] font-semibold tracking-tight">
+          <h1 className="mt-1 font-heading text-xl font-semibold tracking-tight">
             Complete your DarasaX profile
           </h1>
           <p className="mt-0.5 text-[11px] text-muted-foreground">
