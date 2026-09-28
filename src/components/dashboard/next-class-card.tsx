@@ -86,7 +86,7 @@ export function NextClassCard({
         <div className="flex shrink-0 flex-wrap gap-2.5">
           <Button
             variant="secondary"
-            className="h-10 bg-white px-4 text-sm font-semibold text-[#152fb4] shadow-none hover:bg-white/90"
+            className="h-10 bg-white px-4 text-sm font-semibold text-[#b30d2e] shadow-none hover:bg-white/90"
             href={`/modules/${module.id}`}
           >
             View Module
