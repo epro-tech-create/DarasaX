@@ -37,7 +37,7 @@ export default function ModuleDetailPage() {
   const base = getModule(params.id);
   const [tab, setTab] = useState<(typeof tabs)[number]>("Overview");
   const { published, ready: materialsReady } = useMaterialsStore();
-  const { forModule, setCompleted } = useTopicProgress();
+  const { forModule, setCompleted, ready: topicsReady } = useTopicProgress();
   const { items: allAssignments } = useAssignments();
 
   const topics = useMemo(
@@ -124,7 +124,9 @@ export default function ModuleDetailPage() {
               </p>
             ) : null}
           </div>
-          {topics.length === 0 ? (
+          {!topicsReady ? (
+            <LoadingList />
+          ) : topics.length === 0 ? (
             <EmptyState
               icon={BookOpen}
               title="No topics yet"
@@ -176,11 +178,10 @@ export default function ModuleDetailPage() {
         <section className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h3 className="font-heading text-lg font-semibold">Notes & slides</h3>
-            {!materialsReady ? (
-              <p className="text-sm text-muted-foreground">Loading uploads…</p>
-            ) : null}
           </div>
-          {liveNotes.length === 0 ? (
+          {!materialsReady ? (
+            <LoadingList />
+          ) : liveNotes.length === 0 ? (
             <EmptyState
               icon={FileText}
               title="No notes yet"
@@ -212,7 +213,9 @@ export default function ModuleDetailPage() {
 
       {tab === "Past Papers" ? (
         <div className="space-y-3">
-          {livePapers.length === 0 ? (
+          {!materialsReady ? (
+            <LoadingList />
+          ) : livePapers.length === 0 ? (
             <EmptyState
               icon={ScrollText}
               title="No past papers yet"
@@ -229,7 +232,9 @@ export default function ModuleDetailPage() {
       {tab === "Resources" ? (
         <div className="space-y-3">
           <h3 className="font-heading text-lg font-semibold">All materials</h3>
-          {liveAll.length === 0 ? (
+          {!materialsReady ? (
+            <LoadingList />
+          ) : liveAll.length === 0 ? (
             <EmptyState
               icon={FileText}
               title="Nothing uploaded yet"
@@ -242,6 +247,25 @@ export default function ModuleDetailPage() {
           )}
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function LoadingList() {
+  return (
+    <div className="space-y-3" aria-label="Loading">
+      {[0, 1, 2].map((i) => (
+        <div
+          key={i}
+          className="surface flex animate-pulse items-center gap-3 rounded-[18px] p-4"
+        >
+          <div className="h-11 w-11 shrink-0 rounded-2xl bg-muted" />
+          <div className="min-w-0 flex-1 space-y-2">
+            <div className="h-3 w-2/5 rounded bg-muted" />
+            <div className="h-2.5 w-3/5 rounded bg-muted" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

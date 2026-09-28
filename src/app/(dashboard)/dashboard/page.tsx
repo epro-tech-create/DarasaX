@@ -26,19 +26,24 @@ function displayFirstName(name: string) {
 
 export default async function DashboardPage() {
   let liveTimetable: TimetableEntry[] = seedTimetable;
+  let displayName = currentUser.name;
   try {
     if (
       process.env.NEXT_PUBLIC_SUPABASE_URL &&
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     ) {
       const supabase = await createClient();
-      const { data } = await supabase
-        .from("timetable_entries")
-        .select("*")
-        .order("day")
-        .order("start_time");
-      if (data && data.length > 0) {
-        liveTimetable = data.map((row) => ({
+      // Timetable + session resolve concurrently instead of serially.
+      const [timetableRes, userRes] = await Promise.all([
+        supabase
+          .from("timetable_entries")
+          .select("*")
+          .order("day")
+          .order("start_time"),
+        supabase.auth.getUser(),
+      ]);
+      if (timetableRes.data && timetableRes.data.length > 0) {
+        liveTimetable = timetableRes.data.map((row) => ({
           id: row.id,
           streamId: row.stream_id as TimetableEntry["streamId"],
           moduleId: row.module_id,
@@ -49,23 +54,7 @@ export default async function DashboardPage() {
           lecturer: row.lecturer,
         }));
       }
-    }
-  } catch {
-    // Fall back to bundled timetable
-  }
-  const next = getNextClass(new Date(), DEFAULT_CLASS_STREAM, liveTimetable);
-  const examDays = formatCountdownParts(getMsUntilSchoolOpen()).days;
-
-  let displayName = currentUser.name;
-  try {
-    if (
-      process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    ) {
-      const supabase = await createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = userRes.data.user;
       if (user) {
         const { data: profile } = await supabase
           .from("profiles")
@@ -80,8 +69,10 @@ export default async function DashboardPage() {
       }
     }
   } catch {
-    // Keep mock greeting if auth/env is unavailable
+    // Fall back to bundled timetable and mock greeting
   }
+  const next = getNextClass(new Date(), DEFAULT_CLASS_STREAM, liveTimetable);
+  const examDays = formatCountdownParts(getMsUntilSchoolOpen()).days;
 
   const firstName = displayFirstName(displayName);
 

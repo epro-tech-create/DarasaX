@@ -81,12 +81,13 @@ export function DashboardUpcoming() {
 }
 
 export function DashboardModulesPreview() {
-  const { published } = useMaterialsStore();
-  const { topics } = useTopicProgress();
+  const { published, ready: materialsReady } = useMaterialsStore();
+  const { topics, ready: topicsReady } = useTopicProgress();
   const enriched = useMemo(
     () => enrichModules(modules, published, topics).slice(0, 6),
     [published, topics],
   );
+  const ready = materialsReady && topicsReady;
 
   return (
     <section>
@@ -96,11 +97,30 @@ export function DashboardModulesPreview() {
           See all
         </Button>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {enriched.map((module) => (
-          <ModuleCard key={module.id} module={module} />
-        ))}
-      </div>
+      {!ready ? (
+        <div
+          className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+          aria-label="Loading modules"
+        >
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <div
+              key={i}
+              className="surface animate-pulse rounded-[20px] p-5"
+            >
+              <div className="mb-4 h-11 w-11 rounded-2xl bg-muted" />
+              <div className="h-4 w-3/4 rounded bg-muted" />
+              <div className="mt-2 h-3 w-1/2 rounded bg-muted" />
+              <div className="mt-4 h-2 rounded-full bg-muted" />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {enriched.map((module) => (
+            <ModuleCard key={module.id} module={module} />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

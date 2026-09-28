@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Figtree, Outfit } from "next/font/google";
 import Script from "next/script";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { BootSplash } from "@/components/brand/boot-splash";
 import "./globals.css";
 
 const figtree = Figtree({
@@ -52,7 +53,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: themeInitScript }}
         />
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <BootSplash />
+          {children}
+        </ThemeProvider>
+        <noscript>
+          <style>{`#darasax-boot{display:none!important}`}</style>
+        </noscript>
       </body>
     </html>
   );

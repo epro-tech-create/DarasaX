@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { cachedQuery, invalidateQueries } from "@/lib/supabase/query-cache";
 import type { MaterialRow } from "@/types/database";
 import type { MaterialUpload, UploadKind, ClassStreamId, StaffRole } from "@/types";
 
@@ -187,13 +188,16 @@ export function useMaterialsStore() {
         setItems([]);
         return;
       }
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from("materials")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      setItems((data ?? []).map(toUpload));
+      const rows = await cachedQuery("materials:all", async () => {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from("materials")
+          .select("*")
+          .order("created_at", { ascending: false });
+        if (error) throw error;
+        return data ?? [];
+      });
+      setItems(rows.map(toUpload));
     } catch {
       // Keep previously loaded items on transient failures.
     } finally {
@@ -249,6 +253,7 @@ export function useMaterialsStore() {
       throw error;
     }
     const entry = toUpload(data);
+    invalidateQueries("materials");
     setItems((prev) => [entry, ...prev]);
     return entry;
   }, []);
@@ -320,6 +325,7 @@ export function useMaterialsStore() {
       .single();
     if (error) throw error;
     const updated = toUpload(data);
+    invalidateQueries("materials");
     setItems((prev) => prev.map((i) => (i.id === id ? updated : i)));
     return updated;
   }, []);
@@ -333,6 +339,7 @@ export function useMaterialsStore() {
       .maybeSingle();
     const { error } = await supabase.from("materials").delete().eq("id", id);
     if (error) throw error;
+    invalidateQueries("materials");
     if (existing?.file_path) {
       await supabase.storage.from(BUCKET).remove([existing.file_path]).catch(() => null);
     }

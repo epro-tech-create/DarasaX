@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { cachedQuery, invalidateQueries } from "@/lib/supabase/query-cache";
 import type { Database, ModuleTopicRow } from "@/types/database";
 import type { StaffRole, Topic } from "@/types";
 
@@ -65,14 +66,17 @@ export function useTopicsStore() {
         setRows([]);
         return;
       }
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from("module_topics")
-        .select("*")
-        .order("module_id")
-        .order("number");
-      if (error) throw error;
-      setRows(data ?? []);
+      const rows = await cachedQuery("topics:all", async () => {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from("module_topics")
+          .select("*")
+          .order("module_id")
+          .order("number");
+        if (error) throw error;
+        return data ?? [];
+      });
+      setRows(rows);
     } catch {
       // Keep previous rows on transient failures.
     } finally {
@@ -161,6 +165,7 @@ export function useTopicsStore() {
         .select("*")
         .single();
       if (error) throw error;
+      invalidateQueries("topics");
       setRows((prev) =>
         [...prev.filter((r) => r.id !== data.id), data].sort(
           (a, b) =>
@@ -192,6 +197,7 @@ export function useTopicsStore() {
       .select("*")
       .single();
     if (error) throw error;
+    invalidateQueries("topics");
     setRows((prev) => prev.map((r) => (r.id === id ? data : r)));
     return data;
   }, []);
@@ -200,6 +206,7 @@ export function useTopicsStore() {
     const supabase = createClient();
     const { error } = await supabase.from("module_topics").delete().eq("id", id);
     if (error) throw error;
+    invalidateQueries("topics");
     setRows((prev) => prev.filter((r) => r.id !== id));
   }, []);
 

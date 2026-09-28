@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { cachedQuery, invalidateQueries } from "@/lib/supabase/query-cache";
 import type { Database, TimetableRow } from "@/types/database";
 import type { ClassStreamId, TimetableEntry } from "@/types";
 
@@ -45,15 +46,18 @@ export function useTimetableStore() {
         setEntries([]);
         return;
       }
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from("timetable_entries")
-        .select("*")
-        .order("stream_id")
-        .order("day")
-        .order("start_time");
-      if (error) throw error;
-      setEntries((data ?? []).map(toEntry));
+      const rows = await cachedQuery("timetable:all", async () => {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from("timetable_entries")
+          .select("*")
+          .order("stream_id")
+          .order("day")
+          .order("start_time");
+        if (error) throw error;
+        return data ?? [];
+      });
+      setEntries(rows.map(toEntry));
     } catch {
       // Keep previously loaded entries on transient failures.
     } finally {
@@ -84,6 +88,7 @@ export function useTimetableStore() {
         .single();
       if (error) throw error;
       const next = toEntry(data);
+      invalidateQueries("timetable");
       setEntries((prev) => prev.map((e) => (e.id === id ? next : e)));
       return next;
     },
@@ -112,6 +117,7 @@ export function useTimetableStore() {
       .single();
     if (error) throw error;
     const entry = toEntry(data);
+    invalidateQueries("timetable");
     setEntries((prev) => [...prev, entry]);
     return entry;
   }, []);
@@ -123,6 +129,7 @@ export function useTimetableStore() {
       .delete()
       .eq("id", id);
     if (error) throw error;
+    invalidateQueries("timetable");
     setEntries((prev) => prev.filter((e) => e.id !== id));
   }, []);
 
