@@ -74,7 +74,7 @@ export function AppSidebar() {
         <button
           type="button"
           onClick={() => setCollapsed((v) => !v)}
-          className="focus-ring inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground"
+          className="focus-ring inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-none text-muted-foreground hover:bg-muted hover:text-foreground"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? (
@@ -94,7 +94,7 @@ export function AppSidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "focus-ring group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium transition-colors",
+                "focus-ring group flex items-center gap-2.5 rounded-none px-2.5 py-2 text-[13px] font-medium transition-colors",
                 active
                   ? "btn-gradient shadow-sm shadow-primary/25"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -119,7 +119,7 @@ export function AppSidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "focus-ring flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium transition-colors",
+                  "focus-ring flex items-center gap-2.5 rounded-none px-2.5 py-2 text-[13px] font-medium transition-colors",
                   active
                     ? "bg-muted text-foreground"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -171,7 +171,7 @@ export function TopBar({
       <button
         type="button"
         onClick={onOpenSearch}
-        className="focus-ring hidden min-w-0 flex-1 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-left text-[13px] text-muted-foreground transition hover:border-primary/30 md:flex md:max-w-md"
+        className="focus-ring hidden min-w-0 flex-1 items-center gap-2 rounded-none border border-border bg-card px-3 py-2 text-left text-[13px] text-muted-foreground transition hover:border-primary/30 md:flex md:max-w-md"
       >
         <span className="truncate">Search modules, notes, assignments...</span>
         <kbd className="ml-auto rounded-md border border-border bg-muted px-1.5 py-0.5 text-[11px] font-medium">
@@ -183,7 +183,7 @@ export function TopBar({
         <button
           type="button"
           onClick={onOpenSearch}
-          className="focus-ring inline-flex h-8 items-center justify-center rounded-xl border border-border bg-card px-2.5 text-xs font-medium text-muted-foreground hover:text-foreground md:hidden"
+          className="focus-ring inline-flex h-8 items-center justify-center rounded-none border border-border bg-card px-2.5 text-xs font-medium text-muted-foreground hover:text-foreground md:hidden"
           aria-label="Search"
         >
           Search
@@ -200,7 +200,7 @@ function NotificationBellButton({ onOpen }: { onOpen: () => void }) {
     <button
       type="button"
       onClick={onOpen}
-      className="focus-ring relative inline-flex h-8 w-8 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground hover:text-foreground"
+      className="focus-ring relative inline-flex h-8 w-8 items-center justify-center rounded-none border border-border bg-card text-muted-foreground hover:text-foreground"
       aria-label={
         unreadCount > 0
           ? `Notifications, ${unreadCount} unread`
