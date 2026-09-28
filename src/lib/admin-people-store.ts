@@ -164,6 +164,31 @@ export function useAdminPeopleStore() {
     [],
   );
 
+  const deleteLog = useCallback(async (id: string) => {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("audit_log")
+      .delete()
+      .eq("id", Number(id));
+    if (error) throw error;
+    setAudit((prev) => prev.filter((row) => row.id !== id));
+  }, []);
+
+  const clearLogs = useCallback(async (ids: string[]) => {
+    if (ids.length === 0) return;
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("audit_log")
+      .delete()
+      .in(
+        "id",
+        ids.map((id) => Number(id)),
+      );
+    if (error) throw error;
+    const gone = new Set(ids);
+    setAudit((prev) => prev.filter((row) => !gone.has(row.id)));
+  }, []);
+
   const addStudent = useCallback(
     async (
       input: StudentInput,
@@ -401,6 +426,8 @@ export function useAdminPeopleStore() {
     deleteClassRep,
     setClassRepStatus,
     log,
+    deleteLog,
+    clearLogs,
   };
 }
 

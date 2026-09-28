@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { AnnouncementCard } from "@/components/announcements/announcement-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
-import { announcements } from "@/data/mock";
+import { useMaterialsStore } from "@/lib/materials-store";
 import { cn } from "@/lib/utils";
 import {
   BookOpen,
@@ -30,18 +30,34 @@ const categories: Array<{
 ];
 
 export default function AnnouncementsPage() {
+  const { published, ready } = useMaterialsStore();
   const [category, setCategory] = useState<(typeof categories)[number]["id"]>(
     "all",
+  );
+
+  const announcements = useMemo(
+    () =>
+      published
+        .filter((item) => item.kind === "announcement")
+        .map((item) => ({
+          id: item.id,
+          title: item.title,
+          body: item.body || `Posted by ${item.uploadedBy}`,
+          category: "general" as const,
+          pinned: false,
+          postedAt: item.createdAt,
+        })),
+    [published],
   );
 
   const filtered = useMemo(() => {
     return announcements
       .filter((a) => category === "all" || a.category === category)
-      .sort((a, b) => {
-        if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
-        return new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime();
-      });
-  }, [category]);
+      .sort(
+        (a, b) =>
+          new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime(),
+      );
+  }, [announcements, category]);
 
   const pinnedCount = announcements.filter((a) => a.pinned).length;
 
@@ -102,8 +118,12 @@ export default function AnnouncementsPage() {
       {filtered.length === 0 ? (
         <EmptyState
           icon={Megaphone}
-          title="No announcements"
-          description="You’re all caught up. New posts will appear here."
+          title={ready ? "No announcements" : "Loading announcements"}
+          description={
+            ready
+              ? "You’re all caught up. New posts will appear here."
+              : "Checking for new posts."
+          }
         />
       ) : (
         <div className="space-y-2.5">

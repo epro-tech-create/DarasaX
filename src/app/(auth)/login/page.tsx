@@ -8,6 +8,7 @@ import { AuthShell } from "@/components/auth/auth-shell";
 import { AuthSubmitButton } from "@/components/auth/auth-submit-button";
 import { GoogleButton } from "@/components/auth/google-button";
 import { PasswordField } from "@/components/auth/password-field";
+import { recordAudit } from "@/lib/audit-log";
 import { getAuthErrorMessage } from "@/lib/auth/errors";
 import { isValidEmail, normalizeEmail } from "@/lib/auth/email";
 import { signInWithGoogle } from "@/lib/auth/oauth";
@@ -66,6 +67,12 @@ function StudentLoginForm() {
       if (!data.user) throw new Error("No user");
 
       const profile = await ensureProfile(supabase, data.user);
+      await recordAudit({
+        actor: profile?.full_name ?? normalized,
+        role: "student",
+        action: "login",
+        summary: "Signed in",
+      });
       const dest = next && next.startsWith("/") ? next : getPostAuthRedirect(profile);
       router.replace(dest);
       router.refresh();
@@ -209,6 +216,13 @@ function StaffLoginForm({
         role,
         email: normalized,
         password,
+      });
+      await recordAudit({
+        actor: staffSession.name,
+        role: staffSession.role,
+        action: "login",
+        summary: "Signed in",
+        streamId: staffSession.streamId,
       });
       const dest =
         role === "lecturer"

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { cachedQuery, invalidateQueries } from "@/lib/supabase/query-cache";
 import type { MaterialRow } from "@/types/database";
+import { recordAudit } from "@/lib/audit-log";
 import type { MaterialUpload, UploadKind, ClassStreamId, StaffRole } from "@/types";
 
 const BUCKET = "materials";
@@ -39,6 +40,7 @@ function toUpload(row: MaterialRow): MaterialUpload {
     filePath: row.file_path ?? undefined,
     fileName: row.file_name ?? undefined,
     mimeType: row.mime_type ?? undefined,
+    body: row.body ?? undefined,
   };
 }
 
@@ -255,6 +257,17 @@ export function useMaterialsStore() {
     const entry = toUpload(data);
     invalidateQueries("materials");
     setItems((prev) => [entry, ...prev]);
+    await recordAudit({
+      actor: input.uploadedBy,
+      role: input.role,
+      action: input.kind === "announcement" ? "announcement" : "upload",
+      summary:
+        input.kind === "announcement"
+          ? `Published announcement “${entry.title}”`
+          : `Uploaded ${entry.kind.replace("_", " ")} “${entry.title}”`,
+      detail: entry.fileName,
+      streamId: entry.streamId ?? null,
+    });
     return entry;
   }, []);
 
@@ -327,14 +340,69 @@ export function useMaterialsStore() {
     const updated = toUpload(data);
     invalidateQueries("materials");
     setItems((prev) => prev.map((i) => (i.id === id ? updated : i)));
+    await recordAudit({
+      actor: updated.uploadedBy,
+      role: updated.role,
+      action: updated.kind === "announcement" ? "announcement" : "upload",
+      summary: `Updated ${updated.kind.replace("_", " ")} “${updated.title}”`,
+      streamId: updated.streamId ?? null,
+    });
     return updated;
   }, []);
+
+  const publishNotice = useCallback(
+    async (input: {
+      title: string;
+      body: string;
+      uploadedBy: string;
+      role: StaffRole;
+      streamId?: ClassStreamId | "all" | null;
+    }) => {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const id = `ann-${Date.now()}`;
+      const streamId =
+        !input.streamId || input.streamId === "all" ? null : input.streamId;
+      const { data, error } = await supabase
+        .from("materials")
+        .insert({
+          id,
+          title: input.title.trim(),
+          body: input.body.trim(),
+          kind: "announcement",
+          stream_id: streamId,
+          status: "published",
+          uploaded_by: input.uploadedBy,
+          uploaded_by_id: user?.id ?? null,
+          role: input.role,
+          downloads: 0,
+        })
+        .select("*")
+        .single();
+      if (error) throw error;
+      const entry = toUpload(data);
+      invalidateQueries("materials");
+      setItems((prev) => [entry, ...prev]);
+      await recordAudit({
+        actor: input.uploadedBy,
+        role: input.role,
+        action: "announcement",
+        summary: `Published announcement “${entry.title}”`,
+        detail: input.body.trim().slice(0, 180),
+        streamId,
+      });
+      return entry;
+    },
+    [],
+  );
 
   const deleteItem = useCallback(async (id: string) => {
     const supabase = createClient();
     const { data: existing } = await supabase
       .from("materials")
-      .select("file_path")
+      .select("*")
       .eq("id", id)
       .maybeSingle();
     const { error } = await supabase.from("materials").delete().eq("id", id);
@@ -344,6 +412,15 @@ export function useMaterialsStore() {
       await supabase.storage.from(BUCKET).remove([existing.file_path]).catch(() => null);
     }
     setItems((prev) => prev.filter((i) => i.id !== id));
+    if (existing) {
+      await recordAudit({
+        actor: existing.uploaded_by,
+        role: existing.role ?? undefined,
+        action: "other",
+        summary: `Deleted ${existing.kind.replace("_", " ")} “${existing.title}”`,
+        streamId: existing.stream_id,
+      });
+    }
   }, []);
 
   const bumpDownloads = useCallback((id: string) => {
@@ -360,6 +437,7 @@ export function useMaterialsStore() {
     ready,
     refresh,
     publish,
+    publishNotice,
     updateItem,
     deleteItem,
     bumpDownloads,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { recordAudit } from "@/lib/audit-log";
 import { createClient } from "@/lib/supabase/client";
 import { cachedQuery, invalidateQueries } from "@/lib/supabase/query-cache";
 import type { Database, ModuleTopicRow } from "@/types/database";
@@ -137,7 +138,16 @@ export function useTopicsStore() {
     writeProgress(map);
     setProgressTick((n) => n + 1);
     window.dispatchEvent(new Event("darasax:topics"));
-  }, []);
+    const topic = rows.find((row) => row.id === topicId);
+    void recordAudit({
+      role: "student",
+      action: "other",
+      summary: completed
+        ? `Marked topic done: ${topic?.title ?? topicId}`
+        : `Reopened topic: ${topic?.title ?? topicId}`,
+      detail: topic?.module_id,
+    });
+  }, [rows]);
 
   const createTopic = useCallback(
     async (
@@ -172,6 +182,13 @@ export function useTopicsStore() {
             a.module_id.localeCompare(b.module_id) || a.number - b.number,
         ),
       );
+      await recordAudit({
+        actor: input.createdBy,
+        role: input.role,
+        action: "publish",
+        summary: `Added topic “${data.title}”`,
+        detail: data.module_id,
+      });
       return data;
     },
     [],
@@ -199,16 +216,31 @@ export function useTopicsStore() {
     if (error) throw error;
     invalidateQueries("topics");
     setRows((prev) => prev.map((r) => (r.id === id ? data : r)));
+    await recordAudit({
+      actor: data.created_by ?? undefined,
+      role: data.role ?? undefined,
+      action: "publish",
+      summary: `Updated topic “${data.title}”`,
+      detail: data.module_id,
+    });
     return data;
   }, []);
 
   const deleteTopic = useCallback(async (id: string) => {
+    const existing = rows.find((row) => row.id === id);
     const supabase = createClient();
     const { error } = await supabase.from("module_topics").delete().eq("id", id);
     if (error) throw error;
     invalidateQueries("topics");
     setRows((prev) => prev.filter((r) => r.id !== id));
-  }, []);
+    await recordAudit({
+      actor: existing?.created_by ?? undefined,
+      role: existing?.role ?? undefined,
+      action: "other",
+      summary: `Deleted topic “${existing?.title ?? id}”`,
+      detail: existing?.module_id,
+    });
+  }, [rows]);
 
   return {
     rows,

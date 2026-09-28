@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ScrollText } from "lucide-react";
+import { ScrollText, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { StaffSection, StaffStatCard } from "@/components/staff/staff-ui";
 import { useAdminPeopleStore } from "@/lib/admin-people-store";
 import type { AuditAction } from "@/types";
@@ -27,9 +28,11 @@ const actionTone: Record<AuditAction, "default" | "primary" | "success" | "warni
 };
 
 export default function AdminAuditPage() {
-  const { audit } = useAdminPeopleStore();
+  const { audit, deleteLog, clearLogs } = useAdminPeopleStore();
   const [action, setAction] = useState<"all" | AuditAction>("all");
   const [query, setQuery] = useState("");
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [error, setError] = useState("");
 
   const filtered = useMemo(() => {
     return audit.filter((row) => {
@@ -91,9 +94,38 @@ export default function AdminAuditPage() {
           <option value="student_add">Student add</option>
           <option value="cr_add">CR add</option>
           <option value="issue_update">Issues</option>
-          <option value="login">Security / login</option>
+          <option value="announcement">Announcements</option>
+          <option value="publish">Topics</option>
+          <option value="other">Deletes and student activity</option>
+          <option value="login">Sign in</option>
         </select>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => {
+            if (filtered.length === 0) return;
+            if (
+              !window.confirm(
+                `Delete ${filtered.length} audit event${filtered.length === 1 ? "" : "s"}?`,
+              )
+            ) {
+              return;
+            }
+            setError("");
+            void clearLogs(filtered.map((row) => row.id)).catch(() => {
+              setError(
+                "Could not delete logs. Run the latest Supabase migration, then try again.",
+              );
+            });
+          }}
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+          Delete shown
+        </Button>
       </div>
+      {error ? (
+        <p className="text-[12px] font-medium text-danger">{error}</p>
+      ) : null}
 
       <StaffSection title="Activity trail" description="Newest first">
         <div className="relative space-y-0">
@@ -105,9 +137,11 @@ export default function AdminAuditPage() {
                   "relative z-10 mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ring-4 ring-background",
                   row.role === "admin"
                     ? "bg-primary"
-                    : row.role === "class_rep"
+                    : row.role === "lecturer"
                       ? "bg-cyan"
-                      : "bg-warning",
+                      : row.role === "class_rep"
+                        ? "bg-warning"
+                        : "bg-muted-foreground",
                 )}
               />
               <div className="min-w-0 flex-1 rounded-xl border border-border/70 bg-muted/20 px-3 py-2.5">
@@ -127,9 +161,32 @@ export default function AdminAuditPage() {
                 <p className="mt-1.5 text-[12px] font-semibold">{row.summary}</p>
                 <p className="mt-0.5 text-[11px] text-muted-foreground">
                   {row.actor}
+                  {row.role ? ` · ${row.role.replace("_", " ")}` : ""}
                   {row.streamId ? ` · ${row.streamId}` : ""}
                   {row.detail ? ` · ${row.detail}` : ""}
                 </p>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="mt-2"
+                  disabled={busyId === row.id}
+                  onClick={() => {
+                    if (!window.confirm("Delete this audit event?")) return;
+                    setBusyId(row.id);
+                    setError("");
+                    void deleteLog(row.id)
+                      .catch(() => {
+                        setError(
+                          "Could not delete this log. Run the latest Supabase migration, then try again.",
+                        );
+                      })
+                      .finally(() => setBusyId(null));
+                  }}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Delete
+                </Button>
               </div>
             </div>
           ))}

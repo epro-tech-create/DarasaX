@@ -270,6 +270,7 @@ export interface MaterialUpload {
   filePath?: string;
   fileName?: string;
   mimeType?: string;
+  body?: string;
 }
 
 export interface StudentMonitor {

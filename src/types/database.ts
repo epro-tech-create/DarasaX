@@ -179,6 +179,7 @@ export type Database = {
           mime_type: string | null;
           size_bytes: number | null;
           size_label: string | null;
+          body: string | null;
           downloads: number;
           created_at: string;
           updated_at: string;
@@ -199,6 +200,7 @@ export type Database = {
           mime_type?: string | null;
           size_bytes?: number | null;
           size_label?: string | null;
+          body?: string | null;
           downloads?: number;
           created_at?: string;
           updated_at?: string;
@@ -219,6 +221,7 @@ export type Database = {
           mime_type?: string | null;
           size_bytes?: number | null;
           size_label?: string | null;
+          body?: string | null;
           downloads?: number;
           created_at?: string;
           updated_at?: string;

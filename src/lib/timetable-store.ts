@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { recordAudit } from "@/lib/audit-log";
 import { createClient } from "@/lib/supabase/client";
 import { cachedQuery, invalidateQueries } from "@/lib/supabase/query-cache";
 import type { Database, TimetableRow } from "@/types/database";
@@ -90,6 +91,12 @@ export function useTimetableStore() {
       const next = toEntry(data);
       invalidateQueries("timetable");
       setEntries((prev) => prev.map((e) => (e.id === id ? next : e)));
+      await recordAudit({
+        action: "timetable_edit",
+        summary: `Updated timetable session ${next.startTime}–${next.endTime}`,
+        detail: next.room,
+        streamId: next.streamId,
+      });
       return next;
     },
     [],
@@ -119,10 +126,17 @@ export function useTimetableStore() {
     const entry = toEntry(data);
     invalidateQueries("timetable");
     setEntries((prev) => [...prev, entry]);
+    await recordAudit({
+      action: "timetable_edit",
+      summary: `Added timetable session ${entry.startTime}–${entry.endTime}`,
+      detail: entry.room,
+      streamId: entry.streamId,
+    });
     return entry;
   }, []);
 
   const deleteEntry = useCallback(async (id: string) => {
+    const existing = entries.find((entry) => entry.id === id);
     const supabase = createClient();
     const { error } = await supabase
       .from("timetable_entries")
@@ -131,7 +145,12 @@ export function useTimetableStore() {
     if (error) throw error;
     invalidateQueries("timetable");
     setEntries((prev) => prev.filter((e) => e.id !== id));
-  }, []);
+    await recordAudit({
+      action: "timetable_edit",
+      summary: `Removed timetable session ${existing?.startTime ?? ""}`.trim(),
+      streamId: existing?.streamId,
+    });
+  }, [entries]);
 
   const forStream = useCallback(
     (streamId: ClassStreamId) => entries.filter((e) => e.streamId === streamId),
