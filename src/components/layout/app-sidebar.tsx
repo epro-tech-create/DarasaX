@@ -53,7 +53,7 @@ export function AppSidebar() {
   return (
     <aside
       className={cn(
-        "relative sticky top-0 hidden h-screen shrink-0 flex-col overflow-hidden border-r border-white/10 bg-[#3c0386] text-white transition-all duration-300 lg:flex",
+        "relative sticky top-0 hidden h-screen shrink-0 flex-col overflow-hidden border-r border-white/10 bg-[#0f172a] text-white transition-all duration-300 lg:flex",
         collapsed ? "w-[76px]" : "w-[232px]",
       )}
     >
@@ -98,7 +98,7 @@ export function AppSidebar() {
               className={cn(
                 "focus-ring group flex items-center gap-2.5 rounded-full px-3.5 py-2 text-[13px] font-medium transition-all",
                 active
-                  ? "bg-white font-semibold text-[#3c0386] shadow-md shadow-black/20"
+                  ? "bg-white font-semibold text-[#0f172a] shadow-md shadow-black/20"
                   : "text-white/65 hover:bg-white/10 hover:text-white",
                 collapsed && "justify-center rounded-2xl px-0",
               )}
@@ -123,7 +123,7 @@ export function AppSidebar() {
                 className={cn(
                   "focus-ring flex items-center gap-2.5 rounded-full px-3.5 py-2 text-[13px] font-medium transition-all",
                   active
-                    ? "bg-white font-semibold text-[#3c0386] shadow-md shadow-black/20"
+                    ? "bg-white font-semibold text-[#0f172a] shadow-md shadow-black/20"
                     : "text-white/65 hover:bg-white/10 hover:text-white",
                   collapsed && "justify-center rounded-2xl px-0",
                 )}

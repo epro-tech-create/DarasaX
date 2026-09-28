@@ -107,7 +107,7 @@ export default function MissedPage() {
               >
                 <div
                   className="flex items-start justify-between gap-3 px-5 py-4 text-white"
-                    style={{ backgroundColor: module?.accent ?? "#3C0386" }}
+                    style={{ backgroundColor: module?.accent ?? "#1D4ED8" }}
                 >
                   <div className="min-w-0">
                     <h2 className="font-heading text-[15px] font-semibold leading-snug">

@@ -73,7 +73,7 @@ function ClassBlock({
   compact?: boolean;
 }) {
   const module = getModule(entry.moduleId);
-  const accent = module?.accent ?? "#3C0386";
+  const accent = module?.accent ?? "#1D4ED8";
 
   return (
     <div
@@ -367,7 +367,7 @@ export default function TimetablePage() {
                         <span
                           className="h-2.5 w-2.5 rounded-full"
                           style={{
-                            backgroundColor: module?.accent ?? "#3C0386",
+                            backgroundColor: module?.accent ?? "#1D4ED8",
                           }}
                         />
                       </div>
@@ -454,7 +454,7 @@ export default function TimetablePage() {
                       <div className="divide-y divide-border/60">
                         {entries.map((entry) => {
                           const module = getModule(entry.moduleId);
-                          const accent = module?.accent ?? "#3C0386";
+                          const accent = module?.accent ?? "#1D4ED8";
                           return (
                             <div
                               key={entry.id}

@@ -60,7 +60,7 @@ export function DashboardUpcoming() {
                 <div className="flex min-w-0 items-center gap-3">
                   <span
                     className="h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[11px] font-bold text-white hidden sm:inline-flex"
-                    style={{ backgroundColor: module?.accent || "#3C0386" }}
+                    style={{ backgroundColor: module?.accent || "#1D4ED8" }}
                   >
                     {module?.code.slice(0, 2) || "DX"}
                   </span>
