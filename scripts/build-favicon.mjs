@@ -35,14 +35,17 @@ function ico(images) {
   return Buffer.concat([dir, ...entries, ...images.map((img) => img.png)]);
 }
 
-const sizes = [16, 32, 48];
+const sizes = [16, 32, 48, 256];
 const images = [];
 for (const size of sizes) {
   const png = await sharp(Buffer.from(svg)).resize(size, size).png().toBuffer();
   images.push({ size, png });
 }
 
-fs.writeFileSync("public/favicon.ico", ico(images));
+const icon = ico(images);
+// Next.js serves src/app/favicon.ico ahead of public/favicon.ico.
+fs.writeFileSync("src/app/favicon.ico", icon);
+fs.writeFileSync("public/favicon.ico", icon);
 fs.writeFileSync(
   "public/favicon-32.png",
   await sharp(Buffer.from(svg)).resize(32, 32).png().toBuffer(),
