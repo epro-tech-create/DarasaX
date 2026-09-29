@@ -39,6 +39,9 @@ function StudentLoginForm() {
   useEffect(() => {
     const err = searchParams.get("error");
     if (err) setError(err);
+    if (searchParams.get("expired") === "1") {
+      setInfo("You were signed out after 10 minutes of inactivity.");
+    }
   }, [searchParams]);
 
   async function onSubmit(e: FormEvent) {
@@ -182,9 +185,13 @@ function StaffLoginForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (searchParams.get("expired") === "1") {
+      setInfo("You were signed out after 10 minutes of inactivity.");
+    }
     if (!ready || !session) return;
     if (session.role === role) {
       const dest =
@@ -195,7 +202,7 @@ function StaffLoginForm({
             : APP_HOME[role];
       router.replace(dest);
     }
-  }, [next, ready, role, router, session]);
+  }, [next, ready, role, router, searchParams, session]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -262,6 +269,7 @@ function StaffLoginForm({
       </p>
 
       <form className="mt-5 space-y-3.5 sm:mt-4 sm:space-y-3" onSubmit={onSubmit} noValidate>
+        {info ? <AuthAlert message={info} tone="info" /> : null}
         {error ? <AuthAlert message={error} /> : null}
 
         <label className="block text-sm font-medium sm:text-xs">

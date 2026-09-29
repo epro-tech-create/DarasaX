@@ -7,6 +7,7 @@ import {
   forbiddenRedirect,
   getAppRole,
   pathAllowedForRole,
+  roleFromHost,
 } from "@/lib/app-role";
 
 const AUTH_ROUTES = new Set([
@@ -55,7 +56,8 @@ function isStaffProtected(
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const appRole = getAppRole();
+  const appRole =
+    roleFromHost(request.headers.get("host")) ?? getAppRole();
 
   if (
     pathname.startsWith("/_next") ||

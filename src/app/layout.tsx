@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Figtree, Outfit } from "next/font/google";
 import Script from "next/script";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { SessionTimeout } from "@/components/auth/session-timeout";
 import { BootSplash } from "@/components/brand/boot-splash";
 import "./globals.css";
 
@@ -58,6 +59,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           dangerouslySetInnerHTML={{ __html: themeInitScript }}
         />
         <ThemeProvider>
+          <SessionTimeout />
           <BootSplash />
           {children}
         </ThemeProvider>

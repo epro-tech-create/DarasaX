@@ -23,7 +23,37 @@ export const APP_LABEL: Record<AppRole, string> = {
   lecturer: "Lecturer",
 };
 
+/** Hostnames decide the portal even if a build was started without APP_ROLE. */
+export function roleFromHost(host: string | null | undefined): AppRole | null {
+  if (!host) return null;
+  const value = host.toLowerCase();
+  const [name, port] = value.split(":");
+  if (port === "3006") return "admin";
+  if (port === "3007") return "class_rep";
+  if (port === "3008") return "lecturer";
+  if (name === "admin.eprotechtz.com" || name.startsWith("darasax-admin")) {
+    return "admin";
+  }
+  if (name === "cr.eprotechtz.com" || name.startsWith("darasax-cr")) {
+    return "class_rep";
+  }
+  if (
+    name === "lecturer.eprotechtz.com" ||
+    name.startsWith("darasax-lecturer")
+  ) {
+    return "lecturer";
+  }
+  if (name === "darasax.eprotechtz.com" || name === "darasax.vercel.app") {
+    return "student";
+  }
+  return null;
+}
+
 export function getAppRole(): AppRole {
+  if (typeof window !== "undefined") {
+    const fromHost = roleFromHost(window.location.host);
+    if (fromHost) return fromHost;
+  }
   const raw = (
     process.env.APP_ROLE ||
     process.env.NEXT_PUBLIC_APP_ROLE ||
