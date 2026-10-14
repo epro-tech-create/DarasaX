@@ -21,7 +21,7 @@ import {
 import { Logo } from "@/components/brand/logo";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { currentUser } from "@/data/mock";
+import { useStudentProfile } from "@/components/providers/student-profile-provider";
 import { useNotifications } from "@/lib/notifications-store";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -45,6 +45,8 @@ const bottomNav = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { profile, avatarUrl } = useStudentProfile();
+  const displayName = profile?.full_name?.trim() || "Student";
   const [collapsed, setCollapsed] = useState(false);
 
   const isActive = (href: string) =>
@@ -136,19 +138,19 @@ export function AppSidebar() {
 
         {!collapsed ? (
           <div className="mt-1.5 flex items-center gap-2.5 rounded-xl bg-muted/60 px-2.5 py-2">
-            <UserAvatar name={currentUser.name} size="sm" />
+            <UserAvatar name={displayName} src={avatarUrl} size="sm" />
             <div className="min-w-0">
               <p className="truncate text-[13px] font-semibold">
-                {currentUser.name}
+                {displayName}
               </p>
               <p className="truncate text-[11px] text-muted-foreground">
-                Year {currentUser.year} · Sem {currentUser.semester}
+                {profile?.year_of_study ? `Year ${profile.year_of_study}` : "Student"} {profile?.semester ? ` / Sem ${profile.semester}` : ""}
               </p>
             </div>
           </div>
         ) : (
           <div className="flex justify-center pt-1.5">
-            <UserAvatar name={currentUser.name} size="sm" />
+            <UserAvatar name={displayName} src={avatarUrl} size="sm" />
           </div>
         )}
       </div>

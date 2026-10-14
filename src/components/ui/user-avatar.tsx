@@ -1,12 +1,16 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 import type { HTMLAttributes } from "react";
 
 export function UserAvatar({
   name,
+  src,
   className,
   size = "md",
 }: {
   name: string;
+  src?: string | null;
   className?: string;
   size?: "sm" | "md" | "lg";
 } & HTMLAttributes<HTMLDivElement>) {
@@ -26,13 +30,18 @@ export function UserAvatar({
   return (
     <div
       className={cn(
-        "inline-flex items-center justify-center rounded-full bg-primary/15 font-semibold text-primary",
+        "relative inline-flex shrink-0 overflow-hidden items-center justify-center rounded-full bg-primary/15 font-semibold text-primary",
         sizes[size],
         className,
       )}
       aria-label={name}
     >
       {initials}
+      {src ? (
+        // Signed/private avatar URLs and OAuth images are resolved by the caller.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img key={src} src={src} alt="" referrerPolicy="no-referrer" className="absolute inset-0 h-full w-full object-cover" onError={(event) => { event.currentTarget.style.display = "none"; }} />
+      ) : null}
     </div>
   );
 }

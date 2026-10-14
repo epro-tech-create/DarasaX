@@ -1,3 +1,4 @@
+import { StudentGreeting } from "@/components/dashboard/student-greeting";
 import { ExamCountdown } from "@/components/dashboard/exam-countdown";
 import {
   DashboardModulesPreview,
@@ -15,33 +16,19 @@ import { createClient } from "@/lib/supabase/server";
 import { DEFAULT_CLASS_STREAM, timetable as seedTimetable } from "@/data/mock";
 import type { TimetableEntry } from "@/types";
 
-function displayFirstName(name: string) {
-  const cleaned = name.replace(/\s+/g, " ").trim();
-  const parts = cleaned.split(" ");
-  if (parts.length >= 2 && parts[0].toLowerCase() === parts[1].toLowerCase()) {
-    return parts[0];
-  }
-  return parts[0] || cleaned;
-}
-
 export default async function DashboardPage() {
   let liveTimetable: TimetableEntry[] = seedTimetable;
-  let displayName = currentUser.name;
   try {
     if (
       process.env.NEXT_PUBLIC_SUPABASE_URL &&
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     ) {
       const supabase = await createClient();
-      // Timetable + session resolve concurrently instead of serially.
-      const [timetableRes, userRes] = await Promise.all([
-        supabase
+      const timetableRes = await supabase
           .from("timetable_entries")
           .select("*")
           .order("day")
-          .order("start_time"),
-        supabase.auth.getUser(),
-      ]);
+          .order("start_time");
       if (timetableRes.data && timetableRes.data.length > 0) {
         liveTimetable = timetableRes.data.map((row) => ({
           id: row.id,
@@ -54,35 +41,20 @@ export default async function DashboardPage() {
           lecturer: row.lecturer,
         }));
       }
-      const user = userRes.data.user;
-      if (user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("full_name")
-          .eq("id", user.id)
-          .maybeSingle();
-        displayName =
-          profile?.full_name ||
-          (user.user_metadata?.full_name as string | undefined) ||
-          user.email?.split("@")[0] ||
-          displayName;
-      }
+
     }
   } catch {
-    // Fall back to bundled timetable and mock greeting
+    // Fall back to bundled timetable and a generic greeting
   }
   const next = getNextClass(new Date(), DEFAULT_CLASS_STREAM, liveTimetable);
   const examDays = formatCountdownParts(getMsUntilSchoolOpen()).days;
 
-  const firstName = displayFirstName(displayName);
 
   return (
     <div className="space-y-7">
       <div className="flex flex-col gap-1.5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="font-heading text-xl font-semibold tracking-tight">
-            {getGreeting()}, {firstName} 👋
-          </h1>
+          <StudentGreeting greeting={getGreeting()} />
           <p className="mt-1 text-[12px] text-muted-foreground sm:text-[13px]">
             Ready to continue your semester?
           </p>

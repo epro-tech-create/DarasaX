@@ -289,3 +289,10 @@ Earlier schema changes exist in this database without recorded migration history
 On 2026-10-14, `20261014010000_two_class_representatives.sql` was applied to production. Each configured class supports two active CRs. Database triggers enforce this on appointment, activation, and class changes. Appointing a second CR does not replace the first. Deactivating or removing a CR frees a slot. Transactional live tests passed and were rolled back.
 
 CRs retain their existing student authentication account and password. Administrators appoint them by verified email; passwords are never displayed to administrators. A CR who forgets their password uses the normal Forgot password flow. The updated admin UI must be deployed: older versions automatically deactivate other CRs when editing membership.
+
+
+### Student profile photos
+
+On 2026-10-15, `20261015000000_private_student_avatars.sql` was applied to project `psrtifnhstkujmschwem` and recorded in migration history. It creates a private `avatars` bucket with a 1 MB object limit and JPEG/PNG/WebP MIME types. Authenticated users may read, upload, and remove files only within their own UUID folder. The app validates images up to 5 MB, decodes and resizes them to at most 768 pixels, and uploads WebP images using unique filenames. Private photos use signed URLs; passwords and staff roles are not part of profile editing.
+
+Transactional live RLS tests passed for own-avatar access, blocked foreign-avatar reads/uploads, and blocked edits to another student's profile. Profile and sidebar UI updates require deployment of the corresponding application commit.
