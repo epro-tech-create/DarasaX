@@ -127,7 +127,8 @@ export function useAdminPeopleStore() {
   }, []);
 
   useEffect(() => {
-    void refresh();
+    const timer = setTimeout(() => void refresh(), 0);
+    return () => clearTimeout(timer);
   }, [refresh]);
 
   const log = useCallback(
@@ -309,12 +310,18 @@ export function useAdminPeopleStore() {
   );
 
   const addClassRep = useCallback(async (input: ClassRepInput) => {
-    void input;
-    // CRs own a Supabase Auth account, so only they can create their profile
-    // row (RLS self-registration). Admins manage registered CRs below.
-    throw new Error(
-      "CRs create their own login on the Class Rep portal first — then edit their stream and status here.",
-    );
+    const supabase = createClient();
+    const { data, error } = await supabase.rpc("appoint_class_rep", {
+      student_email: input.email.trim().toLowerCase(),
+      assigned_stream: input.streamId,
+      display_name: input.name.trim(),
+      contact_phone: input.phone?.trim() || null,
+      account_status: input.status ?? "active",
+    });
+    if (error || !data) throw new Error("Could not appoint CR. Confirm the student has a verified account and this stream has no active representative.");
+    const account = toClassRep(data);
+    setClassReps((previous) => [account, ...previous.filter((entry) => entry.id !== account.id)]);
+    return account;
   }, []);
 
   const updateClassRep = useCallback(

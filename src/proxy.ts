@@ -10,23 +10,6 @@ import {
   roleFromHost,
 } from "@/lib/app-role";
 
-const AUTH_ROUTES = new Set([
-  "/login",
-  "/signup",
-  "/register",
-  "/verify-email",
-  "/forgot-password",
-  "/forgot-password/verify",
-  "/reset-password",
-]);
-
-function isAuthPath(pathname: string) {
-  if (AUTH_ROUTES.has(pathname)) return true;
-  if (pathname.startsWith("/forgot-password")) return true;
-  if (pathname.startsWith("/auth/")) return true;
-  return false;
-}
-
 function isStudentProtected(pathname: string) {
   const roots = [
     "/dashboard",
@@ -45,143 +28,78 @@ function isStudentProtected(pathname: string) {
   return roots.some((root) => pathname === root || pathname.startsWith(`${root}/`));
 }
 
-function isStaffProtected(
-  pathname: string,
-  role: "admin" | "class_rep" | "lecturer",
-) {
-  const root =
-    role === "admin" ? "/admin" : role === "class_rep" ? "/cr" : "/lecturer";
-  return pathname === root || pathname.startsWith(`${root}/`);
-}
-
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const appRole =
-    roleFromHost(request.headers.get("host")) ?? getAppRole();
-
-  if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/favicon") ||
-    pathname.includes(".")
-  ) {
+  const portal = roleFromHost(request.headers.get("host")) ?? getAppRole();
+  // Static assets only: never exempt a protected path because it contains a dot.
+  if (pathname.startsWith("/brand/") || /^\/[^/]+\.(?:svg|png|jpg|jpeg|webp|ico)$/.test(pathname)) {
+    return NextResponse.next();
+  }
+  const crPath = pathname === "/cr" || pathname.startsWith("/cr/");
+  const adminPath = pathname === "/admin" || pathname.startsWith("/admin/");
+  const lecturerPath = pathname === "/lecturer" || pathname.startsWith("/lecturer/");
+  const protectedPath = crPath || adminPath || lecturerPath || isStudentProtected(pathname);
+  const hasEnv = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!hasEnv) {
+    if (protectedPath || pathname.startsWith("/api/")) {
+      return new NextResponse("Authentication is temporarily unavailable.", { status: 503 });
+    }
     return NextResponse.next();
   }
 
-  // Hard role isolation — always on, even without Supabase.
-  if (!pathAllowedForRole(pathname, appRole)) {
-    const url = request.nextUrl.clone();
-    url.pathname = forbiddenRedirect(appRole);
-    url.search = "";
-    const res = NextResponse.redirect(url);
-    res.headers.set("x-darasax-role", appRole);
-    res.headers.set("x-darasax-denied", pathname);
-    return res;
-  }
-
-  const hasEnv =
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  // Staff apps: gate protected routes with the Supabase staff session.
-  if (appRole === "admin" || appRole === "class_rep" || appRole === "lecturer") {
-    if (!hasEnv) {
-      const res = NextResponse.next();
-      res.headers.set("x-darasax-role", appRole);
-      return res;
-    }
-    const { supabase, user, supabaseResponse } =
-      await updateSession(request);
-    const staffProfile = user
-      ? await getStaffProfile(supabase, user.id).catch(() => null)
-      : null;
-    const staffAuthed =
-      !!user &&
-      !!staffProfile &&
-      staffProfile.role === appRole &&
-      staffProfile.status === "active";
-
-    if (pathname === "/" || pathname === "") {
-      const url = request.nextUrl.clone();
-      url.pathname = staffAuthed ? APP_HOME[appRole] : "/login";
-      return NextResponse.redirect(url);
-    }
-
-    if (isStaffProtected(pathname, appRole) && !staffAuthed) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/login";
-      url.searchParams.set("next", pathname);
-      return NextResponse.redirect(url);
-    }
-
-    if (
-      staffAuthed &&
-      (pathname === "/login" || pathname === "/register")
-    ) {
-      const url = request.nextUrl.clone();
-      url.pathname = APP_HOME[appRole];
-      url.search = "";
-      return NextResponse.redirect(url);
-    }
-
-    const res = supabaseResponse;
-    res.headers.set("x-darasax-role", appRole);
-    return res;
-  }
-
-  if (!hasEnv) {
-    const res = NextResponse.next();
-    res.headers.set("x-darasax-role", appRole);
-    return res;
-  }
-
   const { supabase, user, supabaseResponse } = await updateSession(request);
-  supabaseResponse.headers.set("x-darasax-role", appRole);
-
-  const needsAuth = isStudentProtected(pathname);
-
-  if (needsAuth && !user) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("next", pathname);
-    return NextResponse.redirect(url);
+  const redirect = (destination: string) => {
+    const url = new URL(destination, request.url);
+    const response = NextResponse.redirect(url);
+    for (const cookie of supabaseResponse.cookies.getAll()) response.cookies.set(cookie);
+    response.headers.set("Cache-Control", "private, no-store");
+    return response;
+  };
+  // Old CR deployments are entry links only; no cross-domain session transfer.
+  if (portal === "class_rep") {
+    return redirect("https://darasax.eprotechtz.com/cr");
   }
+  if (pathname === "/register") return redirect("/login");
+  if (!pathAllowedForRole(pathname, portal)) return redirect(forbiddenRedirect(portal));
 
-  if (user && (pathname === "/login" || pathname === "/signup")) {
-    const profile = await getProfile(supabase, user.id).catch(() => null);
-    const url = request.nextUrl.clone();
-    url.pathname = profile?.onboarding_completed ? "/dashboard" : "/onboarding";
-    return NextResponse.redirect(url);
+  // A query failure must not turn staff into a student or grant access.
+  let staff;
+  try {
+    staff = user ? await getStaffProfile(supabase, user.id) : null;
+  } catch {
+    return new NextResponse("Account access could not be verified. Please try again.", { status: 503 });
   }
-
-  if (appRole === "student" && user && pathname === "/onboarding") {
-    const profile = await getProfile(supabase, user.id).catch(() => null);
-    if (profile?.onboarding_completed) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/dashboard";
-      return NextResponse.redirect(url);
+  const active = staff?.status === "active";
+  const requiredRole = crPath ? "class_rep" : adminPath ? "admin" : lecturerPath ? "lecturer" : null;
+  if (requiredRole && (!user || !active || staff?.role !== requiredRole)) {
+    if (!user) return redirect(`/login?next=${encodeURIComponent(pathname)}`);
+    return new NextResponse("You do not have access to this workspace.", { status: 403 });
+  }
+  if (protectedPath && !user) return redirect(`/login?next=${encodeURIComponent(pathname)}`);
+  if (portal !== "student") {
+    if (user && (!active || staff?.role !== portal) && (protectedPath || pathname === "/login")) {
+      return new NextResponse("This account is not authorized for this portal.", { status: 403 });
     }
+    if (pathname === "/" || (active && pathname === "/login")) return redirect(active ? APP_HOME[portal] : "/login");
+    return supabaseResponse;
   }
-
-  if (
-    appRole === "student" &&
-    user &&
-    needsAuth &&
-    pathname !== "/onboarding" &&
-    !isAuthPath(pathname)
-  ) {
-    const profile = await getProfile(supabase, user.id).catch(() => null);
-    if (profile && !profile.onboarding_completed) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/onboarding";
-      return NextResponse.redirect(url);
-    }
+  if (staff && (!active || staff.role !== "class_rep") && (protectedPath || pathname === "/login")) {
+    return new NextResponse("Use your assigned staff portal or contact your administrator.", { status: 403 });
   }
-
+  if (active && staff?.role === "class_rep" && (isStudentProtected(pathname) || pathname === "/login" || pathname === "/signup")) {
+    return redirect("/cr");
+  }
+  if (user && !staff && (isStudentProtected(pathname) || pathname === "/login" || pathname === "/signup")) {
+    const profile = await getProfile(supabase, user.id);
+    const home = profile?.onboarding_completed ? "/dashboard" : "/onboarding";
+    if (pathname === "/login" || pathname === "/signup" || (home === "/onboarding" && pathname !== home) || (pathname === "/onboarding" && home !== pathname)) return redirect(home);
+  }
+  supabaseResponse.headers.set("Cache-Control", "private, no-store");
   return supabaseResponse;
 }
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 };

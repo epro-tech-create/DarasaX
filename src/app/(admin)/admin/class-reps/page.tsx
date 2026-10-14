@@ -27,6 +27,7 @@ export default function AdminClassRepsPage() {
     deleteClassRep,
     streamsWithoutCr,
   } = useAdminPeopleStore();
+  const [saving, setSaving] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<ClassRepAccount | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -50,7 +51,7 @@ export default function AdminClassRepsPage() {
   function openEdit(cr: ClassRepAccount) {
     setEditing(cr);
     setForm({
-      name: cr.name,
+          name: cr.name,
       email: cr.email,
       phone: cr.phone ?? "",
       streamId: cr.streamId,
@@ -66,7 +67,8 @@ export default function AdminClassRepsPage() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.name.trim() || !form.email.trim()) return;
+    if (saving || !form.name.trim() || !form.email.trim()) return;
+    setSaving(true);
     setNote("");
     setFormError("");
     try {
@@ -92,6 +94,8 @@ export default function AdminClassRepsPage() {
       closeModal();
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Could not save.");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -207,7 +211,7 @@ export default function AdminClassRepsPage() {
         description={
           editing
             ? "Update CR details. Activating on a stream deactivates the previous CR."
-            : "CRs register themselves on the Class Rep portal — then set their stream and status here."
+            : "Appoint an existing verified student using their registered email. They keep the same login."
         }
       >
         <form onSubmit={onSubmit} className="space-y-3">
@@ -280,7 +284,7 @@ export default function AdminClassRepsPage() {
             <Button type="button" variant="outline" onClick={closeModal}>
               Cancel
             </Button>
-            <Button type="submit">{editing ? "Save changes" : "Appoint CR"}</Button>
+            <Button type="submit" disabled={saving}>{saving ? "Saving..." : editing ? "Save changes" : "Appoint CR"}</Button>
           </div>
         </form>
       </StaffModal>

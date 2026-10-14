@@ -116,88 +116,6 @@ export async function loginStaff(input: {
   return session;
 }
 
-export async function registerClassRep(input: {
-  name: string;
-  email: string;
-  password: string;
-  streamId: string;
-}): Promise<{ session: StaffSession | null; needsVerification: boolean }> {
-  const supabase = createClient();
-  const { data, error } = await supabase.auth.signUp({
-    email: input.email,
-    password: input.password,
-    options: {
-      data: {
-        full_name: input.name,
-        role: "class_rep",
-        stream_id: input.streamId,
-      },
-    },
-  });
-  if (error) throw error;
-  if (!data.user) throw new Error("Registration failed.");
-
-  if (!data.session) {
-    return { session: null, needsVerification: true };
-  }
-
-  const profile = await ensureStaffProfile(supabase, data.user, {
-    role: "class_rep",
-    streamId: input.streamId,
-    fullName: input.name,
-  });
-  if (!profile) throw new Error("Registration failed.");
-
-  const session = toSession(profile, data.user.email ?? input.email);
-  window.dispatchEvent(new Event(SESSION_EVENT));
-  return { session, needsVerification: false };
-}
-
-export async function registerLecturer(input: {
-  name: string;
-  email: string;
-  password: string;
-}): Promise<{ session: StaffSession | null; needsVerification: boolean }> {
-  const supabase = createClient();
-  const { data, error } = await supabase.auth.signUp({
-    email: input.email,
-    password: input.password,
-    options: {
-      data: {
-        full_name: input.name,
-        role: "lecturer",
-        email: input.email,
-      },
-    },
-  });
-  if (error) throw error;
-  if (!data.user) throw new Error("Registration failed.");
-
-  if (!data.session) {
-    return { session: null, needsVerification: true };
-  }
-
-  let profile = await ensureStaffProfile(supabase, data.user, {
-    role: "lecturer",
-    fullName: input.name,
-  });
-  if (!profile) throw new Error("Registration failed.");
-
-  if (!profile.email || profile.email !== input.email) {
-    const { data: patched } = await supabase
-      .from("staff_profiles")
-      .update({ email: input.email, full_name: input.name })
-      .eq("id", data.user.id)
-      .select("*")
-      .maybeSingle();
-    if (patched) profile = patched;
-    else profile = { ...profile, email: input.email, full_name: input.name };
-  }
-
-  const session = toSession(profile, input.email);
-  window.dispatchEvent(new Event(SESSION_EVENT));
-  return { session, needsVerification: false };
-}
 
 export async function completeLecturerOnboarding(input: {
   streamIds: ClassStreamId[];
@@ -286,11 +204,12 @@ export function useStaffSession() {
   }, []);
 
   useEffect(() => {
-    void refresh();
+    const timer = setTimeout(() => void refresh(), 0);
     const onFocus = () => void refresh();
     window.addEventListener(SESSION_EVENT, onFocus);
     window.addEventListener("focus", onFocus);
     return () => {
+      clearTimeout(timer);
       window.removeEventListener(SESSION_EVENT, onFocus);
       window.removeEventListener("focus", onFocus);
     };

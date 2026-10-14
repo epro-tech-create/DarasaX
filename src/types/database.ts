@@ -405,6 +405,10 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      appoint_class_rep: {
+        Args: { student_email: string; assigned_stream: string; display_name: string; contact_phone: string | null; account_status: string };
+        Returns: StaffProfile;
+      };
       increment_material_downloads: {
         Args: { mid: string };
         Returns: void;

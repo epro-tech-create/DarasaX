@@ -51,9 +51,8 @@ async function syncProfileContact(
 
 /**
  * Ensure a staff_profiles row exists for a Supabase Auth user.
- * The DB trigger (handle_new_staff) creates it from signup metadata;
- * this is the fallback for races or dashboard-created users.
- * Always keeps email / name aligned with Auth.
+ * Only existing administrator-appointed memberships are accepted.
+ * Public user metadata never grants staff access.
  */
 export async function ensureStaffProfile(
   supabase: Client,
@@ -65,46 +64,6 @@ export async function ensureStaffProfile(
     return syncProfileContact(supabase, existing, user, fallback?.fullName);
   }
 
-  const meta = user.user_metadata ?? {};
-  const role = (meta.role as StaffRole | undefined) ?? fallback?.role;
-  if (role !== "admin" && role !== "class_rep" && role !== "lecturer") {
-    return null;
-  }
-
-  const streamId =
-    (meta.stream_id as string | undefined) ?? fallback?.streamId ?? null;
-  const fullName =
-    (meta.full_name as string | undefined) ??
-    (meta.name as string | undefined) ??
-    fallback?.fullName ??
-    null;
-  const email = user.email?.trim() || null;
-
-  const { data, error } = await supabase
-    .from("staff_profiles")
-    .upsert(
-      {
-        id: user.id,
-        role,
-        email,
-        full_name: fullName,
-        stream_id: role === "class_rep" ? streamId : null,
-        stream_ids: role === "class_rep" && streamId ? [streamId] : [],
-        module_ids: [],
-        onboarding_completed: role === "admin" || role === "class_rep",
-        status: "active",
-      },
-      { onConflict: "id" },
-    )
-    .select("*")
-    .single();
-
-  if (error) {
-    const again = await getStaffProfile(supabase, user.id);
-    if (again) {
-      return syncProfileContact(supabase, again, user, fullName);
-    }
-    throw error;
-  }
-  return data;
+  // Privileged membership is created only by an administrator, never login metadata.
+  return null;
 }

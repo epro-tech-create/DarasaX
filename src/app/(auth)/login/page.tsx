@@ -17,6 +17,7 @@ import {
   getPostAuthRedirect,
 } from "@/lib/auth/profile";
 import { createClient } from "@/lib/supabase/client";
+import { getStaffProfile } from "@/lib/auth/staff-profile";
 import { APP_HOME, getAppRole } from "@/lib/app-role";
 import {
   getLecturerEntryPath,
@@ -31,18 +32,10 @@ function StudentLoginForm() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [info, setInfo] = useState("");
+  const [error, setError] = useState(() => searchParams.get("error") ?? "");
+  const [info, setInfo] = useState(() => searchParams.get("expired") === "1" ? "You were signed out after 10 minutes of inactivity." : "");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-
-  useEffect(() => {
-    const err = searchParams.get("error");
-    if (err) setError(err);
-    if (searchParams.get("expired") === "1") {
-      setInfo("You were signed out after 10 minutes of inactivity.");
-    }
-  }, [searchParams]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -69,6 +62,16 @@ function StudentLoginForm() {
       if (signInError) throw signInError;
       if (!data.user) throw new Error("No user");
 
+      const staff = await getStaffProfile(supabase, data.user.id);
+      if (staff) {
+        if (staff.status !== "active" || staff.role !== "class_rep") {
+          await supabase.auth.signOut();
+          throw new Error("Use your assigned portal or contact your administrator.");
+        }
+        router.replace("/cr");
+        router.refresh();
+        return;
+      }
       const profile = await ensureProfile(supabase, data.user);
       await recordAudit({
         actor: profile?.full_name ?? normalized,
@@ -76,7 +79,7 @@ function StudentLoginForm() {
         action: "login",
         summary: "Signed in",
       });
-      const dest = next && next.startsWith("/") ? next : getPostAuthRedirect(profile);
+      const dest = next && next.startsWith("/") && !next.startsWith("//") ? next : getPostAuthRedirect(profile);
       router.replace(dest);
       router.refresh();
     } catch (err) {
@@ -100,7 +103,7 @@ function StudentLoginForm() {
       const supabase = createClient();
       const origin = window.location.origin;
       const redirectTo =
-        next && next.startsWith("/")
+        next && next.startsWith("/") && !next.startsWith("//")
           ? `${origin}/auth/callback?next=${encodeURIComponent(next)}`
           : `${origin}/auth/callback`;
       await signInWithGoogle(supabase, redirectTo);
@@ -184,20 +187,17 @@ function StaffLoginForm({
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [info, setInfo] = useState("");
+  const [error, setError] = useState(() => searchParams.get("error") ?? "");
+  const [info] = useState(() => searchParams.get("expired") === "1" ? "You were signed out after 10 minutes of inactivity." : "");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (searchParams.get("expired") === "1") {
-      setInfo("You were signed out after 10 minutes of inactivity.");
-    }
     if (!ready || !session) return;
     if (session.role === role) {
       const dest =
         role === "lecturer"
           ? getLecturerEntryPath(session)
-          : next && next.startsWith("/")
+          : next && next.startsWith("/") && !next.startsWith("//")
             ? next
             : APP_HOME[role];
       router.replace(dest);
@@ -234,7 +234,7 @@ function StaffLoginForm({
       const dest =
         role === "lecturer"
           ? getLecturerEntryPath(staffSession)
-          : next && next.startsWith("/")
+          : next && next.startsWith("/") && !next.startsWith("//")
             ? next
             : APP_HOME[role];
       router.replace(dest);
@@ -297,18 +297,9 @@ function StaffLoginForm({
         </AuthSubmitButton>
       </form>
 
-      {role === "admin" ? (
-        <p className="mt-5 text-center text-sm text-muted-foreground sm:mt-4 sm:text-[11px]">
-          No public registration. Contact the system owner for credentials.
-        </p>
-      ) : (
-        <p className="mt-5 text-center text-sm text-muted-foreground sm:mt-4 sm:text-xs">
-          {role === "lecturer" ? "New lecturer?" : "New class representative?"}{" "}
-          <Link href="/register" className="font-medium text-primary">
-            Create an account
-          </Link>
-        </p>
-      )}
+      <p className="mt-5 text-center text-sm text-muted-foreground">
+        Staff access is assigned by an administrator. Contact them for access.
+      </p>
     </>
   );
 }

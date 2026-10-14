@@ -15,13 +15,15 @@ export function RoleGuard({
   const router = useRouter();
   const role = getAppRole();
 
+  const permitted = role === allow || (role === "student" && allow === "class_rep");
+
   useEffect(() => {
-    if (role !== allow) {
+    if (!permitted) {
       router.replace(APP_HOME[role]);
     }
-  }, [allow, role, router]);
+  }, [permitted, role, router]);
 
-  if (role !== allow) {
+  if (!permitted) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <div className="surface max-w-sm rounded-2xl p-6 text-center">

@@ -1,3 +1,5 @@
+import { getStaffProfile } from "@/lib/auth/staff-profile";
+import { roleFromHost, getAppRole, APP_HOME } from "@/lib/app-role";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -27,9 +29,20 @@ export async function GET(request: Request) {
       } = await supabase.auth.getUser();
 
       if (user) {
+        const staff = await getStaffProfile(supabase, user.id);
+        const portal = roleFromHost(new URL(request.url).host) ?? getAppRole();
+        if (staff || portal !== "student") {
+          const allowed = staff?.status === "active" &&
+            staff.role === (portal === "student" ? "class_rep" : portal);
+          if (!allowed) {
+            await supabase.auth.signOut();
+            return NextResponse.redirect(new URL("/login?error=Account%20not%20authorized%20for%20this%20portal", origin));
+          }
+          return NextResponse.redirect(new URL(APP_HOME[staff!.role], origin));
+        }
         const profile = await ensureProfile(supabase, user);
         const dest =
-          next && next.startsWith("/") ? next : getPostAuthRedirect(profile);
+          next && next.startsWith("/") && !next.startsWith("//") ? next : getPostAuthRedirect(profile);
         return NextResponse.redirect(new URL(dest, origin));
       }
     }

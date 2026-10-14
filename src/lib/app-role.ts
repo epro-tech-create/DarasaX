@@ -86,7 +86,6 @@ export function pathAllowedForRole(pathname: string, role: AppRole): boolean {
   if (role === "student") {
     if (
       pathname.startsWith("/admin") ||
-      pathname.startsWith("/cr") ||
       pathname.startsWith("/lecturer")
     ) {
       return false;
@@ -98,12 +97,12 @@ export function pathAllowedForRole(pathname: string, role: AppRole): boolean {
 
   if (role === "admin") {
     if (pathname === "/login" || isSharedAuth) return true;
-    if (pathname.startsWith("/admin")) return true;
+    if (pathname.startsWith("/admin") || pathname === "/api/admin/class-reps") return true;
     return false;
   }
 
   if (role === "class_rep") {
-    if (pathname === "/login" || pathname === "/register" || isSharedAuth) {
+    if (pathname === "/login" || isSharedAuth) {
       return true;
     }
     if (pathname.startsWith("/cr")) return true;
@@ -111,7 +110,7 @@ export function pathAllowedForRole(pathname: string, role: AppRole): boolean {
   }
 
   // lecturer
-  if (pathname === "/login" || pathname === "/register" || isSharedAuth) {
+  if (pathname === "/login" || isSharedAuth) {
     return true;
   }
   if (pathname.startsWith("/lecturer")) return true;

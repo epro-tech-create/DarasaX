@@ -264,3 +264,21 @@ Protected app routes redirect unauthenticated users to `/login`.
 
 - Re-run the SQL migration
 - Confirm RLS policies exist
+
+
+## Student and CR access on one domain
+
+Apply `supabase/migrations/20261014000000_admin_managed_staff.sql` after earlier migrations using the Supabase SQL editor or `supabase db push` against the production project. Apply this security migration before deploying this revision. Review existing staff memberships and remove any unapproved accounts created under the former self-registration flow.
+
+Deploy the updated student and admin projects. Students and CRs use `https://darasax.eprotechtz.com/login`. An active CR goes to `/cr`; other students go through normal onboarding/dashboard. In Admin > Class representatives > Add CR, enter the registered email of a verified student and select the stream. Their existing password stays unchanged. Delete CR membership to restore student access; inactive memberships remain blocked pending review.
+
+Update the old CR deployment to redirect visitors to `https://darasax.eprotechtz.com/cr`, or set an equivalent Vercel domain redirect. The new code redirects the old portal without copying tokens between domains. Users sign in on the student domain if needed.
+
+Admin and lecturer portals require active matching staff membership. Public staff registration is disabled. Administrators must manage lecturer stream/module assignments; staff cannot grant themselves additional scope. Keep service-role credentials server-only; this CR appointment flow uses an admin-authorized database function and needs no service-role key in the application.
+
+
+### Production security migration status
+
+On 2026-10-14, `20261014000000_admin_managed_staff.sql` was applied to project `psrtifnhstkujmschwem` and recorded as applied in migration history. Live checks confirmed staff self-registration is disabled, the membership guard is installed, and the admin appointment function exists. Transactional tests confirmed a CR cannot change their role or class scope, or appoint staff; those test writes were rolled back. Existing seven staff memberships were preserved. Application deployment remains separate.
+
+Earlier schema changes exist in this database without recorded migration history. Do not blindly replay all earlier migrations with `db push`; reconcile their history against the live schema first. For another Supabase project, apply migrations in order and verify the resulting policies.
