@@ -1,5 +1,8 @@
 import { createBrowserClient } from "@supabase/ssr";
+import { invalidateQueries } from "./query-cache";
 import type { Database } from "@/types/database";
+
+let listening = false;
 
 export function createClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -9,5 +12,12 @@ export function createClient() {
       "Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY (names must include NEXT_PUBLIC_).",
     );
   }
-  return createBrowserClient<Database>(url, key);
+  const client = createBrowserClient<Database>(url, key);
+  if (typeof window !== "undefined" && !listening) {
+    listening = true;
+    client.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") invalidateQueries("");
+    });
+  }
+  return client;
 }

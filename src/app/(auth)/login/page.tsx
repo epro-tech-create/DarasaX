@@ -17,6 +17,7 @@ import {
   ensureProfile,
 } from "@/lib/auth/profile";
 import { createClient } from "@/lib/supabase/client";
+import { studentEnrollmentError } from "@/lib/auth/enrollment";
 import { getStaffProfile } from "@/lib/auth/staff-profile";
 import { APP_HOME, getAppRole } from "@/lib/app-role";
 import {
@@ -73,6 +74,8 @@ function StudentLoginForm() {
         return;
       }
       const profile = await ensureProfile(supabase, data.user);
+      const restriction = studentEnrollmentError(profile);
+      if (restriction) { await supabase.auth.signOut(); setError(restriction); return; }
       await recordAudit({
         actor: profile?.full_name ?? normalized,
         role: "student",

@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { notFound, useParams } from "next/navigation";
+import { MaterialUploadCard } from "@/components/modules/material-upload-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,16 +14,17 @@ import { CheckCircle2, Download, FileText, RotateCcw } from "lucide-react";
 
 export default function AssignmentDetailPage() {
   const params = useParams<{ id: string }>();
-  const { items, markCompleted, setStatus } = useAssignments();
+  const { items, ready, markCompleted, setStatus } = useAssignments();
   const assignment = useMemo(
     () => items.find((a) => a.id === params.id),
     [items, params.id],
   );
 
+  if (!ready) return <p role="status" className="surface rounded-2xl p-6 text-sm">Loading assignment...</p>;
   if (!assignment) notFound();
 
   const completed = assignment.status === "completed";
-  const module = getModule(assignment.moduleId);
+  const courseModule = getModule(assignment.moduleId);
   const related = resources.filter((r) =>
     assignment.relatedResourceIds.includes(r.id),
   );
@@ -31,7 +33,7 @@ export default function AssignmentDetailPage() {
     <div className="mx-auto max-w-3xl">
       <PageHeader
         title={assignment.title}
-        description={`${module?.name || "Module"} · ${assignment.lecturer}`}
+        description={`${courseModule?.name || "Module"} · ${assignment.lecturer}`}
         actions={<DeadlineBadge deadline={assignment.deadline} />}
       />
 
@@ -66,6 +68,8 @@ export default function AssignmentDetailPage() {
             {assignment.instructions}
           </p>
         </section>
+
+        {assignment.material && <MaterialUploadCard item={assignment.material} />}
 
         {assignment.attachedFiles.length > 0 ? (
           <section>

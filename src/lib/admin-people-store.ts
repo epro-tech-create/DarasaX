@@ -128,7 +128,10 @@ export function useAdminPeopleStore() {
 
   useEffect(() => {
     const timer = setTimeout(() => void refresh(), 0);
-    return () => clearTimeout(timer);
+    const poll = setInterval(() => void refresh(), 30000);
+    const onFocus = () => void refresh();
+    window.addEventListener("focus", onFocus);
+    return () => { clearTimeout(timer); clearInterval(poll); window.removeEventListener("focus", onFocus); };
   }, [refresh]);
 
   const log = useCallback(

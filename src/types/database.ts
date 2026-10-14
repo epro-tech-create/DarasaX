@@ -176,6 +176,10 @@ export type Database = {
           module_id: string | null;
           stream_id: string | null;
           status: string;
+          programme: string;
+          year_of_study: number;
+          semester: number;
+          due_at: string | null;
           uploaded_by: string;
           uploaded_by_id: string | null;
           role: string | null;
@@ -197,6 +201,10 @@ export type Database = {
           module_id?: string | null;
           stream_id?: string | null;
           status?: string;
+          programme?: string;
+          year_of_study?: number;
+          semester?: number;
+          due_at?: string | null;
           uploaded_by?: string;
           uploaded_by_id?: string | null;
           role?: string | null;
@@ -218,6 +226,10 @@ export type Database = {
           module_id?: string | null;
           stream_id?: string | null;
           status?: string;
+          programme?: string;
+          year_of_study?: number;
+          semester?: number;
+          due_at?: string | null;
           uploaded_by?: string;
           uploaded_by_id?: string | null;
           role?: string | null;
@@ -288,6 +300,7 @@ export type Database = {
       monitored_students: {
         Row: {
           id: string;
+          profile_id: string | null;
           name: string;
           email: string;
           stream_id: string;

@@ -1,73 +1,38 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Assignment, AssignmentStatus } from "@/types";
-import { assignments as mockAssignments } from "@/data/mock";
-
-const KEY = "darasax_assignment_status_v1";
-
-type StatusMap = Record<string, AssignmentStatus>;
-
-function readMap(): StatusMap {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return {};
-    return JSON.parse(raw) as StatusMap;
-  } catch {
-    return {};
-  }
-}
-
-function writeMap(map: StatusMap) {
-  localStorage.setItem(KEY, JSON.stringify(map));
-}
-
-export function mergeAssignmentStatus(list: Assignment[]): Assignment[] {
-  const map = readMap();
-  return list.map((a) => {
-    const override = map[a.id];
-    if (!override) return a;
-    return { ...a, status: override };
-  });
-}
+import { useMaterialsStore } from "@/lib/materials-store";
+import { useStudentProfile } from "@/components/providers/student-profile-provider";
 
 export function useAssignments() {
-  const [items, setItems] = useState<Assignment[]>(() =>
-    typeof window === "undefined"
-      ? mockAssignments
-      : mergeAssignmentStatus(mockAssignments),
-  );
-
-  const refresh = useCallback(() => {
-    setItems(mergeAssignmentStatus(mockAssignments));
-  }, []);
-
+  const { profile } = useStudentProfile();
+  const { published, ready, refresh } = useMaterialsStore();
+  const key = profile ? `darasax_assignments_${profile.id}` : null;
+  const [tick, setTick] = useState(0);
   useEffect(() => {
-    refresh();
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === KEY) refresh();
-    };
-    window.addEventListener("storage", onStorage);
-    window.addEventListener("darasax:assignments", refresh);
-    return () => {
-      window.removeEventListener("storage", onStorage);
-      window.removeEventListener("darasax:assignments", refresh);
-    };
-  }, [refresh]);
-
-  const setStatus = useCallback((id: string, status: AssignmentStatus) => {
-    const map = readMap();
-    map[id] = status;
-    writeMap(map);
-    setItems(mergeAssignmentStatus(mockAssignments));
-    window.dispatchEvent(new Event("darasax:assignments"));
+    const update = () => setTick((previous) => previous + 1);
+    window.addEventListener("storage", update);
+    window.addEventListener("darasax:assignments", update);
+    return () => { window.removeEventListener("storage", update); window.removeEventListener("darasax:assignments", update); };
   }, []);
-
-  const markCompleted = useCallback(
-    (id: string) => setStatus(id, "completed"),
-    [setStatus],
-  );
-
-  return { items, refresh, setStatus, markCompleted };
+  const items = useMemo<Assignment[]>(() => {
+    void tick;
+    let progress: Record<string, AssignmentStatus> = {};
+    try { if (key && typeof window !== "undefined") progress = JSON.parse(localStorage.getItem(key) || "{}"); } catch { /* Ignore invalid personal preferences. */ }
+    return published.filter((item) => item.kind === "assignment" && item.moduleId).map((item) => ({
+      id: item.id, moduleId: item.moduleId!, title: item.title, description: item.body || "Open the attached coursework file for the full assignment.",
+      lecturer: item.uploadedBy, deadline: item.dueAt || "", priority: "medium", status: progress[item.id] || "upcoming",
+      instructions: item.body || "Follow the instructions in the published assignment file.", attachedFiles: [], relatedResourceIds: [], material: item,
+    }));
+  }, [published, key, tick]);
+  const setStatus = useCallback((id: string, status: AssignmentStatus) => {
+    if (!key) return;
+    let progress = {};
+    try { progress = JSON.parse(localStorage.getItem(key) || "{}"); } catch { /* Start clean. */ }
+    localStorage.setItem(key, JSON.stringify({ ...progress, [id]: status }));
+    window.dispatchEvent(new Event("darasax:assignments"));
+  }, [key]);
+  const markCompleted = useCallback((id: string) => setStatus(id, "completed"), [setStatus]);
+  return { items, ready, refresh, setStatus, markCompleted };
 }

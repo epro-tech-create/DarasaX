@@ -50,6 +50,7 @@ export function UploadWorkspace({
     const allowed = new Set(allowedStreamIds);
     return classStreams.filter((s) => allowed.has(s.id));
   })();
+  const [dueAt, setDueAt] = useState("");
   const [kind, setKind] = useState<UploadKind>(defaultKind);
   const [moduleId, setModuleId] = useState(catalog[0]?.id ?? "");
   const [streamId, setStreamId] = useState<ClassStreamId | "all">(
@@ -85,6 +86,7 @@ export function UploadWorkspace({
     try {
       await publish({
         title: titleValue.trim(),
+        dueAt: kind === "assignment" && dueAt ? new Date(dueAt).toISOString() : undefined,
         kind,
         moduleId,
         streamId: lockedStream ?? streamId,
@@ -192,9 +194,6 @@ export function UploadWorkspace({
                 }
                 className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               >
-                {!allowedStreamIds || allowedStreamIds.length === 0 ? (
-                  <option value="all">All streams</option>
-                ) : null}
                 {streamOptions.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.label}
@@ -206,6 +205,9 @@ export function UploadWorkspace({
           ) : null}
         </div>
 
+        {kind === "assignment" && <label className="mt-4 block text-sm font-medium">Assignment deadline (optional)
+          <input type="datetime-local" value={dueAt} onChange={(event) => setDueAt(event.target.value)} className="focus-ring mt-2 h-11 w-full rounded-xl border border-border bg-background px-3" />
+        </label>}
         {error ? (
           <p className="mt-3 rounded-xl border border-danger/30 bg-danger/10 px-3 py-2 text-[12px] font-medium text-danger">
             {error}

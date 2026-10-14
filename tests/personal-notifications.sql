@@ -14,6 +14,7 @@ begin
   if existing is null then raise exception 'Expected an existing verified recipient'; end if;
   insert into auth.users(id,email,email_confirmed_at,created_at,updated_at,raw_user_meta_data)
   values(newcomer,'notification-test-' || newcomer::text || '@example.invalid',now(),now(),now(),'{}'::jsonb);
+  update public.profiles set institution='Dar es Salaam Institute of Technology (DIT)',programme='BENG24COE',year_of_study=3,semester=1,class_name='BENG24COE-1',onboarding_completed=true where id=newcomer;
   if exists(select 1 from public.notifications where recipient_id=newcomer) then raise exception 'New account inherited historical notifications'; end if;
   insert into public.module_topics(id,module_id,number,title,published)
   values(second_topic,'mod-sensor-networks',1900000002,'Notification test after signup',false);
@@ -25,7 +26,7 @@ begin
   update public.profiles set class_name='BENG24COE-1' where id=newcomer;
   insert into auth.users(id,email,email_confirmed_at,created_at,updated_at,raw_user_meta_data)
   values(outsider,'notification-test-' || outsider::text || '@example.invalid',now(),now(),now(),'{}'::jsonb);
-  update public.profiles set class_name='BENG24COE-2' where id=outsider;
+  update public.profiles set institution='Dar es Salaam Institute of Technology (DIT)',programme='BENG24COE',year_of_study=3,semester=1,class_name='BENG24COE-2',onboarding_completed=true where id=outsider;
   insert into public.materials(id,title,kind,status,stream_id,uploaded_by)
   values(material_id,'Class-specific notification test','notes','pending','BENG24COE-1','Security test');
   if exists(select 1 from public.notifications where source_id=material_id) then raise exception 'Draft material sent a notification'; end if;

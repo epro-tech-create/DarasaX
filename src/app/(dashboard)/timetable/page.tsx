@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   CalendarDays,
@@ -20,10 +20,10 @@ import {
 } from "@/data/mock";
 import { getNextClass } from "@/lib/academic";
 import { useTimetableStore } from "@/lib/timetable-store";
+import { useStudentProfile } from "@/components/providers/student-profile-provider";
 import { cn, formatTime } from "@/lib/utils";
 import type { ClassStreamId, TimetableEntry } from "@/types";
 
-const STREAM_STORAGE_KEY = "darasax-class-stream";
 
 const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const dayFull = [
@@ -72,8 +72,8 @@ function ClassBlock({
   isNext?: boolean;
   compact?: boolean;
 }) {
-  const module = getModule(entry.moduleId);
-  const accent = module?.accent ?? "#1E88E5";
+  const courseModule = getModule(entry.moduleId);
+  const accent = courseModule?.accent ?? "#1E88E5";
 
   return (
     <div
@@ -103,7 +103,7 @@ function ClassBlock({
               compact ? "line-clamp-2 text-[10px]" : "line-clamp-2 text-[12px]",
             )}
           >
-            {module?.name}
+            {courseModule?.name}
           </p>
           {isNext ? (
             <span className="shrink-0 rounded-md bg-primary/15 px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-primary">
@@ -122,7 +122,7 @@ function ClassBlock({
         {!compact ? (
           <p className="mt-auto truncate pt-1 text-[10px] text-muted-foreground">
             {entry.room}
-            {module?.code ? ` · ${module.code}` : ""}
+            {courseModule?.code ? ` · ${courseModule.code}` : ""}
           </p>
         ) : (
           <p className="mt-auto truncate text-[9px] text-muted-foreground">
@@ -136,30 +136,8 @@ function ClassBlock({
 
 export default function TimetablePage() {
   const [view, setView] = useState<"today" | "week">("week");
-  const [streamId, setStreamId] = useState<ClassStreamId>(DEFAULT_CLASS_STREAM);
-  const [streamReady, setStreamReady] = useState(false);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STREAM_STORAGE_KEY);
-      if (classStreams.some((s) => s.id === saved)) {
-        setStreamId(saved as ClassStreamId);
-      }
-    } catch {
-      /* ignore */
-    }
-    setStreamReady(true);
-  }, []);
-
-  useEffect(() => {
-    if (!streamReady) return;
-    try {
-      localStorage.setItem(STREAM_STORAGE_KEY, streamId);
-    } catch {
-      /* ignore */
-    }
-  }, [streamId, streamReady]);
-
+  const { profile } = useStudentProfile();
+  const streamId = (profile?.class_name ?? DEFAULT_CLASS_STREAM) as ClassStreamId;
   const today = new Date().getDay();
   const selectedStream =
     classStreams.find((s) => s.id === streamId) ?? classStreams[0];
@@ -254,10 +232,10 @@ export default function TimetablePage() {
           </span>
           <select
             value={streamId}
-            onChange={(e) => setStreamId(e.target.value as ClassStreamId)}
+            disabled aria-label="Your assigned class"
             className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px] font-medium outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
           >
-            {classStreams.map((stream) => (
+            {classStreams.filter((stream) => stream.id === streamId).map((stream) => (
               <option key={stream.id} value={stream.id}>
                 {stream.label}
                 {stream.isEvening ? " (Evening)" : ""}
@@ -348,7 +326,7 @@ export default function TimetablePage() {
               <div className="relative space-y-0 pl-1">
                 <div className="absolute bottom-4 left-[17px] top-4 w-px bg-border" />
                 {todayEntries.map((entry, index) => {
-                  const module = getModule(entry.moduleId);
+                  const courseModule = getModule(entry.moduleId);
                   const isNext = next?.entry.id === entry.id;
                   return (
                     <motion.div
@@ -367,7 +345,7 @@ export default function TimetablePage() {
                         <span
                           className="h-2.5 w-2.5 rounded-full"
                           style={{
-                            backgroundColor: module?.accent ?? "#1E88E5",
+                            backgroundColor: courseModule?.accent ?? "#1E88E5",
                           }}
                         />
                       </div>
@@ -380,10 +358,10 @@ export default function TimetablePage() {
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0">
                             <p className="truncate text-[13px] font-semibold">
-                              {module?.name}
+                              {courseModule?.name}
                             </p>
                             <p className="mt-0.5 text-[11px] text-muted-foreground">
-                              {module?.code} ·{" "}
+                              {courseModule?.code} ·{" "}
                               {durationLabel(entry.startTime, entry.endTime)}
                             </p>
                           </div>
@@ -453,8 +431,8 @@ export default function TimetablePage() {
                     ) : (
                       <div className="divide-y divide-border/60">
                         {entries.map((entry) => {
-                          const module = getModule(entry.moduleId);
-                          const accent = module?.accent ?? "#1E88E5";
+                          const courseModule = getModule(entry.moduleId);
+                          const accent = courseModule?.accent ?? "#1E88E5";
                           return (
                             <div
                               key={entry.id}
@@ -466,7 +444,7 @@ export default function TimetablePage() {
                               />
                               <div className="min-w-0 flex-1">
                                 <p className="text-[12px] font-semibold">
-                                  {module?.name}
+                                  {courseModule?.name}
                                 </p>
                                 <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
                                   {formatTime(entry.startTime)} –{" "}

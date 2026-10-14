@@ -8,7 +8,7 @@ import { recordAudit } from "@/lib/audit-log";
 import type { MaterialUpload, UploadKind, ClassStreamId, StaffRole } from "@/types";
 
 const BUCKET = "materials";
-const SIGNED_URL_SECONDS = 60 * 60;
+const SIGNED_URL_SECONDS = 5 * 60;
 
 function isConfigured() {
   return Boolean(
@@ -35,6 +35,7 @@ function toUpload(row: MaterialRow): MaterialUpload {
     role: (row.role as StaffRole | null) ?? "admin",
     size: row.size_label ?? (row.size_bytes != null ? formatFileSize(row.size_bytes) : "—"),
     createdAt: row.created_at,
+    dueAt: row.due_at ?? undefined,
     downloads: row.downloads,
     fileUrl: row.file_url ?? undefined,
     filePath: row.file_path ?? undefined,
@@ -61,22 +62,6 @@ export async function resolveMaterialObjectUrl(
   item: MaterialUpload,
   options?: { download?: boolean },
 ): Promise<{ url: string; revoke: boolean; fileName: string; mimeType: string } | null> {
-  if (item.fileUrl?.startsWith("http") || item.fileUrl?.startsWith("/")) {
-    return {
-      url: item.fileUrl,
-      revoke: false,
-      fileName: item.fileName ?? `${slugify(item.title)}.pdf`,
-      mimeType: item.mimeType ?? "application/pdf",
-    };
-  }
-  if (item.fileUrl?.startsWith("blob:") || item.fileUrl?.startsWith("data:")) {
-    return {
-      url: item.fileUrl,
-      revoke: false,
-      fileName: item.fileName ?? `${slugify(item.title)}.bin`,
-      mimeType: item.mimeType ?? "application/octet-stream",
-    };
-  }
   try {
     const supabase = createClient();
     let filePath = item.filePath;
@@ -162,6 +147,7 @@ export async function downloadMaterial(item: MaterialUpload) {
 }
 
 export type PublishMaterialInput = {
+  dueAt?: string;
   title: string;
   kind: UploadKind;
   moduleId?: string;
@@ -208,7 +194,10 @@ export function useMaterialsStore() {
   }, []);
 
   useEffect(() => {
-    void refresh();
+    const timer = setTimeout(() => void refresh(), 0);
+    const onFocus = () => { invalidateQueries("materials"); void refresh(); };
+    window.addEventListener("focus", onFocus);
+    return () => { clearTimeout(timer); window.removeEventListener("focus", onFocus); };
   }, [refresh]);
 
   const publish = useCallback(async (input: PublishMaterialInput) => {
@@ -218,6 +207,7 @@ export function useMaterialsStore() {
     } = await supabase.auth.getUser();
     const id = `up-${Date.now()}`;
     const streamId = input.streamId === "all" ? null : (input.streamId ?? null);
+    if (!streamId) throw new Error("Choose the particular class receiving this file.");
     const path = storagePath(streamId, id, input.file.name);
 
     const { error: uploadError } = await supabase.storage
@@ -233,6 +223,7 @@ export function useMaterialsStore() {
       .insert({
         id,
         title: input.title.trim(),
+        due_at: input.dueAt || null,
         kind: input.kind,
         module_id: input.moduleId ?? null,
         stream_id: streamId,
@@ -362,9 +353,9 @@ export function useMaterialsStore() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
+      if (!input.streamId || input.streamId === "all") throw new Error("Choose the class receiving this announcement.");
       const id = `ann-${Date.now()}`;
-      const streamId =
-        !input.streamId || input.streamId === "all" ? null : input.streamId;
+      const streamId = input.streamId;
       const { data, error } = await supabase
         .from("materials")
         .insert({

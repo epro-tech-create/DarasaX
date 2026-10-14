@@ -143,12 +143,15 @@ export function MaterialsLibrary({
   });
 
   useEffect(() => {
+    const timer = setTimeout(() => {
     try {
       const saved = localStorage.getItem(VIEW_KEY);
       if (saved === "list" || saved === "cards") setView(saved);
     } catch {
       // ignore
     }
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   function changeView(next: "cards" | "list") {
@@ -169,9 +172,9 @@ export function MaterialsLibrary({
     const q = query.trim().toLowerCase();
     return source
       .filter((item) => {
-        const module = item.moduleId ? getModule(item.moduleId) : null;
+        const courseModule = item.moduleId ? getModule(item.moduleId) : null;
         const hay =
-          `${item.title} ${module?.name ?? ""} ${module?.code ?? ""} ${item.uploadedBy}`.toLowerCase();
+          `${item.title} ${courseModule?.name ?? ""} ${courseModule?.code ?? ""} ${item.uploadedBy}`.toLowerCase();
         return (
           (!q || hay.includes(q)) &&
           (kindFilter === "all" || item.kind === kindFilter)
@@ -341,7 +344,7 @@ export function MaterialsLibrary({
       ) : view === "cards" ? (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {filtered.map((item) => {
-            const module = item.moduleId ? getModule(item.moduleId) : null;
+            const courseModule = item.moduleId ? getModule(item.moduleId) : null;
             const Icon = resolveIcon(item);
             const busy = busyId === item.id;
             return (
@@ -358,7 +361,7 @@ export function MaterialsLibrary({
                       {item.title}
                     </h3>
                     <p className="mt-1 truncate text-[11px] text-muted-foreground">
-                      {module?.code ?? "General"} · {item.size} · {item.uploadedBy}
+                      {courseModule?.code ?? "General"} · {item.size} · {item.uploadedBy}
                     </p>
                   </div>
                 </div>
@@ -378,7 +381,7 @@ export function MaterialsLibrary({
         <div className="surface overflow-hidden rounded-2xl">
           <ul className="divide-y divide-border/60">
             {filtered.map((item) => {
-              const module = item.moduleId ? getModule(item.moduleId) : null;
+              const courseModule = item.moduleId ? getModule(item.moduleId) : null;
               const Icon = resolveIcon(item);
               const busy = busyId === item.id;
               return (
@@ -394,7 +397,7 @@ export function MaterialsLibrary({
                       {item.title}
                     </p>
                     <p className="truncate text-[11px] text-muted-foreground">
-                      {module?.code ?? "General"} · {item.size} · {item.uploadedBy}
+                      {courseModule?.code ?? "General"} · {item.size} · {item.uploadedBy}
                     </p>
                   </div>
                   <FileActions
@@ -491,7 +494,7 @@ export function MaterialsLibrary({
                 }
                 className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px]"
               >
-                <option value="all">All streams</option>
+                <option value="all" disabled>Select a particular class</option>
                 {classStreams.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.label}

@@ -27,6 +27,7 @@ const callback = load('src/app/auth/callback/route.ts', {
     exchangeCodeForSession: async () => ({error:null}),
     getUser: async () => ({data:{user:{id:'user'}}}), signOut: async () => ({})
   }})},
+  '@/lib/auth/enrollment': { studentEnrollmentError: () => null },
   '@/lib/auth/profile': {ensureProfile: async () => ({onboarding_completed:complete})}
 });
 (async () => {

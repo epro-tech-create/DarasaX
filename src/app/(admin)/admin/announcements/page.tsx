@@ -1,5 +1,6 @@
 "use client";
 
+import { classStreams } from "@/data/mock";
 import { useState } from "react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +12,7 @@ import { useStaffSession } from "@/lib/staff-auth";
 export default function AdminAnnouncementsPage() {
   const { session } = useStaffSession();
   const { items, publishNotice } = useMaterialsStore();
+  const [streamId, setStreamId] = useState(classStreams[0].id);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
@@ -32,7 +34,7 @@ export default function AdminAnnouncementsPage() {
         body,
         uploadedBy: session?.name ?? "Admin",
         role: "admin",
-        streamId: "all",
+        streamId,
       });
       setTitle("");
       setBody("");
@@ -50,6 +52,9 @@ export default function AdminAnnouncementsPage() {
 
   return (
     <div className="space-y-5">
+      <label className="mb-4 block text-sm font-medium">Recipient class
+        <select value={streamId} onChange={(event) => setStreamId(event.target.value as typeof streamId)} className="focus-ring ml-3 h-11 rounded-xl border border-border bg-background px-3">{classStreams.map((stream) => <option key={stream.id} value={stream.id}>{stream.label}</option>)}</select>
+      </label>
       <PageHeader
         title="Announcements"
         description="Broadcast a notice to every stream. Students see it on Announcements and in notifications."

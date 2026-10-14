@@ -6,6 +6,7 @@ import { deadlineLabel, daysUntil, cn } from "@/lib/utils";
 import { ArrowUpRight, Clock3 } from "lucide-react";
 
 export function DeadlineBadge({ deadline }: { deadline: string }) {
+  if (!deadline) return <Badge tone="default">No deadline set</Badge>;
   const days = daysUntil(deadline);
   const tone =
     days < 0 || days <= 1 ? "danger" : days <= 3 ? "warning" : "success";
@@ -62,13 +63,13 @@ export function AssignmentCard({
           <span>{module?.name || "Module"}</span>
           <span className="inline-flex items-center gap-1">
             <Clock3 className="h-3 w-3" />
-            {new Date(assignment.deadline).toLocaleString("en-GB", {
+            {assignment.deadline ? new Date(assignment.deadline).toLocaleString("en-GB", {
               weekday: "short",
               day: "numeric",
               month: "short",
               hour: "2-digit",
               minute: "2-digit",
-            })}
+            }) : "Deadline not specified"}
           </span>
         </p>
       </div>

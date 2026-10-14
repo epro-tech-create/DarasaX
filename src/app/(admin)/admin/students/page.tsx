@@ -301,7 +301,7 @@ export default function AdminStudentsPage() {
                 }
                 className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px]"
               >
-                {[1, 2, 3, 4].map((y) => (
+                {[3].map((y) => (
                   <option key={y} value={y}>
                     Year {y}
                   </option>

@@ -12,17 +12,20 @@ import { getNextClass } from "@/lib/academic";
 import { formatCountdownParts, getMsUntilSchoolOpen } from "@/lib/school";
 import { getGreeting } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/server";
-import { DEFAULT_CLASS_STREAM, timetable as seedTimetable } from "@/data/mock";
+import { DEFAULT_CLASS_STREAM } from "@/data/mock";
 import type { TimetableEntry } from "@/types";
 
 export default async function DashboardPage() {
-  let liveTimetable: TimetableEntry[] = seedTimetable;
+  let liveTimetable: TimetableEntry[] = [];
+  let studentStream = DEFAULT_CLASS_STREAM;
   try {
     if (
       process.env.NEXT_PUBLIC_SUPABASE_URL &&
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     ) {
       const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) { const { data } = await supabase.from("profiles").select("class_name").eq("id", user.id).single(); studentStream = (data?.class_name ?? DEFAULT_CLASS_STREAM) as typeof DEFAULT_CLASS_STREAM; }
       const timetableRes = await supabase
           .from("timetable_entries")
           .select("*")
@@ -45,7 +48,7 @@ export default async function DashboardPage() {
   } catch {
     // Fall back to bundled timetable and a generic greeting
   }
-  const next = getNextClass(new Date(), DEFAULT_CLASS_STREAM, liveTimetable);
+  const next = getNextClass(new Date(), studentStream, liveTimetable);
   const examDays = formatCountdownParts(getMsUntilSchoolOpen()).days;
 
 

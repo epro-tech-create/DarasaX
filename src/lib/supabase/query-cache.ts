@@ -42,6 +42,7 @@ export async function cachedQuery<T>(
 }
 
 export function invalidateQueries(prefix: string) {
+  if (!prefix) { store.clear(); return; }
   for (const key of [...store.keys()]) {
     if (key === prefix || key.startsWith(`${prefix}:`)) {
       store.delete(key);

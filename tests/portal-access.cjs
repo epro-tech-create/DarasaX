@@ -19,7 +19,8 @@ class Response {
 const { proxy } = load('src/proxy.ts', {
   'next/server': { NextResponse: Response },
   '@/lib/app-role': roles,
-  '@/lib/auth/profile': { getProfile: async () => ({ onboarding_completed: true }) },
+  '@/lib/auth/enrollment': { studentEnrollmentError: () => null },
+  '@/lib/auth/profile': { getProfile: async () => ({ onboarding_completed: true, institution:"Dar es Salaam Institute of Technology (DIT)", programme:"BENG24COE", year_of_study:3, semester:1, class_name:"BENG24COE-1" }) },
   '@/lib/auth/staff-profile': { getStaffProfile: async () => { if (failed) throw Error(); return staff; } },
   '@/lib/supabase/middleware': { updateSession: async () => ({ user, supabase: {}, supabaseResponse: Response.next() }) }
 });

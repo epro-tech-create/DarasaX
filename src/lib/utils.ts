@@ -46,6 +46,7 @@ export function daysUntil(date: string | Date): number {
 }
 
 export function deadlineLabel(date: string): string {
+  if (!date || !Number.isFinite(new Date(date).getTime())) return "No deadline set";
   const days = daysUntil(date);
   if (days < 0) return "Overdue";
   if (days === 0) return "Due today";

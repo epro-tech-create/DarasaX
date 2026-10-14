@@ -1,3 +1,4 @@
+import { currentTimetable } from "@/data/current-timetable";
 import type {
   AIConversation,
   Announcement,
@@ -89,7 +90,7 @@ export const modules: Module[] = [
     code: "GSU 07516",
     description:
       "Numerical techniques, matrix algebra, and computational methods for engineering problems.",
-    lecturer: "Dr. Grace Kimaro",
+    lecturer: "Ryoba M",
     semester: 1,
     year: 3,
     category: "fundamentals",
@@ -129,7 +130,7 @@ export const modules: Module[] = [
     code: "COU 07501",
     description:
       "Threats, cryptography basics, network security, secure coding, and incident response.",
-    lecturer: "Eng. Sarah Nkomo",
+    lecturer: "Alfred Kajirunga",
     semester: 1,
     year: 3,
     category: "core",
@@ -149,7 +150,7 @@ export const modules: Module[] = [
     code: "COU 07502",
     description:
       "Advanced SQL, database programming, administration, backup, recovery, and performance tuning.",
-    lecturer: "Prof. Amina Hassan",
+    lecturer: "Justin Nnko",
     semester: 1,
     year: 3,
     category: "core",
@@ -169,7 +170,7 @@ export const modules: Module[] = [
     code: "COU 07503",
     description:
       "Modern web architectures, frontend and backend development, APIs, and deployment.",
-    lecturer: "Mr. David Okello",
+    lecturer: "Raphael Jesse",
     semester: 1,
     year: 3,
     category: "core",
@@ -189,7 +190,7 @@ export const modules: Module[] = [
     code: "COU 07504",
     description:
       "Core data structures, algorithm design, complexity analysis, and problem-solving techniques.",
-    lecturer: "Dr. Peter Mwangi",
+    lecturer: "Dr. Christian Budoya",
     semester: 1,
     year: 3,
     category: "core",
@@ -209,7 +210,7 @@ export const modules: Module[] = [
     code: "COU 07505",
     description:
       "Software development lifecycles, requirements, design patterns, testing, and agile practices.",
-    lecturer: "Mr. David Okello",
+    lecturer: "Dr. Hosea Shimwela",
     semester: 1,
     year: 3,
     category: "core",
@@ -229,7 +230,7 @@ export const modules: Module[] = [
     code: "COU 07506",
     description:
       "Discrete-time signals, transforms, filtering, and DSP applications in engineering systems.",
-    lecturer: "Dr. Fatima Juma",
+    lecturer: "Dr. Haji Fimbombaya",
     semester: 1,
     year: 3,
     category: "core",
@@ -269,7 +270,7 @@ export const modules: Module[] = [
     code: "COU 07507",
     description:
       "HCI principles, usability, interaction design, and interactive device prototyping.",
-    lecturer: "Dr. Fatima Juma",
+    lecturer: "Dr. Godfrey Wandwi",
     semester: 1,
     year: 3,
     category: "elective",
@@ -286,10 +287,10 @@ export const modules: Module[] = [
   {
     id: "mod-electronics",
     name: "Electronics design and digital fabrication",
-    code: "ETU 07508",
+    code: "ETU 07521",
     description:
       "Electronic circuit design, PCB workflows, prototyping, and digital fabrication techniques.",
-    lecturer: "Eng. Sarah Nkomo",
+    lecturer: "John Mashurano",
     semester: 1,
     year: 3,
     category: "elective",
@@ -944,7 +945,7 @@ export const classStreams: ClassStream[] = [
 
 export const DEFAULT_CLASS_STREAM: ClassStreamId = "BENG24COE-1";
 
-export const timetable: TimetableEntry[] = [
+const legacyTimetable: TimetableEntry[] = [
   // —— BENG24COE-1 (day) ——
   {
     id: "tt-1-1",
@@ -1273,6 +1274,8 @@ export const timetable: TimetableEntry[] = [
     lecturer: "Dr. Fatima Juma",
   },
 ];
+
+export const timetable: TimetableEntry[] = [...currentTimetable, ...legacyTimetable.filter((entry) => entry.streamId !== "BENG24COE-1" && entry.streamId !== "BENG24COE-2")];
 
 export function getTimetableForStream(streamId: ClassStreamId) {
   return timetable.filter((entry) => entry.streamId === streamId);

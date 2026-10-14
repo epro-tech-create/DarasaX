@@ -310,3 +310,20 @@ On 2026-10-15, `20261015020000_personal_notifications.sql` was applied to produc
 There is no historical backfill. Publishing a new material or topic captures the existing verified recipients at that moment. New accounts start with no notifications and receive future publications; draft content and ordinary edits create no new alerts. Class-specific materials notify the matching class and authorized staff. Authors are excluded from their own publications. Withdrawn/deleted sources remove their alerts. Historical materials remain accessible in their normal pages without appearing as new notifications.
 
 The updated app removes shared localStorage read markers and mock assignment-deadline alerts. Read status persists across devices. Inboxes refresh on sign-in, window focus, marking read, and every 30 seconds while visible; no Realtime configuration is required. Database tests covered signup cutoffs, publication/draft transitions, deduplication, class isolation, independent read status, and blocked cross-user access, with all fixtures rolled back.
+
+
+### DIT BENG24COE class membership and official timetable
+
+Applied on 2026-10-15 to production:
+- `20261015030000_class_membership_security.sql`: active DIT/BENG24COE Year 3 Semester 1 membership, locked student academic fields, class-scoped materials/private files/timetables, automatic registered-account roster sync, and current-class inbox visibility.
+- `20261015040000_official_timetable.sql`: replaces only streams 1 and 2 with the 32 sessions transcribed from the supplied timetables. Streams 3 and 4 were not changed because no replacement schedules were provided.
+- `20261015050000_scoped_material_actions.sql`: validates download counters against current class access and limits lecturer topic changes to assigned modules.
+
+Existing students whose profiles lack course/class information must complete onboarding again after deployment. No class was guessed for an existing account. Semester 2, other years/courses, and incomplete memberships cannot activate access to this cohort's academic content. Students may edit their name and photo; academic changes require an administrator. Editing a registered student's class through the admin roster updates the actual profile and therefore its content access.
+
+Previously published material with no recipient class has been set to pending. In Admin > Library, assign the correct class and publish it again. Uploads and notices must target a particular class; there is no All streams publication option. Public demo-document URLs are blocked, and downloads resolve through private storage. Existing signed links expire normally; newly issued links expire after five minutes.
+
+The student assignment list now comes from authorized published assignment uploads, with optional deadlines, rather than shared demo assignments. Registered accounts are mirrored to the staff roster immediately; staff pages refresh on focus and every 30 seconds. These application changes require the corresponding GitHub deployment.
+
+
+`20261015060000_active_cohort_approval.sql` was also applied on 2026-10-15. Existing accounts saved under another semester/year/course are refused student login until an administrator approves their active cohort. In Admin > Students, choose the registered account, set its real stream and Year 3, and save; this sets the approved DIT/BENG24COE Semester 1 membership. New accounts with no prior academic details can complete the restricted onboarding normally.

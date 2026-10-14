@@ -85,6 +85,7 @@ export interface Assignment {
   priority: Priority;
   status: AssignmentStatus;
   instructions: string;
+  material?: MaterialUpload;
   attachedFiles: { name: string; size: string; type: string; url: string }[];
   relatedResourceIds: string[];
 }
@@ -256,6 +257,7 @@ export interface StaffIssue {
 
 export interface MaterialUpload {
   id: string;
+  dueAt?: string;
   title: string;
   kind: UploadKind;
   moduleId?: string;

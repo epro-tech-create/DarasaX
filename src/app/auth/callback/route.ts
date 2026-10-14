@@ -1,3 +1,4 @@
+import { studentEnrollmentError } from "@/lib/auth/enrollment";
 import { studentPostAuthPath } from "@/lib/auth/redirect";
 import { getStaffProfile } from "@/lib/auth/staff-profile";
 import { roleFromHost, getAppRole, APP_HOME } from "@/lib/app-role";
@@ -41,6 +42,13 @@ export async function GET(request: Request) {
           return NextResponse.redirect(new URL(APP_HOME[staff!.role], origin));
         }
         const profile = await ensureProfile(supabase, user);
+        const restriction = studentEnrollmentError(profile);
+        if (restriction) {
+          await supabase.auth.signOut();
+          const destination = new URL("/login", origin);
+          destination.searchParams.set("error", restriction);
+          return NextResponse.redirect(destination);
+        }
         const dest =
           studentPostAuthPath(profile.onboarding_completed, next);
         return NextResponse.redirect(new URL(dest, origin));

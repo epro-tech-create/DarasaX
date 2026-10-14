@@ -38,12 +38,7 @@ export default function ProfilePage() {
     event.preventDefault();
     if (!profile || saving) return;
     setError(""); setSuccess("");
-    if (form.full_name.trim().length < 2 || !form.institution.trim() || !form.programme.trim()) {
-      setError("Enter your full name, institution, and programme."); return;
-    }
-    if (![1,2,3,4,5,6].includes(Number(form.year_of_study)) || ![1,2].includes(Number(form.semester))) {
-      setError("Select your year of study and semester."); return;
-    }
+    if (form.full_name.trim().length < 2) { setError("Enter your full name."); return; }
     setSaving(true);
     const supabase = createClient();
     let uploadedPath: string | null = null;
@@ -59,9 +54,7 @@ export default function ProfilePage() {
         avatar = uploadedPath;
       }
       const { data, error: updateError } = await supabase.from("profiles").update({
-        full_name: form.full_name.trim(), institution: form.institution.trim(), programme: form.programme.trim(),
-        year_of_study: Number(form.year_of_study), semester: Number(form.semester),
-        class_name: form.class_name || null, avatar_url: avatar,
+        full_name: form.full_name.trim(), avatar_url: avatar,
       }).eq("id", user.id).select("*").single();
       if (updateError) throw new Error("We could not save your profile. Please try again.");
       uploadedPath = null; // Database commit succeeded; never delete the new photo on cleanup failure.
@@ -119,13 +112,14 @@ export default function ProfilePage() {
           </section>
           <section className="surface rounded-2xl p-5 sm:p-7">
             <h2 className="flex items-center gap-2 text-base font-semibold"><GraduationCap className="h-4 w-4 text-primary" /> Academic details</h2>
-            <div className="mt-5 grid gap-5 sm:grid-cols-2">
-              <label className="text-sm font-medium">Institution<input required maxLength={180} value={form.institution} onChange={(e) => change("institution", e.target.value)} className={inputClass} /></label>
-              <label className="text-sm font-medium">Programme<input required maxLength={180} value={form.programme} onChange={(e) => change("programme", e.target.value)} className={inputClass} /></label>
-              <label className="text-sm font-medium">Year of study<select required value={form.year_of_study} onChange={(e) => change("year_of_study", e.target.value)} className={inputClass}><option value="">Select year</option>{[1,2,3,4,5,6].map((year) => <option key={year} value={year}>Year {year}</option>)}</select></label>
-              <label className="text-sm font-medium">Semester<select required value={form.semester} onChange={(e) => change("semester", e.target.value)} className={inputClass}><option value="">Select semester</option><option value="1">Semester 1</option><option value="2">Semester 2</option></select></label>
-              <label className="text-sm font-medium sm:col-span-2">Class<select value={form.class_name} onChange={(e) => change("class_name", e.target.value)} className={inputClass}><option value="">Select class</option>{form.class_name && !classStreams.some((stream) => stream.id === form.class_name) && <option value={form.class_name}>{form.class_name}</option>}{classStreams.map((stream) => <option key={stream.id} value={stream.id}>{stream.label}{stream.isEvening ? " (Evening)" : ""}</option>)}</select></label>
-            </div>
+            <p className="mt-2 text-sm text-muted-foreground">Academic details are set during onboarding and locked. Contact your administrator to request a class change.</p>
+            <fieldset disabled className="mt-5 grid gap-5 sm:grid-cols-2 opacity-75">
+              <label className="text-sm font-medium">Institution<input required maxLength={180} value={profile.institution ?? ""} onChange={(e) => change("institution", e.target.value)} className={inputClass} /></label>
+              <label className="text-sm font-medium">Programme<input required maxLength={180} value={profile.programme ?? ""} onChange={(e) => change("programme", e.target.value)} className={inputClass} /></label>
+              <label className="text-sm font-medium">Year of study<select required value={String(profile.year_of_study ?? "")} onChange={(e) => change("year_of_study", e.target.value)} className={inputClass}><option value="">Select year</option>{[1,2,3,4,5,6].map((year) => <option key={year} value={year}>Year {year}</option>)}</select></label>
+              <label className="text-sm font-medium">Semester<select required value={String(profile.semester ?? "")} onChange={(e) => change("semester", e.target.value)} className={inputClass}><option value="">Select semester</option><option value="1">Semester 1</option><option value="2">Semester 2</option></select></label>
+              <label className="text-sm font-medium sm:col-span-2">Class<select value={profile.class_name ?? ""} onChange={(e) => change("class_name", e.target.value)} className={inputClass}><option value="">Select class</option>{form.class_name && !classStreams.some((stream) => stream.id === form.class_name) && <option value={profile.class_name ?? ""}>{form.class_name}</option>}{classStreams.map((stream) => <option key={stream.id} value={stream.id}>{stream.label}{stream.isEvening ? " (Evening)" : ""}</option>)}</select></label>
+            </fieldset>
           </section>
           <div className="flex justify-end"><Button type="submit" disabled={saving}><Save className="h-4 w-4" />{saving ? "Saving changes..." : "Save changes"}</Button></div>
         </fieldset>

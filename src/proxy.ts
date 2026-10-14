@@ -1,3 +1,4 @@
+import { studentEnrollmentError } from "@/lib/auth/enrollment";
 import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 import { getProfile } from "@/lib/auth/profile";
@@ -30,6 +31,7 @@ function isStudentProtected(pathname: string) {
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  if (/^\/(assignments|past-papers)\/[^/]+\.[a-z0-9]+$/i.test(pathname)) return new NextResponse("Use the private class library to access files.", { status: 403 });
   const portal = roleFromHost(request.headers.get("host")) ?? getAppRole();
   // Static assets only: never exempt a protected path because it contains a dot.
   if (pathname.startsWith("/brand/") || /^\/[^/]+\.(?:svg|png|jpg|jpeg|webp|ico)$/.test(pathname)) {
@@ -91,7 +93,10 @@ export async function proxy(request: NextRequest) {
   }
   if (user && !staff && (isStudentProtected(pathname) || pathname === "/login" || pathname === "/signup")) {
     const profile = await getProfile(supabase, user.id);
-    const home = profile?.onboarding_completed ? "/dashboard" : "/onboarding";
+    const restriction = studentEnrollmentError(profile);
+    if (restriction) return new NextResponse(restriction, { status: 403 });
+    const eligible = profile?.onboarding_completed && profile.institution === "Dar es Salaam Institute of Technology (DIT)" && profile.programme === "BENG24COE" && profile.year_of_study === 3 && profile.semester === 1 && /^BENG24COE-[1-4]$/.test(profile.class_name ?? "");
+    const home = eligible ? "/dashboard" : "/onboarding";
     if (pathname === "/login" || pathname === "/signup" || (home === "/onboarding" && pathname !== home) || (pathname === "/onboarding" && home !== pathname)) return redirect(home);
   }
   supabaseResponse.headers.set("Cache-Control", "private, no-store");

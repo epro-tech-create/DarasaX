@@ -10,6 +10,23 @@ const StudentProfileContext = createContext<Context | null>(null);
 export function StudentProfileProvider({ initialProfile, children }: { initialProfile: Profile | null; children: React.ReactNode }) {
   const [profile, setProfile] = useState(initialProfile);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  useEffect(() => {
+    const timer = setTimeout(() => setProfile(initialProfile), 0);
+    return () => clearTimeout(timer);
+  }, [initialProfile]);
+  useEffect(() => {
+    let disposed = false;
+    const refresh = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || user.id !== initialProfile?.id) return;
+      const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+      if (!disposed && data) setProfile(data);
+    };
+    const onFocus = () => void refresh();
+    window.addEventListener("focus", onFocus);
+    return () => { disposed = true; window.removeEventListener("focus", onFocus); };
+  }, [initialProfile?.id]);
   const updateProfile = useCallback((next: Profile) => setProfile(next), []);
   useEffect(() => {
     let cancelled = false;
