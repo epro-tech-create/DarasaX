@@ -11,14 +11,14 @@ export function NotificationPanel({
   open,
   onClose,
   resolveHref,
-  emptyDescription = "When staff upload notes, past papers, or topics, they show up here.",
+  emptyDescription = "New updates published after you join will appear here.",
 }: {
   open: boolean;
   onClose: () => void;
   resolveHref?: (href: string) => string;
   emptyDescription?: string;
 }) {
-  const { items, ready, markRead, markAllRead } = useNotifications();
+  const { items, unreadCount, ready, error, refresh, markRead, markAllRead } = useNotifications();
 
   if (!open) return null;
 
@@ -41,12 +41,15 @@ export function NotificationPanel({
             size="sm"
             type="button"
             onClick={markAllRead}
-            disabled={items.every((n) => n.read)}
+            disabled={unreadCount === 0}
           >
             <CheckCheck className="h-4 w-4" />
             Mark all read
           </Button>
         </div>
+        {error ? <div role="alert" className="space-y-2 px-4 py-4 text-sm">
+          <p>{error}</p><Button variant="outline" size="sm" onClick={refresh}>Try again</Button>
+        </div> : null}
         {!ready ? (
           <p className="px-4 py-8 text-center text-[12px] text-muted-foreground">
             Loading updates…

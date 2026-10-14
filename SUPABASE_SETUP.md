@@ -301,3 +301,12 @@ Transactional live RLS tests passed for own-avatar access, blocked foreign-avata
 ### Topic explanations
 
 On 2026-10-15, `20261015010000_topic_explanations.sql` was applied to production and recorded in migration history. It adds plain-text `content` and `learning_objectives` to `module_topics`, preserving existing summaries and RLS. In Admin > Topics, choose the module, enter the title, overview, explanation, and objectives (one per line), then publish. Students open the topic from the module Overview. Unpublished topics remain hidden from student accounts. The page lists module-level uploaded notes; those files are not represented as topic-specific attachments.
+
+
+### Personal notification inboxes
+
+On 2026-10-15, `20261015020000_personal_notifications.sql` was applied to production and recorded in migration history. Notifications are stored per authenticated recipient, with RLS preventing access to another user's inbox. Clients can update only their own `read_at` field, not notification content or recipients.
+
+There is no historical backfill. Publishing a new material or topic captures the existing verified recipients at that moment. New accounts start with no notifications and receive future publications; draft content and ordinary edits create no new alerts. Class-specific materials notify the matching class and authorized staff. Authors are excluded from their own publications. Withdrawn/deleted sources remove their alerts. Historical materials remain accessible in their normal pages without appearing as new notifications.
+
+The updated app removes shared localStorage read markers and mock assignment-deadline alerts. Read status persists across devices. Inboxes refresh on sign-in, window focus, marking read, and every 30 seconds while visible; no Realtime configuration is required. Database tests covered signup cutoffs, publication/draft transitions, deduplication, class isolation, independent read status, and blocked cross-user access, with all fixtures rolled back.

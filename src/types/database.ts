@@ -22,6 +22,12 @@ export type AuditLogRow = Database["public"]["Tables"]["audit_log"]["Row"];
 export type Database = {
   public: {
     Tables: {
+      notifications: {
+        Row: { id: string; recipient_id: string; source_type: string; source_id: string; title: string; body: string; type: string; href: string; created_at: string; read_at: string | null };
+        Insert: { recipient_id: string; source_type: string; source_id: string; title: string; body: string; type: string; href: string; id?: string; created_at?: string; read_at?: string | null };
+        Update: { read_at?: string | null };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           id: string;
