@@ -42,6 +42,8 @@ function toTopic(row: ModuleTopicRow, completed: boolean): Topic {
     completed,
     resourceIds: [],
     summary: row.summary ?? undefined,
+    content: row.content ?? undefined,
+    learningObjectives: row.learning_objectives ?? [],
   };
 }
 
@@ -51,6 +53,8 @@ export type TopicDraft = {
   title: string;
   durationMinutes: number;
   summary?: string;
+  content?: string;
+  learningObjectives?: string[];
   published?: boolean;
 };
 
@@ -59,9 +63,12 @@ export type TopicUpdate = Partial<TopicDraft>;
 export function useTopicsStore() {
   const [rows, setRows] = useState<ModuleTopicRow[]>([]);
   const [ready, setReady] = useState(false);
+  const [error, setError] = useState("");
   const [progressTick, setProgressTick] = useState(0);
 
   const refresh = useCallback(async () => {
+    setReady(false);
+    setError("");
     try {
       if (!isConfigured()) {
         setRows([]);
@@ -79,14 +86,17 @@ export function useTopicsStore() {
       });
       setRows(rows);
     } catch {
-      // Keep previous rows on transient failures.
+      setError("Topics could not be loaded. Please try again.");
     } finally {
       setReady(true);
     }
   }, []);
 
   useEffect(() => {
-    void refresh();
+    const timer = setTimeout(() => void refresh(), 0);
+    const onFocus = () => void refresh();
+    window.addEventListener("focus", onFocus);
+    return () => { clearTimeout(timer); window.removeEventListener("focus", onFocus); };
   }, [refresh]);
 
   useEffect(() => {
@@ -167,6 +177,8 @@ export function useTopicsStore() {
           title: input.title.trim(),
           duration_minutes: input.durationMinutes,
           summary: input.summary?.trim() || null,
+          content: input.content?.trim() || null,
+          learning_objectives: input.learningObjectives ?? [],
           published: input.published ?? true,
           created_by: input.createdBy,
           created_by_id: user?.id ?? null,
@@ -206,6 +218,8 @@ export function useTopicsStore() {
     if (patch.summary !== undefined) {
       dbPatch.summary = patch.summary.trim() || null;
     }
+    if (patch.content !== undefined) dbPatch.content = patch.content.trim() || null;
+    if (patch.learningObjectives !== undefined) dbPatch.learning_objectives = patch.learningObjectives;
     if (patch.published !== undefined) dbPatch.published = patch.published;
     const { data, error } = await supabase
       .from("module_topics")
@@ -247,6 +261,7 @@ export function useTopicsStore() {
     topics,
     staffTopics,
     ready,
+    error,
     refresh,
     forModule,
     setCompleted,

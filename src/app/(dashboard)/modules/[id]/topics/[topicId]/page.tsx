@@ -23,8 +23,8 @@ import { cn } from "@/lib/utils";
 
 export default function TopicDetailPage() {
   const params = useParams<{ id: string; topicId: string }>();
-  const module = getModule(params.id);
-  const { topics, setCompleted } = useTopicProgress();
+  const courseModule = getModule(params.id);
+  const { topics, setCompleted, ready, error, refresh } = useTopicProgress();
   const { published } = useMaterialsStore();
 
   const topic = useMemo(
@@ -32,16 +32,30 @@ export default function TopicDetailPage() {
     [topics, params.topicId],
   );
 
-  if (!module || !topic || topic.moduleId !== module.id) notFound();
-
-  const liveNotes = noteMaterials(published, module.id);
   const siblings = useMemo(
     () =>
       topics
-        .filter((t) => t.moduleId === module.id)
+        .filter((t) => t.moduleId === params.id)
         .sort((a, b) => a.number - b.number),
-    [topics, module.id],
+    [topics, params.id],
   );
+  if (!courseModule) notFound();
+  if (!ready) return (
+    <div role="status" aria-live="polite" className="surface animate-pulse rounded-2xl p-6">
+      <p className="text-sm text-muted-foreground">Loading topic...</p>
+      <div className="mt-5 h-5 w-2/3 rounded bg-muted" />
+      <div className="mt-3 h-24 rounded bg-muted" />
+    </div>
+  );
+  if (error) return (
+    <div role="alert" className="surface space-y-4 rounded-2xl p-6">
+      <p>{error}</p>
+      <Button onClick={() => void refresh()}>Try again</Button>
+      <Link href={`/modules/${courseModule.id}`} className="ml-3 text-sm text-primary">Back to module</Link>
+    </div>
+  );
+  if (!topic || topic.moduleId !== courseModule.id) notFound();
+  const liveNotes = noteMaterials(published, courseModule.id);
   const index = siblings.findIndex((t) => t.id === topic.id);
   const prev = index > 0 ? siblings[index - 1] : null;
   const next =
@@ -51,15 +65,15 @@ export default function TopicDetailPage() {
     <div className="space-y-6">
       <div>
         <Link
-          href={`/modules/${module.id}`}
+          href={`/modules/${courseModule.id}`}
           className="inline-flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground transition hover:text-primary"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          Back to {module.name}
+          Back to {courseModule.name}
         </Link>
         <PageHeader
           title={`Topic ${String(topic.number).padStart(2, "0")} — ${topic.title}`}
-          description={`${module.code} · ${module.lecturer}`}
+          description={`${courseModule.code} · ${courseModule.lecturer}`}
           actions={
             <Badge tone={topic.completed ? "success" : "primary"}>
               {topic.completed ? "Completed" : "In progress"}
@@ -88,7 +102,7 @@ export default function TopicDetailPage() {
           </span>
         </div>
         {topic.summary ? (
-          <p className="mt-4 text-[14px] leading-relaxed text-foreground/90">
+          <p className="mt-4 whitespace-pre-wrap text-[14px] leading-relaxed text-foreground/90">
             {topic.summary}
           </p>
         ) : null}
@@ -102,6 +116,25 @@ export default function TopicDetailPage() {
             <CheckCircle2 className="h-4 w-4" />
             {topic.completed ? "Undo complete" : "Mark topic done"}
           </Button>
+        </div>
+      </section>
+
+      {topic.learningObjectives && topic.learningObjectives.length > 0 && (
+        <section className="surface rounded-[20px] p-5 sm:p-6">
+          <h2 className="text-base font-semibold">What you will learn</h2>
+          <ul className="mt-4 space-y-3">
+            {topic.learningObjectives.map((objective, position) => (
+              <li key={position} className="flex gap-3 text-sm leading-relaxed">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{objective}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      <section className="surface rounded-[20px] p-5 sm:p-6">
+        <h2 className="text-base font-semibold">About this topic</h2>
+        <div className="mt-4 whitespace-pre-wrap text-sm leading-7 text-foreground/90">
+          {topic.content || topic.summary || "Your teaching team has published this topic. A detailed explanation will appear here when it is added. Explore the module materials below in the meantime."}
         </div>
       </section>
 
@@ -132,7 +165,7 @@ export default function TopicDetailPage() {
       <nav className="grid gap-3 sm:grid-cols-2">
         {prev ? (
           <Link
-            href={`/modules/${module.id}/topics/${prev.id}`}
+            href={`/modules/${courseModule.id}/topics/${prev.id}`}
             className="surface group flex items-center gap-3 rounded-[16px] p-4 transition hover:border-primary/30"
           >
             <ArrowLeft className="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-primary" />
@@ -150,7 +183,7 @@ export default function TopicDetailPage() {
         )}
         {next ? (
           <Link
-            href={`/modules/${module.id}/topics/${next.id}`}
+            href={`/modules/${courseModule.id}/topics/${next.id}`}
             className={cn(
               "surface group flex items-center justify-end gap-3 rounded-[16px] p-4 text-right transition hover:border-primary/30",
             )}

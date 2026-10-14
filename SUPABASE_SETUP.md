@@ -296,3 +296,8 @@ CRs retain their existing student authentication account and password. Administr
 On 2026-10-15, `20261015000000_private_student_avatars.sql` was applied to project `psrtifnhstkujmschwem` and recorded in migration history. It creates a private `avatars` bucket with a 1 MB object limit and JPEG/PNG/WebP MIME types. Authenticated users may read, upload, and remove files only within their own UUID folder. The app validates images up to 5 MB, decodes and resizes them to at most 768 pixels, and uploads WebP images using unique filenames. Private photos use signed URLs; passwords and staff roles are not part of profile editing.
 
 Transactional live RLS tests passed for own-avatar access, blocked foreign-avatar reads/uploads, and blocked edits to another student's profile. Profile and sidebar UI updates require deployment of the corresponding application commit.
+
+
+### Topic explanations
+
+On 2026-10-15, `20261015010000_topic_explanations.sql` was applied to production and recorded in migration history. It adds plain-text `content` and `learning_objectives` to `module_topics`, preserving existing summaries and RLS. In Admin > Topics, choose the module, enter the title, overview, explanation, and objectives (one per line), then publish. Students open the topic from the module Overview. Unpublished topics remain hidden from student accounts. The page lists module-level uploaded notes; those files are not represented as topic-specific attachments.

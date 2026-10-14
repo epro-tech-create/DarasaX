@@ -236,6 +236,8 @@ export type Database = {
           title: string;
           duration_minutes: number;
           summary: string | null;
+          content: string | null;
+          learning_objectives: string[];
           published: boolean;
           created_by: string;
           created_by_id: string | null;
@@ -250,6 +252,8 @@ export type Database = {
           title: string;
           duration_minutes?: number;
           summary?: string | null;
+          content?: string | null;
+          learning_objectives?: string[];
           published?: boolean;
           created_by?: string;
           created_by_id?: string | null;
@@ -264,6 +268,8 @@ export type Database = {
           title?: string;
           duration_minutes?: number;
           summary?: string | null;
+          content?: string | null;
+          learning_objectives?: string[];
           published?: boolean;
           created_by?: string;
           created_by_id?: string | null;

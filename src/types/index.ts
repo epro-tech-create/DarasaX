@@ -57,6 +57,8 @@ export interface Topic {
   completed: boolean;
   resourceIds: string[];
   summary?: string;
+  content?: string;
+  learningObjectives?: string[];
 }
 
 export interface Resource {

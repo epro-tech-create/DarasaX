@@ -18,6 +18,8 @@ type FormState = {
   title: string;
   durationMinutes: string;
   summary: string;
+  content: string;
+  objectives: string;
   published: boolean;
 };
 
@@ -27,6 +29,8 @@ const emptyForm = (moduleId = ""): FormState => ({
   title: "",
   durationMinutes: "20",
   summary: "",
+  content: "",
+  objectives: "",
   published: true,
 });
 
@@ -101,6 +105,8 @@ export function TopicsWorkspace({
       title: row.title,
       durationMinutes: String(row.duration_minutes),
       summary: row.summary ?? "",
+      content: row.content ?? "",
+      objectives: (row.learning_objectives ?? []).join("\n"),
       published: row.published,
     });
     setError("");
@@ -131,6 +137,8 @@ export function TopicsWorkspace({
           title: form.title,
           durationMinutes,
           summary: form.summary,
+          content: form.content,
+          learningObjectives: form.objectives.split("\n").map((line) => line.trim()).filter(Boolean),
           published: form.published,
         });
         setMessage("Topic updated — students see it on the module Overview.");
@@ -141,6 +149,8 @@ export function TopicsWorkspace({
           title: form.title,
           durationMinutes,
           summary: form.summary,
+          content: form.content,
+          learningObjectives: form.objectives.split("\n").map((line) => line.trim()).filter(Boolean),
           published: form.published,
           createdBy,
           role,
@@ -153,7 +163,7 @@ export function TopicsWorkspace({
       setError(
         msg.toLowerCase().includes("duplicate") ||
           msg.toLowerCase().includes("unique")
-          ? "That topic number already exists for this module. Pick another number."
+          ? "That topic number already exists for this courseModule. Pick another number."
           : msg,
       );
     } finally {
@@ -183,7 +193,7 @@ export function TopicsWorkspace({
       <PageHeader
         size="lg"
         title="Module topics"
-        description="Add the course outline per module. Students mark topics done to drive progress — this is not a file upload."
+        description="Add the course outline per courseModule. Students mark topics done to drive progress — this is not a file upload."
         actions={
           <Button
             size="sm"
@@ -261,7 +271,7 @@ export function TopicsWorkspace({
         ) : (
           <div className="space-y-2">
             {filtered.map((row) => {
-              const module = catalog.find((m) => m.id === row.module_id) ??
+              const courseModule = catalog.find((m) => m.id === row.module_id) ??
                 modules.find((m) => m.id === row.module_id);
               return (
                 <div
@@ -273,7 +283,7 @@ export function TopicsWorkspace({
                       <Badge tone="primary">
                         Topic {String(row.number).padStart(2, "0")}
                       </Badge>
-                      <Badge>{module?.code ?? row.module_id}</Badge>
+                      <Badge>{courseModule?.code ?? row.module_id}</Badge>
                       {!row.published ? (
                         <Badge tone="warning">Draft</Badge>
                       ) : null}
@@ -282,7 +292,7 @@ export function TopicsWorkspace({
                       {row.title}
                     </p>
                     <p className="mt-0.5 text-[11px] text-muted-foreground">
-                      {module?.name} · {row.duration_minutes} min
+                      {courseModule?.name} · {row.duration_minutes} min
                       {row.summary
                         ? ` · ${row.summary.slice(0, 80)}${row.summary.length > 80 ? "…" : ""}`
                         : ""}
@@ -398,6 +408,18 @@ export function TopicsWorkspace({
               placeholder="Short description students see on the topic page"
               className="w-full rounded-xl border border-border bg-background px-3 py-2 text-[13px]"
             />
+          </label>
+          <label className="block space-y-1.5">
+            <span className="text-[11px] font-medium text-muted-foreground">Topic explanation</span>
+            <textarea value={form.content} onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+              rows={6} maxLength={30000} placeholder="Explain the topic, key concepts, examples, and important information."
+              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-[13px]" />
+          </label>
+          <label className="block space-y-1.5">
+            <span className="text-[11px] font-medium text-muted-foreground">Learning objectives (one per line)</span>
+            <textarea value={form.objectives} onChange={(e) => setForm((f) => ({ ...f, objectives: e.target.value }))}
+              rows={4} maxLength={6000} placeholder="What should students understand after this topic?"
+              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-[13px]" />
           </label>
           <label className="flex items-center gap-2 text-[12px]">
             <input
