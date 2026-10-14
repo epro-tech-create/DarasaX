@@ -23,14 +23,13 @@ export function StaffStatCard({
   };
 
   return (
-    <div className="surface relative overflow-hidden rounded-2xl p-4 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/10">
-      <div className="pointer-events-none absolute -right-4 -top-6 h-20 w-20 rounded-full bg-primary/10 blur-2xl" />
+    <div className="surface relative overflow-hidden rounded-2xl p-4 transition duration-200 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 motion-safe:hover:-translate-y-0.5 sm:p-5">
       <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs font-medium text-muted-foreground">
             {label}
           </p>
-          <p className="mt-1 truncate font-heading text-xl font-semibold leading-none tracking-tight">
+          <p className="mt-2 truncate font-heading text-2xl font-semibold leading-none tracking-tight">
             {value}
           </p>
           {hint ? (
@@ -39,7 +38,7 @@ export function StaffStatCard({
         </div>
         <span
           className={cn(
-            "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
+            "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl",
             tones[tone],
           )}
         >

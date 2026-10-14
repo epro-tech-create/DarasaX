@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { OverviewHeader, OverviewShortcut } from "@/components/dashboard/overview-ui";
 import {
   ArrowUpRight,
   BookOpen,
@@ -22,7 +23,7 @@ import { getActiveLecturerStream } from "@/lib/lecturer-context";
 import { useMaterialsStore } from "@/lib/materials-store";
 import { useStaffSession } from "@/lib/staff-auth";
 import { useTopicsStore } from "@/lib/topics-store";
-import { formatDate, formatRelativeTime, getGreeting } from "@/lib/utils";
+import { formatRelativeTime, getGreeting } from "@/lib/utils";
 
 export default function LecturerOverviewPage() {
   const { session } = useStaffSession();
@@ -95,42 +96,10 @@ export default function LecturerOverviewPage() {
 
   return (
     <div className="space-y-6 sm:space-y-7">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0">
-          <h1 className="font-heading text-xl font-semibold tracking-tight">
-            {getGreeting()}, {displayName}
-          </h1>
-          <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-muted-foreground sm:text-[13px]">
-            <span>Lecturer teaching desk</span>
-            {activeLabel ? (
-              <>
-                <span aria-hidden className="h-1 w-1 rounded-full bg-border" />
-                <span className="font-medium text-foreground">{activeLabel}</span>
-              </>
-            ) : null}
-            <span aria-hidden className="h-1 w-1 rounded-full bg-border" />
-            <span>
-              {moduleCount} module{moduleCount === 1 ? "" : "s"}
-              {streamCount > 0
-                ? ` · ${streamCount} class${streamCount === 1 ? "" : "es"}`
-                : ""}
-            </span>
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="rounded-full bg-muted/70 px-3 py-1 text-[11px] font-medium text-muted-foreground">
-            {formatDate(new Date())}
-          </p>
-          <Button href="/lecturer/uploads" size="sm">
-            <FileUp className="h-3.5 w-3.5" />
-            Upload
-          </Button>
-          <Button href="/lecturer/topics" size="sm" variant="outline">
-            <ListOrdered className="h-3.5 w-3.5" />
-            Topics
-          </Button>
-        </div>
-      </div>
+      <OverviewHeader label="Lecturer workspace" title={`${getGreeting()}, ${displayName}`}
+        description={`${activeLabel || "Your teaching workspace"} / ${moduleCount} modules / ${streamCount} classes. Bring your next lesson to life.`}
+        actions={<><Button href="/lecturer/uploads" size="sm"><FileUp className="h-4 w-4" />Upload material</Button><Button href="/lecturer/topics" size="sm" variant="outline">Manage topics</Button></>}
+      />
 
       <StaffStagger className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StaffFadeItem>
@@ -180,23 +149,7 @@ export default function LecturerOverviewPage() {
           const Icon = card.icon;
           return (
             <StaffFadeItem key={card.href}>
-              <Link
-                href={card.href}
-                className="surface group block rounded-2xl p-4 transition duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10"
-              >
-                <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary transition group-hover:bg-primary group-hover:text-primary-foreground">
-                  <Icon className="h-4 w-4" />
-                </span>
-                <p className="mt-3 font-heading text-[13px] font-semibold">
-                  {card.title}
-                </p>
-                <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
-                  {card.body}
-                </p>
-                <span className="mt-3 inline-flex items-center gap-1 text-[11px] font-medium text-primary">
-                  Open <ArrowUpRight className="h-3 w-3" />
-                </span>
-              </Link>
+              <OverviewShortcut href={card.href} title={card.title} description={card.body} icon={Icon} />
             </StaffFadeItem>
           );
         })}
@@ -217,7 +170,7 @@ export default function LecturerOverviewPage() {
         >
           <div className="space-y-2">
             {recent.map((item) => {
-              const module = item.moduleId
+              const courseModule = item.moduleId
                 ? modules.find((m) => m.id === item.moduleId)
                 : null;
               return (
@@ -230,7 +183,7 @@ export default function LecturerOverviewPage() {
                       {item.title}
                     </p>
                     <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
-                      {module ? `${module.code} · ` : ""}
+                      {courseModule ? `${courseModule.code} · ` : ""}
                       {formatRelativeTime(item.createdAt)} · {item.size}
                     </p>
                   </div>
@@ -257,7 +210,7 @@ export default function LecturerOverviewPage() {
 
         <StaffSection
           title="Teaching context"
-          description="What students see for your modules and class."
+          description="Your current class and teaching modules."
         >
           <div className="space-y-3">
             <div className="rounded-xl bg-muted/50 px-3 py-2.5">

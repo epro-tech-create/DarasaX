@@ -3,13 +3,14 @@
 import Link from "next/link";
 import {
   ArrowUpRight,
+  CalendarDays,
   FileUp,
   Flag,
   GraduationCap,
   ScrollText,
   Users,
 } from "lucide-react";
-import { PageHeader } from "@/components/layout/page-header";
+import { OverviewHeader, OverviewShortcut } from "@/components/dashboard/overview-ui";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StaffSection, StaffStatCard } from "@/components/staff/staff-ui";
@@ -34,11 +35,11 @@ export default function AdminOverviewPage() {
   const atRisk = students.filter((s) => s.risk !== "low").length;
 
   return (
-    <div className="space-y-5">
-      <PageHeader
-        size="lg"
+    <div className="space-y-6 sm:space-y-7">
+      <OverviewHeader
+        label="Administration"
         title={`${greeting()}, ${session?.name ?? "Admin"}`}
-        description="Admin · DarasaX programme operations"
+        description="Manage your community, keep classes running, and see what needs attention."
         actions={
           <div className="flex flex-wrap gap-2">
             <Button href="/admin/students" size="sm" variant="outline">
@@ -55,7 +56,7 @@ export default function AdminOverviewPage() {
         }
       />
 
-      <StaffStagger className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
+      <StaffStagger className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <StaffFadeItem>
           <StaffStatCard
             label="Students"
@@ -91,19 +92,13 @@ export default function AdminOverviewPage() {
 
       <StaffStagger className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { href: "/admin/students", title: "Students", body: "Add & monitor roster" },
-          { href: "/admin/class-reps", title: "Class reps", body: "Appoint per stream" },
-          { href: "/admin/timetable", title: "Timetable", body: "Edit live sessions" },
-          { href: "/admin/audit", title: "Audit logs", body: "See every change" },
+          { href: "/admin/students", title: "Students", body: "Manage your student community", icon: Users },
+          { href: "/admin/class-reps", title: "Class reps", body: "Manage class representatives", icon: GraduationCap },
+          { href: "/admin/timetable", title: "Timetable", body: "Keep class schedules up to date", icon: CalendarDays },
+          { href: "/admin/audit", title: "Audit logs", body: "Follow activity across your campus", icon: ScrollText },
         ].map((card) => (
           <StaffFadeItem key={card.href}>
-            <Link
-              href={card.href}
-              className="surface block rounded-2xl p-4 transition hover:border-primary/40"
-            >
-              <p className="text-[13px] font-semibold">{card.title}</p>
-              <p className="mt-0.5 text-[11px] text-muted-foreground">{card.body}</p>
-            </Link>
+            <OverviewShortcut href={card.href} title={card.title} description={card.body} icon={card.icon} />
           </StaffFadeItem>
         ))}
       </StaffStagger>
@@ -121,6 +116,7 @@ export default function AdminOverviewPage() {
           }
         >
           <div className="space-y-2">
+            {audit.length === 0 && <p className="rounded-xl bg-muted/40 px-4 py-8 text-center text-sm text-muted-foreground">No activity yet. New actions will appear here.</p>}
             {audit.slice(0, 5).map((row) => (
               <div
                 key={row.id}
@@ -153,6 +149,7 @@ export default function AdminOverviewPage() {
           }
         >
           <div className="space-y-2">
+            {openIssues.length === 0 && <p className="rounded-xl bg-success/5 px-4 py-8 text-center text-sm text-muted-foreground">All caught up. There are no open issues.</p>}
             {openIssues
               .slice(0, 5)
               .map((issue) => (

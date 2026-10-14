@@ -137,12 +137,12 @@ export function StatCard({
         <Icon className="h-4 w-4" />
       </span>
       <div className="min-w-0">
-        <p className="text-[11px] text-muted-foreground">{label}</p>
-        <p className="mt-0.5 font-heading text-[17px] font-semibold tracking-tight">
+        <p className="text-xs font-medium text-muted-foreground">{label}</p>
+        <p className="mt-1 font-heading text-xl font-semibold tracking-tight">
           {value}
         </p>
         {hint ? (
-          <p className="mt-0.5 text-[10px] text-muted-foreground">{hint}</p>
+          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{hint}</p>
         ) : null}
       </div>
     </div>
@@ -155,7 +155,7 @@ export function StatCard({
   return (
     <Link
       href={href}
-      className="surface block rounded-[16px] p-3.5 transition duration-200 hover:scale-[1.03] hover:border-primary hover:shadow-lg hover:shadow-primary/25 sm:p-4"
+      className="surface block rounded-[16px] p-3.5 transition duration-200 focus-ring motion-safe:hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 sm:p-4"
     >
       {body}
     </Link>

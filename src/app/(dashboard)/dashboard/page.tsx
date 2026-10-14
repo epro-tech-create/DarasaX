@@ -1,17 +1,16 @@
+import { OverviewHeader } from "@/components/dashboard/overview-ui";
 import { StudentGreeting } from "@/components/dashboard/student-greeting";
 import { ExamCountdown } from "@/components/dashboard/exam-countdown";
 import {
-  DashboardModulesPreview,
   DashboardUpcoming,
 } from "@/components/dashboard/live-sections";
-import { DashboardLiveUpdates } from "@/components/dashboard/live-updates";
 import { NextClassCard, StatCard } from "@/components/dashboard/next-class-card";
 import { DashboardAssignmentStatCard } from "@/components/dashboard/assignment-stat-card";
 import { StudyChart } from "@/components/dashboard/study-chart";
 import { currentUser, modules } from "@/data/mock";
 import { getNextClass } from "@/lib/academic";
 import { formatCountdownParts, getMsUntilSchoolOpen } from "@/lib/school";
-import { formatDate, getGreeting } from "@/lib/utils";
+import { getGreeting } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/server";
 import { DEFAULT_CLASS_STREAM, timetable as seedTimetable } from "@/data/mock";
 import type { TimetableEntry } from "@/types";
@@ -51,18 +50,9 @@ export default async function DashboardPage() {
 
 
   return (
-    <div className="space-y-7">
-      <div className="flex flex-col gap-1.5 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <StudentGreeting greeting={getGreeting()} />
-          <p className="mt-1 text-[12px] text-muted-foreground sm:text-[13px]">
-            Ready to continue your semester?
-          </p>
-        </div>
-        <p className="rounded-full bg-muted/70 px-3 py-1 text-[11px] font-medium text-muted-foreground">
-          {formatDate(new Date())}
-        </p>
-      </div>
+    <div className="space-y-6 sm:space-y-7">
+      <OverviewHeader label="Student workspace" title={<StudentGreeting greeting={getGreeting()} />}
+        description="Your classes, coursework, and study plans at a glance." />
 
       {next ? (
         <NextClassCard
@@ -88,16 +78,12 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <StudyChart />
-
       <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
-        <DashboardUpcoming />
+        <StudyChart />
         <ExamCountdown />
       </div>
 
-      <DashboardModulesPreview />
-
-      <DashboardLiveUpdates />
+      <DashboardUpcoming />
     </div>
   );
 }
