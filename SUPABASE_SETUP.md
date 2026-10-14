@@ -282,3 +282,10 @@ Admin and lecturer portals require active matching staff membership. Public staf
 On 2026-10-14, `20261014000000_admin_managed_staff.sql` was applied to project `psrtifnhstkujmschwem` and recorded as applied in migration history. Live checks confirmed staff self-registration is disabled, the membership guard is installed, and the admin appointment function exists. Transactional tests confirmed a CR cannot change their role or class scope, or appoint staff; those test writes were rolled back. Existing seven staff memberships were preserved. Application deployment remains separate.
 
 Earlier schema changes exist in this database without recorded migration history. Do not blindly replay all earlier migrations with `db push`; reconcile their history against the live schema first. For another Supabase project, apply migrations in order and verify the resulting policies.
+
+
+### Two representatives per class
+
+On 2026-10-14, `20261014010000_two_class_representatives.sql` was applied to production. Each configured class supports two active CRs. Database triggers enforce this on appointment, activation, and class changes. Appointing a second CR does not replace the first. Deactivating or removing a CR frees a slot. Transactional live tests passed and were rolled back.
+
+CRs retain their existing student authentication account and password. Administrators appoint them by verified email; passwords are never displayed to administrators. A CR who forgets their password uses the normal Forgot password flow. The updated admin UI must be deployed: older versions automatically deactivate other CRs when editing membership.

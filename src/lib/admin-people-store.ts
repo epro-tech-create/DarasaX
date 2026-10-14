@@ -318,7 +318,7 @@ export function useAdminPeopleStore() {
       contact_phone: input.phone?.trim() || null,
       account_status: input.status ?? "active",
     });
-    if (error || !data) throw new Error("Could not appoint CR. Confirm the student has a verified account and this stream has no active representative.");
+    if (error || !data) throw new Error("Could not appoint CR. Confirm the student has a verified account and this class has fewer than two active representatives.");
     const account = toClassRep(data);
     setClassReps((previous) => [account, ...previous.filter((entry) => entry.id !== account.id)]);
     return account;
@@ -336,25 +336,11 @@ export function useAdminPeopleStore() {
         dbPatch.email = patch.email.trim().toLowerCase();
       if (patch.phone !== undefined)
         dbPatch.phone = patch.phone.trim() || null;
-      if (patch.streamId !== undefined) dbPatch.stream_id = patch.streamId;
-      if (patch.status !== undefined) dbPatch.status = patch.status;
-
-      // One active CR per stream: demote the others first.
-      if (patch.status === "active") {
-        const targetStream =
-          patch.streamId ??
-          classReps.find((c) => c.id === id)?.streamId ??
-          null;
-        if (targetStream) {
-          await supabase
-            .from("staff_profiles")
-            .update({ status: "inactive" })
-            .eq("role", "class_rep")
-            .eq("stream_id", targetStream)
-            .eq("status", "active")
-            .neq("id", id);
-        }
+      if (patch.streamId !== undefined) {
+        dbPatch.stream_id = patch.streamId;
+        dbPatch.stream_ids = [patch.streamId];
       }
+      if (patch.status !== undefined) dbPatch.status = patch.status;
 
       const { data, error } = await supabase
         .from("staff_profiles")
@@ -371,11 +357,11 @@ export function useAdminPeopleStore() {
         detail: updated.email,
         streamId: updated.streamId,
       }).catch(() => null);
-      // Refresh to pick up demotions.
+      // Refresh the directory after the server validates class capacity.
       await refresh().catch(() => null);
       return updated;
     },
-    [classReps, log, refresh],
+    [log, refresh],
   );
 
   const deleteClassRep = useCallback(
@@ -408,7 +394,7 @@ export function useAdminPeopleStore() {
   );
 
   const streamsWithoutCr = classStreams.filter(
-    (s) => !classReps.some((c) => c.streamId === s.id && c.status === "active"),
+    (s) => classReps.filter((c) => c.streamId === s.id && c.status === "active").length < 2,
   );
 
   const studentsForStream = useCallback(

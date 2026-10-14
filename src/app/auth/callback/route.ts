@@ -1,10 +1,10 @@
+import { studentPostAuthPath } from "@/lib/auth/redirect";
 import { getStaffProfile } from "@/lib/auth/staff-profile";
 import { roleFromHost, getAppRole, APP_HOME } from "@/lib/app-role";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import {
   ensureProfile,
-  getPostAuthRedirect,
 } from "@/lib/auth/profile";
 
 export async function GET(request: Request) {
@@ -42,7 +42,7 @@ export async function GET(request: Request) {
         }
         const profile = await ensureProfile(supabase, user);
         const dest =
-          next && next.startsWith("/") && !next.startsWith("//") ? next : getPostAuthRedirect(profile);
+          studentPostAuthPath(profile.onboarding_completed, next);
         return NextResponse.redirect(new URL(dest, origin));
       }
     }

@@ -11,10 +11,10 @@ import { PasswordField } from "@/components/auth/password-field";
 import { recordAudit } from "@/lib/audit-log";
 import { getAuthErrorMessage } from "@/lib/auth/errors";
 import { isValidEmail, normalizeEmail } from "@/lib/auth/email";
+import { safeStudentReturnPath, studentPostAuthPath } from "@/lib/auth/redirect";
 import { signInWithGoogle } from "@/lib/auth/oauth";
 import {
   ensureProfile,
-  getPostAuthRedirect,
 } from "@/lib/auth/profile";
 import { createClient } from "@/lib/supabase/client";
 import { getStaffProfile } from "@/lib/auth/staff-profile";
@@ -79,7 +79,7 @@ function StudentLoginForm() {
         action: "login",
         summary: "Signed in",
       });
-      const dest = next && next.startsWith("/") && !next.startsWith("//") ? next : getPostAuthRedirect(profile);
+      const dest = studentPostAuthPath(profile.onboarding_completed, next);
       router.replace(dest);
       router.refresh();
     } catch (err) {
@@ -102,9 +102,10 @@ function StudentLoginForm() {
     try {
       const supabase = createClient();
       const origin = window.location.origin;
+      const returnPath = safeStudentReturnPath(next);
       const redirectTo =
-        next && next.startsWith("/") && !next.startsWith("//")
-          ? `${origin}/auth/callback?next=${encodeURIComponent(next)}`
+        returnPath
+          ? `${origin}/auth/callback?next=${encodeURIComponent(returnPath)}`
           : `${origin}/auth/callback`;
       await signInWithGoogle(supabase, redirectTo);
     } catch (err) {

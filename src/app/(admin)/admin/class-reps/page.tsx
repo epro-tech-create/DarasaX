@@ -51,7 +51,7 @@ export default function AdminClassRepsPage() {
   function openEdit(cr: ClassRepAccount) {
     setEditing(cr);
     setForm({
-          name: cr.name,
+      name: cr.name,
       email: cr.email,
       phone: cr.phone ?? "",
       streamId: cr.streamId,
@@ -114,7 +114,7 @@ export default function AdminClassRepsPage() {
     <div className="space-y-5">
       <PageHeader
         title="Class representatives"
-        description="Appoint, edit, or remove CRs. One active CR per stream."
+        description="Appoint, edit, or remove CRs. Up to two active CRs per class."
         actions={
           <Button size="sm" type="button" onClick={openAdd}>
             <Plus className="h-3.5 w-3.5" />
@@ -126,22 +126,22 @@ export default function AdminClassRepsPage() {
       <div className="grid gap-2.5 sm:grid-cols-3">
         <StaffStatCard
           label="Active CRs"
-          value={String(active.length)}
+          value={`${active.length}/${classStreams.length * 2}`}
           icon={GraduationCap}
           tone="success"
         />
         <StaffStatCard
-          label="Streams covered"
-          value={`${active.length}/${classStreams.length}`}
+          label="Classes fully staffed"
+          value={`${classStreams.length - streamsWithoutCr.length}/${classStreams.length}`}
           icon={GraduationCap}
         />
         <StaffStatCard
-          label="Need CR"
+          label="Classes needing CRs"
           value={String(streamsWithoutCr.length)}
           hint={
             streamsWithoutCr.length
               ? streamsWithoutCr.map((s) => s.label).join(", ")
-              : "All streams have a CR"
+              : "All classes have two CRs"
           }
           icon={GraduationCap}
           tone={streamsWithoutCr.length ? "warning" : "success"}
@@ -210,7 +210,7 @@ export default function AdminClassRepsPage() {
         title={editing ? "Edit class rep" : "Add class rep"}
         description={
           editing
-            ? "Update CR details. Activating on a stream deactivates the previous CR."
+            ? "Update CR details. Each class supports two active representatives; neither replaces the other."
             : "Appoint an existing verified student using their registered email. They keep the same login."
         }
       >
