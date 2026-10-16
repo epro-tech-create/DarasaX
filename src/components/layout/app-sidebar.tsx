@@ -21,7 +21,6 @@ import {
 import { Logo } from "@/components/brand/logo";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { useTheme } from "@/components/providers/theme-provider";
 import { useStudentProfile } from "@/components/providers/student-profile-provider";
 import { useNotifications } from "@/lib/notifications-store";
 import { cn } from "@/lib/utils";
@@ -45,7 +44,6 @@ const bottomNav = [
 ];
 
 export function AppSidebar() {
-  const { resolvedTheme } = useTheme();
   const pathname = usePathname();
   const { profile, avatarUrl } = useStudentProfile();
   const displayName = profile?.full_name?.trim() || "Student";
@@ -56,7 +54,7 @@ export function AppSidebar() {
 
   return (
     <aside
-      style={{ backgroundColor: resolvedTheme === "dark" ? "#0e1116" : "#1565c0", color: "#ffffff" }}
+      style={{ background: "linear-gradient(165deg, #1e88e5 0%, #1565c0 55%, #0d47a1 100%)", color: "#ffffff" }}
       className={cn(
         "student-sidebar sticky top-0 hidden h-screen shrink-0 flex-col border-r border-border text-white transition-[width,background-color] duration-300 motion-reduce:transition-none lg:flex",
         collapsed ? "w-[76px]" : "w-[232px]",

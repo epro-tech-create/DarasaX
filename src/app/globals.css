@@ -378,7 +378,7 @@ h4,
 
 /* Scoped palette for the student sidebar; content keeps its own theme tokens. */
 .student-sidebar {
-  background-color: #1565c0;
+  background: linear-gradient(165deg, #1e88e5 0%, #1565c0 55%, #0d47a1 100%);
   color: #ffffff;
   --border: rgb(255 255 255 / 0.14);
   --muted: rgb(255 255 255 / 0.1);
@@ -391,6 +391,3 @@ h4,
   outline-offset: 2px;
 }
 
-.dark .student-sidebar {
-  background-color: #0e1116;
-}
