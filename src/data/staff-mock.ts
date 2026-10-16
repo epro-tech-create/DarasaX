@@ -195,7 +195,6 @@ export const monitoredStudents: StudentMonitor[] = [
     assignmentsDone: 4,
     assignmentsTotal: 5,
     lastActive: "2026-09-18T08:40:00",
-    risk: "low",
   },
   {
     id: "st-2",
@@ -207,7 +206,6 @@ export const monitoredStudents: StudentMonitor[] = [
     assignmentsDone: 3,
     assignmentsTotal: 5,
     lastActive: "2026-09-17T21:10:00",
-    risk: "medium",
   },
   {
     id: "st-3",
@@ -219,7 +217,6 @@ export const monitoredStudents: StudentMonitor[] = [
     assignmentsDone: 2,
     assignmentsTotal: 5,
     lastActive: "2026-09-14T16:00:00",
-    risk: "high",
   },
   {
     id: "st-4",
@@ -231,7 +228,6 @@ export const monitoredStudents: StudentMonitor[] = [
     assignmentsDone: 5,
     assignmentsTotal: 5,
     lastActive: "2026-09-18T07:55:00",
-    risk: "low",
   },
   {
     id: "st-5",
@@ -243,7 +239,6 @@ export const monitoredStudents: StudentMonitor[] = [
     assignmentsDone: 3,
     assignmentsTotal: 5,
     lastActive: "2026-09-16T19:20:00",
-    risk: "medium",
   },
   {
     id: "st-6",
@@ -255,7 +250,6 @@ export const monitoredStudents: StudentMonitor[] = [
     assignmentsDone: 5,
     assignmentsTotal: 5,
     lastActive: "2026-09-18T09:02:00",
-    risk: "low",
   },
   {
     id: "st-7",
@@ -267,7 +261,6 @@ export const monitoredStudents: StudentMonitor[] = [
     assignmentsDone: 1,
     assignmentsTotal: 5,
     lastActive: "2026-09-12T22:00:00",
-    risk: "high",
   },
   {
     id: "st-8",
@@ -279,7 +272,6 @@ export const monitoredStudents: StudentMonitor[] = [
     assignmentsDone: 4,
     assignmentsTotal: 5,
     lastActive: "2026-09-17T13:30:00",
-    risk: "low",
   },
 ];
 

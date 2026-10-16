@@ -287,7 +287,6 @@ export interface StudentMonitor {
   assignmentsDone: number;
   assignmentsTotal: number;
   lastActive: string;
-  risk: "low" | "medium" | "high";
 }
 
 export interface AnalyticsPoint {

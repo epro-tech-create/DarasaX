@@ -1,9 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AlertTriangle, GraduationCap, Pencil, Plus, Trash2, Users } from "lucide-react";
+import { GraduationCap, Pencil, Plus, Trash2, Users } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StaffModal } from "@/components/staff/staff-modal";
 import { StaffSection, StaffStatCard } from "@/components/staff/staff-ui";
@@ -16,14 +15,12 @@ const emptyForm = {
   email: "",
   streamId: "BENG24COE-1" as ClassStreamId,
   year: 3,
-  risk: "low" as StudentMonitor["risk"],
 };
 
 export default function AdminStudentsPage() {
   const { students, addStudent, updateStudent, deleteStudent } =
     useAdminPeopleStore();
   const [stream, setStream] = useState("all");
-  const [risk, setRisk] = useState("all");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<StudentMonitor | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -32,12 +29,10 @@ export default function AdminStudentsPage() {
   const filtered = useMemo(() => {
     return students.filter(
       (s) =>
-        (stream === "all" || s.streamId === stream) &&
-        (risk === "all" || s.risk === risk),
+        stream === "all" || s.streamId === stream,
     );
-  }, [students, stream, risk]);
+  }, [students, stream]);
 
-  const highRisk = students.filter((s) => s.risk === "high").length;
   const streamCount = new Set(students.map((s) => s.streamId)).size;
 
   function initials(name: string) {
@@ -62,7 +57,6 @@ export default function AdminStudentsPage() {
       email: s.email,
       streamId: s.streamId,
       year: s.year,
-      risk: s.risk,
     });
     setModalOpen(true);
   }
@@ -83,7 +77,6 @@ export default function AdminStudentsPage() {
           email: form.email,
           streamId: form.streamId,
           year: form.year,
-          risk: form.risk,
         });
         setMessage("Student updated.");
       } else {
@@ -92,7 +85,6 @@ export default function AdminStudentsPage() {
           email: form.email,
           streamId: form.streamId,
           year: form.year,
-          risk: form.risk,
         });
         setMessage("Student added.");
       }
@@ -123,18 +115,12 @@ export default function AdminStudentsPage() {
         }
       />
 
-      <div className="grid gap-2.5 sm:grid-cols-3">
+      <div className="grid gap-2.5 sm:grid-cols-2">
         <StaffStatCard label="Students" value={String(students.length)} icon={Users} />
         <StaffStatCard
           label="Streams"
           value={String(streamCount)}
           icon={GraduationCap}
-        />
-        <StaffStatCard
-          label="High risk"
-          value={String(highRisk)}
-          icon={AlertTriangle}
-          tone={highRisk ? "danger" : "success"}
         />
       </div>
 
@@ -155,27 +141,16 @@ export default function AdminStudentsPage() {
             </option>
           ))}
         </select>
-        <select
-          value={risk}
-          onChange={(e) => setRisk(e.target.value)}
-          className="h-10 rounded-xl border border-border bg-background px-3 text-[13px]"
-        >
-          <option value="all">All risk</option>
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
-        </select>
       </div>
 
       <StaffSection title="Roster" description={`${filtered.length} students`}>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left text-[12px]">
+          <table className="w-full min-w-[520px] text-left text-[12px]">
             <thead>
               <tr className="border-b border-border text-[10px] uppercase tracking-wide text-muted-foreground">
                 <th className="pb-2 pr-3 font-medium">Student</th>
                 <th className="pb-2 pr-3 font-medium">Stream</th>
                 <th className="pb-2 pr-3 font-medium">Year</th>
-                <th className="pb-2 pr-3 font-medium">Risk</th>
                 <th className="pb-2 text-right font-medium"> </th>
               </tr>
             </thead>
@@ -197,19 +172,6 @@ export default function AdminStudentsPage() {
                   </td>
                   <td className="py-3 pr-3 text-muted-foreground">{s.streamId}</td>
                   <td className="py-3 pr-3 tabular-nums">{s.year}</td>
-                  <td className="py-3 pr-3">
-                    <Badge
-                      tone={
-                        s.risk === "high"
-                          ? "danger"
-                          : s.risk === "medium"
-                            ? "warning"
-                            : "success"
-                      }
-                    >
-                      {s.risk}
-                    </Badge>
-                  </td>
                   <td className="py-3">
                     <div className="flex justify-end gap-0.5">
                       <Button
@@ -309,23 +271,6 @@ export default function AdminStudentsPage() {
               </select>
             </label>
           </div>
-          <label className="block space-y-1">
-            <span className="text-[11px] text-muted-foreground">Risk</span>
-            <select
-              value={form.risk}
-              onChange={(e) =>
-                setForm((f) => ({
-                  ...f,
-                  risk: e.target.value as StudentMonitor["risk"],
-                }))
-              }
-              className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px]"
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
-          </label>
           <div className="flex justify-end gap-2 pt-1">
             <Button type="button" variant="outline" onClick={closeModal}>
               Cancel

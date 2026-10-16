@@ -1,7 +1,6 @@
 "use client";
 
 import { PageHeader } from "@/components/layout/page-header";
-import { Badge } from "@/components/ui/badge";
 import { StaffSection, StaffStatCard } from "@/components/staff/staff-ui";
 import { useAdminPeopleStore } from "@/lib/admin-people-store";
 import { useStaffSession } from "@/lib/staff-auth";
@@ -56,7 +55,6 @@ export default function ClassRepAttendancePage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="tabular-nums text-[12px] font-semibold">{s.attendancePct}%</span>
-                  <Badge tone="danger">{s.risk}</Badge>
                 </div>
               </div>
             ))}

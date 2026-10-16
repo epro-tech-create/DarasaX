@@ -59,7 +59,7 @@ export default function ClassRepAnalyticsPage() {
         </div>
       </StaffSection>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4">
         <StaffSection title="Top class materials">
           <div className="space-y-2">
             {[...uploads]
@@ -75,39 +75,6 @@ export default function ClassRepAnalyticsPage() {
                   </span>
                 </div>
               ))}
-          </div>
-        </StaffSection>
-
-        <StaffSection title="Risk mix">
-          <div className="space-y-3">
-            {(["low", "medium", "high"] as const).map((level) => {
-              const count = members.filter((s) => s.risk === level).length;
-              const pct = members.length
-                ? Math.round((count / members.length) * 100)
-                : 0;
-              return (
-                <div key={level}>
-                  <div className="mb-1 flex justify-between text-[11px]">
-                    <span className="capitalize text-muted-foreground">{level}</span>
-                    <span className="tabular-nums">
-                      {count} · {pct}%
-                    </span>
-                  </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-muted">
-                    <div
-                      className={
-                        level === "high"
-                          ? "h-full bg-danger"
-                          : level === "medium"
-                            ? "h-full bg-warning"
-                            : "h-full bg-success"
-                      }
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
           </div>
         </StaffSection>
       </div>

@@ -3,13 +3,11 @@
 import { PageHeader } from "@/components/layout/page-header";
 import { StaffSection, StaffStatCard } from "@/components/staff/staff-ui";
 import { weeklyAnalytics } from "@/data/staff-mock";
-import { useAdminPeopleStore } from "@/lib/admin-people-store";
 import { useIssuesStore } from "@/lib/issues-store";
 import { useMaterialsStore } from "@/lib/materials-store";
 import { BarChart3, Download, Eye, Flag } from "lucide-react";
 
 export default function AdminAnalyticsPage() {
-  const { students } = useAdminPeopleStore();
   const { items: issues } = useIssuesStore();
   const { items: uploads } = useMaterialsStore();
   const max = Math.max(...weeklyAnalytics.map((d) => Math.max(d.views, d.uploads * 20)));
@@ -63,39 +61,7 @@ export default function AdminAnalyticsPage() {
         </div>
       </StaffSection>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <StaffSection title="Risk distribution">
-          <div className="space-y-3">
-            {(["low", "medium", "high"] as const).map((level) => {
-              const count = students.filter((s) => s.risk === level).length;
-              const pct = students.length
-                ? Math.round((count / students.length) * 100)
-                : 0;
-              return (
-                <div key={level}>
-                  <div className="mb-1 flex justify-between text-[11px]">
-                    <span className="capitalize text-muted-foreground">{level} risk</span>
-                    <span className="tabular-nums font-medium">
-                      {count} · {pct}%
-                    </span>
-                  </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-muted">
-                    <div
-                      className={
-                        level === "high"
-                          ? "h-full bg-danger"
-                          : level === "medium"
-                            ? "h-full bg-warning"
-                            : "h-full bg-success"
-                      }
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </StaffSection>
+      <div className="grid gap-4">
 
         <StaffSection title="Top materials">
           <div className="space-y-2">

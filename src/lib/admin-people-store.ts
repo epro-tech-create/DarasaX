@@ -36,7 +36,6 @@ function toStudent(row: MonitoredStudentRow): StudentMonitor {
     assignmentsDone: row.assignments_done,
     assignmentsTotal: row.assignments_total,
     lastActive: row.last_active,
-    risk: row.risk as StudentMonitor["risk"],
   };
 }
 
@@ -70,7 +69,6 @@ export type StudentInput = {
   email: string;
   streamId: ClassStreamId;
   year?: number;
-  risk?: StudentMonitor["risk"];
   attendancePct?: number;
 };
 
@@ -211,7 +209,6 @@ export function useAdminPeopleStore() {
           assignments_done: 0,
           assignments_total: 5,
           last_active: new Date().toISOString(),
-          risk: input.risk ?? "low",
         })
         .select("*")
         .single();
@@ -251,7 +248,6 @@ export function useAdminPeopleStore() {
       if (patch.assignmentsTotal !== undefined)
         dbPatch.assignments_total = patch.assignmentsTotal;
       if (patch.lastActive !== undefined) dbPatch.last_active = patch.lastActive;
-      if (patch.risk !== undefined) dbPatch.risk = patch.risk;
       const { data, error } = await supabase
         .from("monitored_students")
         .update(dbPatch)
@@ -303,13 +299,6 @@ export function useAdminPeopleStore() {
       }
     },
     [log],
-  );
-
-  const updateStudentRisk = useCallback(
-    async (id: string, risk: StudentMonitor["risk"]) => {
-      await updateStudent(id, { risk });
-    },
-    [updateStudent],
   );
 
   const addClassRep = useCallback(async (input: ClassRepInput) => {
@@ -416,7 +405,6 @@ export function useAdminPeopleStore() {
     addStudent,
     updateStudent,
     deleteStudent,
-    updateStudentRisk,
     addClassRep,
     updateClassRep,
     deleteClassRep,

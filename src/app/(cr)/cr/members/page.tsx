@@ -1,9 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AlertTriangle, Pencil, Plus, Trash2, Users } from "lucide-react";
+import { Pencil, Plus, Trash2, Users } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StaffModal } from "@/components/staff/staff-modal";
 import { StaffSection, StaffStatCard } from "@/components/staff/staff-ui";
@@ -15,7 +14,6 @@ const emptyForm = {
   name: "",
   email: "",
   year: 3,
-  risk: "low" as StudentMonitor["risk"],
 };
 
 export default function ClassRepMembersPage() {
@@ -24,7 +22,6 @@ export default function ClassRepMembersPage() {
   const { studentsForStream, addStudent, updateStudent, deleteStudent } =
     useAdminPeopleStore();
   const members = studentsForStream(streamId);
-  const atRisk = members.filter((m) => m.risk !== "low");
 
   function initials(name: string) {
     return name
@@ -57,7 +54,6 @@ export default function ClassRepMembersPage() {
       name: s.name,
       email: s.email,
       year: s.year,
-      risk: s.risk,
     });
     setModalOpen(true);
   }
@@ -79,7 +75,6 @@ export default function ClassRepMembersPage() {
             name: form.name,
             email: form.email,
             year: form.year,
-            risk: form.risk,
             streamId,
           },
           meta,
@@ -92,7 +87,6 @@ export default function ClassRepMembersPage() {
             email: form.email,
             streamId,
             year: form.year,
-            risk: form.risk,
           },
           meta,
         );
@@ -125,18 +119,11 @@ export default function ClassRepMembersPage() {
         }
       />
 
-      <div className="grid gap-2.5 sm:grid-cols-2">
+      <div className="grid gap-2.5">
         <StaffStatCard
           label="Members"
           value={String(members.length)}
           icon={Users}
-        />
-        <StaffStatCard
-          label="Need attention"
-          value={String(atRisk.length)}
-          hint="Medium or high risk students"
-          icon={AlertTriangle}
-          tone={atRisk.length ? "warning" : "success"}
         />
       </div>
 
@@ -146,12 +133,11 @@ export default function ClassRepMembersPage() {
 
       <StaffSection title="Roster" description={`${members.length} students`}>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px] text-left text-[12px]">
+          <table className="w-full min-w-[420px] text-left text-[12px]">
             <thead>
               <tr className="border-b border-border text-[10px] uppercase tracking-wide text-muted-foreground">
                 <th className="pb-2 pr-3 font-medium">Student</th>
                 <th className="pb-2 pr-3 font-medium">Year</th>
-                <th className="pb-2 pr-3 font-medium">Risk</th>
                 <th className="pb-2 text-right font-medium"> </th>
               </tr>
             </thead>
@@ -159,7 +145,7 @@ export default function ClassRepMembersPage() {
               {members.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={4}
+                    colSpan={3}
                     className="py-10 text-center text-muted-foreground"
                   >
                     No members yet. Add a student to get started.
@@ -182,19 +168,6 @@ export default function ClassRepMembersPage() {
                     </div>
                   </td>
                   <td className="py-3 pr-3 tabular-nums">{s.year}</td>
-                  <td className="py-3 pr-3">
-                    <Badge
-                      tone={
-                        s.risk === "high"
-                          ? "danger"
-                          : s.risk === "medium"
-                            ? "warning"
-                            : "success"
-                      }
-                    >
-                      {s.risk}
-                    </Badge>
-                  </td>
                   <td className="py-3">
                     <div className="flex justify-end gap-0.5">
                       <Button
@@ -253,7 +226,7 @@ export default function ClassRepMembersPage() {
               className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
           </label>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3">
             <label className="block space-y-1">
               <span className="text-[11px] text-muted-foreground">Year</span>
               <select
@@ -268,23 +241,6 @@ export default function ClassRepMembersPage() {
                     Year {y}
                   </option>
                 ))}
-              </select>
-            </label>
-            <label className="block space-y-1">
-              <span className="text-[11px] text-muted-foreground">Risk</span>
-              <select
-                value={form.risk}
-                onChange={(e) =>
-                  setForm((f) => ({
-                    ...f,
-                    risk: e.target.value as StudentMonitor["risk"],
-                  }))
-                }
-                className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px]"
-              >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
               </select>
             </label>
           </div>

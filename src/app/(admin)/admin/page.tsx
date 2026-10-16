@@ -32,7 +32,6 @@ export default function AdminOverviewPage() {
   const { session } = useStaffSession();
   const openIssues = issues.filter((i) => i.status !== "resolved");
   const activeCrs = classReps.filter((c) => c.status === "active").length;
-  const atRisk = students.filter((s) => s.risk !== "low").length;
 
   return (
     <div className="space-y-6 sm:space-y-7">
@@ -61,7 +60,6 @@ export default function AdminOverviewPage() {
           <StaffStatCard
             label="Students"
             value={String(students.length)}
-            hint={`${atRisk} need attention`}
             icon={Users}
           />
         </StaffFadeItem>
