@@ -6,12 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { classStreams } from "@/data/mock";
 import { useAdminPeopleStore } from "@/lib/admin-people-store";
-import { useIssuesStore } from "@/lib/issues-store";
 import { useTimetableStore } from "@/lib/timetable-store";
 
 export default function AdminStreamsPage() {
   const { studentsForStream } = useAdminPeopleStore();
-  const { items: issues } = useIssuesStore();
   const { forStream } = useTimetableStore();
   return (
     <div className="space-y-5">
@@ -28,11 +26,6 @@ export default function AdminStreamsPage() {
       <div className="grid gap-3 md:grid-cols-2">
         {classStreams.map((stream) => {
           const students = studentsForStream(stream.id);
-          const openIssues = issues.filter(
-            (i) =>
-              (i.streamId === stream.id || !i.streamId) &&
-              i.status !== "resolved",
-          );
           const sessions = forStream(stream.id).length;
 
           return (
@@ -57,7 +50,7 @@ export default function AdminStreamsPage() {
                 {stream.isEvening ? <Badge tone="cyan">Evening</Badge> : <Badge>Day</Badge>}
               </div>
 
-              <div className="relative mt-4 grid grid-cols-3 gap-2">
+              <div className="relative mt-4 grid grid-cols-2 gap-2">
                 <div className="rounded-xl bg-muted/40 px-2.5 py-2">
                   <p className="text-[10px] text-muted-foreground">Students</p>
                   <p className="mt-0.5 font-heading text-[16px] font-semibold">{students.length}</p>
@@ -65,10 +58,6 @@ export default function AdminStreamsPage() {
                 <div className="rounded-xl bg-muted/40 px-2.5 py-2">
                   <p className="text-[10px] text-muted-foreground">Sessions</p>
                   <p className="mt-0.5 font-heading text-[16px] font-semibold">{sessions}</p>
-                </div>
-                <div className="rounded-xl bg-muted/40 px-2.5 py-2">
-                  <p className="text-[10px] text-muted-foreground">Open issues</p>
-                  <p className="mt-0.5 font-heading text-[16px] font-semibold">{openIssues.length}</p>
                 </div>
               </div>
 

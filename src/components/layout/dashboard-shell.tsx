@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ActivityTracker } from "@/components/dashboard/activity-tracker";
 import { AppSidebar, TopBar } from "@/components/layout/app-sidebar";
 import { MobileNavigation } from "@/components/layout/mobile-navigation";
 import { NotificationPanel } from "@/components/layout/notification-panel";
@@ -18,6 +19,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen bg-background font-sans text-[13px]">
+      <ActivityTracker />
       <AppSidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar

@@ -52,7 +52,6 @@ const adminNav: StaffNavItem[] = [
   { href: "/admin/class-reps", label: "Class reps", icon: GraduationCap },
   { href: "/admin/streams", label: "Streams", icon: Shield },
   { href: "/admin/announcements", label: "Announce", icon: Megaphone },
-  { href: "/admin/issues", label: "Issues", icon: Flag },
   { href: "/admin/audit", label: "Audit logs", icon: ScrollText },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
 ];

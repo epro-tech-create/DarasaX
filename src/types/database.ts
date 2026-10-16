@@ -430,6 +430,10 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      record_student_activity: { Args: Record<string, never>; Returns: void };
+      record_material_view: { Args: { mid: string }; Returns: void };
+      engagement_summary: { Args: Record<string, never>; Returns: Json };
+
       appoint_class_rep: {
         Args: { student_email: string; assigned_stream: string; display_name: string; contact_phone: string | null; account_status: string };
         Returns: StaffProfile;

@@ -5,18 +5,16 @@ import {
   ArrowUpRight,
   CalendarDays,
   FileUp,
-  Flag,
   GraduationCap,
   ScrollText,
   Users,
 } from "lucide-react";
 import { OverviewHeader, OverviewShortcut } from "@/components/dashboard/overview-ui";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StaffSection, StaffStatCard } from "@/components/staff/staff-ui";
 import { StaffFadeItem, StaffStagger } from "@/components/staff/staff-motion";
 import { useAdminPeopleStore } from "@/lib/admin-people-store";
-import { useIssuesStore } from "@/lib/issues-store";
+import { useMaterialsStore } from "@/lib/materials-store";
 import { useStaffSession } from "@/lib/staff-auth";
 
 function greeting() {
@@ -28,9 +26,8 @@ function greeting() {
 
 export default function AdminOverviewPage() {
   const { students, classReps, audit } = useAdminPeopleStore();
-  const { items: issues } = useIssuesStore();
+  const { published } = useMaterialsStore();
   const { session } = useStaffSession();
-  const openIssues = issues.filter((i) => i.status !== "resolved");
   const activeCrs = classReps.filter((c) => c.status === "active").length;
 
   return (
@@ -73,10 +70,10 @@ export default function AdminOverviewPage() {
         </StaffFadeItem>
         <StaffFadeItem>
           <StaffStatCard
-            label="Open issues"
-            value={String(openIssues.length)}
-            icon={Flag}
-            tone="warning"
+            label="Published materials"
+            value={String(published.length)}
+            icon={FileUp}
+            tone="primary"
           />
         </StaffFadeItem>
         <StaffFadeItem>
@@ -101,7 +98,7 @@ export default function AdminOverviewPage() {
         ))}
       </StaffStagger>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4">
         <StaffSection
           title="Latest audit"
           action={
@@ -132,43 +129,6 @@ export default function AdminOverviewPage() {
                 </p>
               </div>
             ))}
-          </div>
-        </StaffSection>
-
-        <StaffSection
-          title="Open issues"
-          action={
-            <Link
-              href="/admin/issues"
-              className="inline-flex items-center gap-1 text-[11px] font-medium text-primary"
-            >
-              Issues desk <ArrowUpRight className="h-3 w-3" />
-            </Link>
-          }
-        >
-          <div className="space-y-2">
-            {openIssues.length === 0 && <p className="rounded-xl bg-success/5 px-4 py-8 text-center text-sm text-muted-foreground">All caught up. There are no open issues.</p>}
-            {openIssues
-              .slice(0, 5)
-              .map((issue) => (
-                <div
-                  key={issue.id}
-                  className="flex items-center justify-between gap-2 rounded-xl border border-border/70 px-3 py-2.5"
-                >
-                  <p className="truncate text-[12px] font-semibold">{issue.title}</p>
-                  <Badge
-                    tone={
-                      issue.severity === "high"
-                        ? "danger"
-                        : issue.severity === "medium"
-                          ? "warning"
-                          : "default"
-                    }
-                  >
-                    {issue.severity}
-                  </Badge>
-                </div>
-              ))}
           </div>
         </StaffSection>
       </div>

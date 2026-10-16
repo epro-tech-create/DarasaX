@@ -54,7 +54,7 @@ export default function AdminAuditPage() {
     <div className="space-y-5">
       <PageHeader
         title="Audit logs"
-        description="Track who changed what across uploads, users, timetable, and issues."
+        description="Track who changed what across uploads, users, and timetable."
       />
 
       <div className="grid gap-2.5 sm:grid-cols-3">
@@ -93,7 +93,6 @@ export default function AdminAuditPage() {
           <option value="timetable_edit">Timetable</option>
           <option value="student_add">Student add</option>
           <option value="cr_add">CR add</option>
-          <option value="issue_update">Issues</option>
           <option value="announcement">Announcements</option>
           <option value="publish">Topics</option>
           <option value="other">Deletes and student activity</option>

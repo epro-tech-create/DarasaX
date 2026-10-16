@@ -1,5 +1,4 @@
 import type {
-  AnalyticsPoint,
   ClassStreamId,
   MaterialUpload,
   StaffActivity,
@@ -273,16 +272,6 @@ export const monitoredStudents: StudentMonitor[] = [
     assignmentsTotal: 5,
     lastActive: "2026-09-17T13:30:00",
   },
-];
-
-export const weeklyAnalytics: AnalyticsPoint[] = [
-  { label: "Mon", uploads: 4, views: 120, issues: 2 },
-  { label: "Tue", uploads: 6, views: 148, issues: 1 },
-  { label: "Wed", uploads: 3, views: 132, issues: 3 },
-  { label: "Thu", uploads: 8, views: 201, issues: 2 },
-  { label: "Fri", uploads: 5, views: 176, issues: 1 },
-  { label: "Sat", uploads: 2, views: 64, issues: 0 },
-  { label: "Sun", uploads: 1, views: 41, issues: 1 },
 ];
 
 export const staffActivity: StaffActivity[] = [

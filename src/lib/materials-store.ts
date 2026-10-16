@@ -134,6 +134,7 @@ export async function viewMaterial(item: MaterialUpload) {
       return false;
     }
     previewWindow.location.replace(resolved.url);
+    void createClient().rpc("record_material_view", { mid: item.id }).then(() => {});
     return true;
   } catch {
     previewWindow.close();
