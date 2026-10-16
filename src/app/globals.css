@@ -375,3 +375,16 @@ h4,
     scroll-behavior: auto;
   }
 }
+
+/* Scoped palette for the student sidebar; content keeps its own theme tokens. */
+.student-sidebar {
+  --border: rgb(255 255 255 / 0.14);
+  --muted: rgb(255 255 255 / 0.1);
+  --muted-foreground: rgb(255 255 255 / 0.72);
+  --foreground: #ffffff;
+  --ring: #ffffff;
+}
+.student-sidebar .focus-ring:focus-visible {
+  outline: 2px solid rgb(255 255 255 / 0.85);
+  outline-offset: 2px;
+}
