@@ -55,7 +55,7 @@ export function AppSidebar() {
   return (
     <aside
       className={cn(
-        "student-sidebar sticky top-0 hidden h-screen shrink-0 flex-col border-r border-border bg-[#1565C0] text-white transition-[width,background-color] duration-300 motion-reduce:transition-none dark:bg-sidebar lg:flex",
+        "student-sidebar sticky top-0 hidden h-screen shrink-0 flex-col border-r border-border text-white transition-[width,background-color] duration-300 motion-reduce:transition-none lg:flex",
         collapsed ? "w-[76px]" : "w-[232px]",
       )}
     >

@@ -378,6 +378,8 @@ h4,
 
 /* Scoped palette for the student sidebar; content keeps its own theme tokens. */
 .student-sidebar {
+  background-color: #1565c0;
+  color: #ffffff;
   --border: rgb(255 255 255 / 0.14);
   --muted: rgb(255 255 255 / 0.1);
   --muted-foreground: rgb(255 255 255 / 0.72);
@@ -387,4 +389,8 @@ h4,
 .student-sidebar .focus-ring:focus-visible {
   outline: 2px solid rgb(255 255 255 / 0.85);
   outline-offset: 2px;
+}
+
+.dark .student-sidebar {
+  background-color: #0e1116;
 }
