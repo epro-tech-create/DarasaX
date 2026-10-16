@@ -6,6 +6,8 @@ import {
   motion,
   useReducedMotion,
   useScroll,
+  useSpring,
+  type MotionValue,
   useTransform,
 } from "framer-motion";
 import { ArrowDown, Pause, Play } from "lucide-react";
@@ -135,21 +137,34 @@ const stories = [
 function StoryCard({
   story,
   index,
+  progress,
 }: {
   story: (typeof stories)[number];
   index: number;
+  progress: MotionValue<number>;
 }) {
-  const ref = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start start", "end start"],
+  const start = index / stories.length;
+  const end = (index + 1) / stories.length;
+  const targetScale = useTransform(
+    progress,
+    [start, end],
+    [1, index === stories.length - 1 ? 1 : 0.95],
+  );
+  const scale = useSpring(targetScale, {
+    stiffness: 180,
+    damping: 32,
+    mass: 0.5,
   });
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 0.95]);
   return (
-    <div className="campus-stack-slot" style={{ zIndex: index + 1 }}>
+    <div
+      className="campus-stack-slot"
+      style={{
+        zIndex: index + 1,
+        top: `calc(var(--campus-stack-top) + ${index * 12}px)`,
+      }}
+    >
       <motion.article
-        ref={ref}
         style={{ scale: reduced ? 1 : scale }}
         className="campus-story relative grid overflow-hidden rounded-3xl border border-border bg-card shadow-xl shadow-black/10 md:grid-cols-2"
       >
@@ -180,6 +195,12 @@ function StoryCard({
 }
 
 export function CampusStories() {
+  const stackRef = useRef<HTMLDivElement>(null);
+  // Measure the stationary stack, never a sticky or transformed card.
+  const { scrollYProgress } = useScroll({
+    target: stackRef,
+    offset: ["start 35%", "end end"],
+  });
   return (
     <section
       className="mx-auto max-w-6xl px-5 pb-16 sm:px-8 sm:pb-24"
@@ -202,9 +223,14 @@ export function CampusStories() {
           Keep scrolling <ArrowDown className="h-4 w-4" aria-hidden />
         </p>
       </div>
-      <div className="campus-stack">
+      <div ref={stackRef} className="campus-stack">
         {stories.map((story, index) => (
-          <StoryCard key={story.tag} story={story} index={index} />
+          <StoryCard
+            key={story.tag}
+            story={story}
+            index={index}
+            progress={scrollYProgress}
+          />
         ))}
       </div>
     </section>
