@@ -2,7 +2,10 @@ import { OverviewHeader } from "@/components/dashboard/overview-ui";
 import { StudentGreeting } from "@/components/dashboard/student-greeting";
 import { ExamCountdown } from "@/components/dashboard/exam-countdown";
 import { ComingUp } from "@/components/dashboard/coming-up";
-import { NextClassCard, StatCard } from "@/components/dashboard/next-class-card";
+import {
+  NextClassCard,
+  StatCard,
+} from "@/components/dashboard/next-class-card";
 import { DashboardAssignmentStatCard } from "@/components/dashboard/assignment-stat-card";
 import { StudyChart } from "@/components/dashboard/study-chart";
 import { currentUser, modules } from "@/data/mock";
@@ -22,13 +25,23 @@ export default async function DashboardPage() {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     ) {
       const supabase = await createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) { const { data } = await supabase.from("profiles").select("class_name").eq("id", user.id).single(); studentStream = (data?.class_name ?? DEFAULT_CLASS_STREAM) as typeof DEFAULT_CLASS_STREAM; }
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("class_name")
+          .eq("id", user.id)
+          .single();
+        studentStream = (data?.class_name ??
+          DEFAULT_CLASS_STREAM) as typeof DEFAULT_CLASS_STREAM;
+      }
       const timetableRes = await supabase
-          .from("timetable_entries")
-          .select("*")
-          .order("day")
-          .order("start_time");
+        .from("timetable_entries")
+        .select("*")
+        .order("day")
+        .order("start_time");
       if (timetableRes.data && timetableRes.data.length > 0) {
         liveTimetable = timetableRes.data.map((row) => ({
           id: row.id,
@@ -41,7 +54,6 @@ export default async function DashboardPage() {
           lecturer: row.lecturer,
         }));
       }
-
     }
   } catch {
     // Fall back to bundled timetable and a generic greeting
@@ -49,11 +61,9 @@ export default async function DashboardPage() {
   const next = getNextClass(new Date(), studentStream, liveTimetable);
   const examDays = formatCountdownParts(getMsUntilSchoolOpen()).days;
 
-
   return (
     <div className="space-y-6 sm:space-y-7">
-      <OverviewHeader label="Student workspace" title={<StudentGreeting greeting={getGreeting()} />}
-        description="Your classes, coursework, and study plans at a glance." />
+      <OverviewHeader title={<StudentGreeting greeting={getGreeting()} />} />
 
       {next ? (
         <NextClassCard

@@ -40,20 +40,31 @@ export default function TopicDetailPage() {
     [topics, params.id],
   );
   if (!courseModule) notFound();
-  if (!ready) return (
-    <div role="status" aria-live="polite" className="surface animate-pulse rounded-2xl p-6">
-      <p className="text-sm text-muted-foreground">Loading topic...</p>
-      <div className="mt-5 h-5 w-2/3 rounded bg-muted" />
-      <div className="mt-3 h-24 rounded bg-muted" />
-    </div>
-  );
-  if (error) return (
-    <div role="alert" className="surface space-y-4 rounded-2xl p-6">
-      <p>{error}</p>
-      <Button onClick={() => void refresh()}>Try again</Button>
-      <Link href={`/modules/${courseModule.id}`} className="ml-3 text-sm text-primary">Back to module</Link>
-    </div>
-  );
+  if (!ready)
+    return (
+      <div
+        role="status"
+        aria-live="polite"
+        className="surface animate-pulse rounded-2xl p-6"
+      >
+        <p className="text-sm text-muted-foreground">Loading topic...</p>
+        <div className="mt-5 h-5 w-2/3 rounded bg-muted" />
+        <div className="mt-3 h-24 rounded bg-muted" />
+      </div>
+    );
+  if (error)
+    return (
+      <div role="alert" className="surface space-y-4 rounded-2xl p-6">
+        <p>{error}</p>
+        <Button onClick={() => void refresh()}>Try again</Button>
+        <Link
+          href={`/modules/${courseModule.id}`}
+          className="ml-3 text-sm text-primary"
+        >
+          Back to module
+        </Link>
+      </div>
+    );
   if (!topic || topic.moduleId !== courseModule.id) notFound();
   const liveNotes = noteMaterials(published, courseModule.id);
   const index = siblings.findIndex((t) => t.id === topic.id);
@@ -125,18 +136,21 @@ export default function TopicDetailPage() {
           <ul className="mt-4 space-y-3">
             {topic.learningObjectives.map((objective, position) => (
               <li key={position} className="flex gap-3 text-sm leading-relaxed">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{objective}
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                {objective}
               </li>
             ))}
           </ul>
         </section>
       )}
-      <section className="surface rounded-[20px] p-5 sm:p-6">
-        <h2 className="text-base font-semibold">About this topic</h2>
-        <div className="mt-4 whitespace-pre-wrap text-sm leading-7 text-foreground/90">
-          {topic.content || topic.summary || "Your teaching team has published this topic. A detailed explanation will appear here when it is added. Explore the module materials below in the meantime."}
-        </div>
-      </section>
+      {topic.content?.trim() &&
+        topic.content.trim() !== topic.summary?.trim() && (
+          <section className="surface rounded-[20px] p-5 sm:p-6">
+            <div className="whitespace-pre-wrap text-sm leading-7 text-foreground/90">
+              {topic.content}
+            </div>
+          </section>
+        )}
 
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-3">

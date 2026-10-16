@@ -1,11 +1,18 @@
 "use client";
 
+import { downloadFile } from "@/lib/download";
+
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { cachedQuery, invalidateQueries } from "@/lib/supabase/query-cache";
 import type { MaterialRow } from "@/types/database";
 import { recordAudit } from "@/lib/audit-log";
-import type { MaterialUpload, UploadKind, ClassStreamId, StaffRole } from "@/types";
+import type {
+  MaterialUpload,
+  UploadKind,
+  ClassStreamId,
+  StaffRole,
+} from "@/types";
 
 const BUCKET = "materials";
 const SIGNED_URL_SECONDS = 5 * 60;
@@ -33,7 +40,9 @@ function toUpload(row: MaterialRow): MaterialUpload {
     status: row.status as MaterialUpload["status"],
     uploadedBy: row.uploaded_by,
     role: (row.role as StaffRole | null) ?? "admin",
-    size: row.size_label ?? (row.size_bytes != null ? formatFileSize(row.size_bytes) : "—"),
+    size:
+      row.size_label ??
+      (row.size_bytes != null ? formatFileSize(row.size_bytes) : "—"),
     createdAt: row.created_at,
     dueAt: row.due_at ?? undefined,
     downloads: row.downloads,
@@ -61,7 +70,12 @@ function storagePath(streamId: string | null, id: string, fileName: string) {
 export async function resolveMaterialObjectUrl(
   item: MaterialUpload,
   options?: { download?: boolean },
-): Promise<{ url: string; revoke: boolean; fileName: string; mimeType: string } | null> {
+): Promise<{
+  url: string;
+  revoke: boolean;
+  fileName: string;
+  mimeType: string;
+} | null> {
   try {
     const supabase = createClient();
     let filePath = item.filePath;
@@ -103,7 +117,9 @@ export async function resolveMaterialObjectUrl(
 export async function viewMaterial(item: MaterialUpload) {
   const previewWindow = window.open("about:blank", "_blank");
   if (!previewWindow) {
-    window.alert("The preview was blocked. Allow pop-ups for DarasaX and try again.");
+    window.alert(
+      "The preview was blocked. Allow pop-ups for DarasaX and try again.",
+    );
     return false;
   }
 
@@ -112,14 +128,18 @@ export async function viewMaterial(item: MaterialUpload) {
     const resolved = await resolveMaterialObjectUrl(item);
     if (!resolved) {
       previewWindow.close();
-      window.alert("This file is unavailable. Ask the uploader to attach it again.");
+      window.alert(
+        "This file is unavailable. Ask the uploader to attach it again.",
+      );
       return false;
     }
     previewWindow.location.replace(resolved.url);
     return true;
   } catch {
     previewWindow.close();
-    window.alert("The file could not be opened. Check your connection and try again.");
+    window.alert(
+      "The file could not be opened. Check your connection and try again.",
+    );
     return false;
   }
 }
@@ -127,16 +147,13 @@ export async function viewMaterial(item: MaterialUpload) {
 export async function downloadMaterial(item: MaterialUpload) {
   const resolved = await resolveMaterialObjectUrl(item, { download: true });
   if (!resolved) {
-    window.alert("This file is unavailable. Ask the uploader to attach it again.");
+    window.alert(
+      "This file is unavailable. Ask the uploader to attach it again.",
+    );
     return false;
   }
-  const anchor = document.createElement("a");
-  anchor.href = resolved.url;
-  anchor.download = resolved.fileName;
-  anchor.rel = "noopener noreferrer";
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
+  const downloaded = await downloadFile(resolved.url, resolved.fileName);
+  if (!downloaded) return false;
   try {
     const supabase = createClient();
     await supabase.rpc("increment_material_downloads", { mid: item.id });
@@ -195,9 +212,15 @@ export function useMaterialsStore() {
 
   useEffect(() => {
     const timer = setTimeout(() => void refresh(), 0);
-    const onFocus = () => { invalidateQueries("materials"); void refresh(); };
+    const onFocus = () => {
+      invalidateQueries("materials");
+      void refresh();
+    };
     window.addEventListener("focus", onFocus);
-    return () => { clearTimeout(timer); window.removeEventListener("focus", onFocus); };
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("focus", onFocus);
+    };
   }, [refresh]);
 
   const publish = useCallback(async (input: PublishMaterialInput) => {
@@ -207,7 +230,8 @@ export function useMaterialsStore() {
     } = await supabase.auth.getUser();
     const id = `up-${Date.now()}`;
     const streamId = input.streamId === "all" ? null : (input.streamId ?? null);
-    if (!streamId) throw new Error("Choose the particular class receiving this file.");
+    if (!streamId)
+      throw new Error("Choose the particular class receiving this file.");
     const path = storagePath(streamId, id, input.file.name);
 
     const { error: uploadError } = await supabase.storage
@@ -242,7 +266,10 @@ export function useMaterialsStore() {
       .single();
 
     if (error) {
-      await supabase.storage.from(BUCKET).remove([path]).catch(() => null);
+      await supabase.storage
+        .from(BUCKET)
+        .remove([path])
+        .catch(() => null);
       throw error;
     }
     const entry = toUpload(data);
@@ -262,84 +289,90 @@ export function useMaterialsStore() {
     return entry;
   }, []);
 
-  const updateItem = useCallback(async (id: string, patch: UpdateMaterialInput) => {
-    const supabase = createClient();
-    const { data: existing, error: fetchError } = await supabase
-      .from("materials")
-      .select("*")
-      .eq("id", id)
-      .single();
-    if (fetchError) throw fetchError;
+  const updateItem = useCallback(
+    async (id: string, patch: UpdateMaterialInput) => {
+      const supabase = createClient();
+      const { data: existing, error: fetchError } = await supabase
+        .from("materials")
+        .select("*")
+        .eq("id", id)
+        .single();
+      if (fetchError) throw fetchError;
 
-    let filePath = existing.file_path;
-    let fileName = existing.file_name;
-    let mimeType = existing.mime_type;
-    let sizeBytes = existing.size_bytes;
-    let sizeLabel = existing.size_label;
-    let fileUrl = existing.file_url;
+      let filePath = existing.file_path;
+      let fileName = existing.file_name;
+      let mimeType = existing.mime_type;
+      let sizeBytes = existing.size_bytes;
+      let sizeLabel = existing.size_label;
+      let fileUrl = existing.file_url;
 
-    if (patch.file) {
-      const streamForPath =
-        patch.streamId === undefined
-          ? existing.stream_id
-          : patch.streamId === "all" || patch.streamId === null
-            ? null
-            : patch.streamId;
-      const nextPath = storagePath(streamForPath, id, patch.file.name);
-      const { error: uploadError } = await supabase.storage
-        .from(BUCKET)
-        .upload(nextPath, patch.file, {
-          contentType: patch.file.type || "application/octet-stream",
-          upsert: true,
-        });
-      if (uploadError) throw uploadError;
-      if (filePath && filePath !== nextPath) {
-        await supabase.storage.from(BUCKET).remove([filePath]).catch(() => null);
-      }
-      filePath = nextPath;
-      fileName = patch.file.name;
-      mimeType = patch.file.type || "application/octet-stream";
-      sizeBytes = patch.file.size;
-      sizeLabel = formatFileSize(patch.file.size);
-      fileUrl = null;
-    }
-
-    const { data, error } = await supabase
-      .from("materials")
-      .update({
-        title: patch.title?.trim() ?? existing.title,
-        kind: patch.kind ?? existing.kind,
-        module_id: patch.moduleId ?? existing.module_id,
-        status: patch.status ?? existing.status,
-        stream_id:
+      if (patch.file) {
+        const streamForPath =
           patch.streamId === undefined
             ? existing.stream_id
             : patch.streamId === "all" || patch.streamId === null
               ? null
-              : patch.streamId,
-        file_path: filePath,
-        file_url: fileUrl,
-        file_name: fileName,
-        mime_type: mimeType,
-        size_bytes: sizeBytes,
-        size_label: sizeLabel,
-      })
-      .eq("id", id)
-      .select("*")
-      .single();
-    if (error) throw error;
-    const updated = toUpload(data);
-    invalidateQueries("materials");
-    setItems((prev) => prev.map((i) => (i.id === id ? updated : i)));
-    await recordAudit({
-      actor: updated.uploadedBy,
-      role: updated.role,
-      action: updated.kind === "announcement" ? "announcement" : "upload",
-      summary: `Updated ${updated.kind.replace("_", " ")} “${updated.title}”`,
-      streamId: updated.streamId ?? null,
-    });
-    return updated;
-  }, []);
+              : patch.streamId;
+        const nextPath = storagePath(streamForPath, id, patch.file.name);
+        const { error: uploadError } = await supabase.storage
+          .from(BUCKET)
+          .upload(nextPath, patch.file, {
+            contentType: patch.file.type || "application/octet-stream",
+            upsert: true,
+          });
+        if (uploadError) throw uploadError;
+        if (filePath && filePath !== nextPath) {
+          await supabase.storage
+            .from(BUCKET)
+            .remove([filePath])
+            .catch(() => null);
+        }
+        filePath = nextPath;
+        fileName = patch.file.name;
+        mimeType = patch.file.type || "application/octet-stream";
+        sizeBytes = patch.file.size;
+        sizeLabel = formatFileSize(patch.file.size);
+        fileUrl = null;
+      }
+
+      const { data, error } = await supabase
+        .from("materials")
+        .update({
+          title: patch.title?.trim() ?? existing.title,
+          kind: patch.kind ?? existing.kind,
+          module_id: patch.moduleId ?? existing.module_id,
+          status: patch.status ?? existing.status,
+          stream_id:
+            patch.streamId === undefined
+              ? existing.stream_id
+              : patch.streamId === "all" || patch.streamId === null
+                ? null
+                : patch.streamId,
+          file_path: filePath,
+          file_url: fileUrl,
+          file_name: fileName,
+          mime_type: mimeType,
+          size_bytes: sizeBytes,
+          size_label: sizeLabel,
+        })
+        .eq("id", id)
+        .select("*")
+        .single();
+      if (error) throw error;
+      const updated = toUpload(data);
+      invalidateQueries("materials");
+      setItems((prev) => prev.map((i) => (i.id === id ? updated : i)));
+      await recordAudit({
+        actor: updated.uploadedBy,
+        role: updated.role,
+        action: updated.kind === "announcement" ? "announcement" : "upload",
+        summary: `Updated ${updated.kind.replace("_", " ")} “${updated.title}”`,
+        streamId: updated.streamId ?? null,
+      });
+      return updated;
+    },
+    [],
+  );
 
   const publishNotice = useCallback(
     async (input: {
@@ -353,7 +386,8 @@ export function useMaterialsStore() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!input.streamId || input.streamId === "all") throw new Error("Choose the class receiving this announcement.");
+      if (!input.streamId || input.streamId === "all")
+        throw new Error("Choose the class receiving this announcement.");
       const id = `ann-${Date.now()}`;
       const streamId = input.streamId;
       const { data, error } = await supabase
@@ -400,7 +434,10 @@ export function useMaterialsStore() {
     if (error) throw error;
     invalidateQueries("materials");
     if (existing?.file_path) {
-      await supabase.storage.from(BUCKET).remove([existing.file_path]).catch(() => null);
+      await supabase.storage
+        .from(BUCKET)
+        .remove([existing.file_path])
+        .catch(() => null);
     }
     setItems((prev) => prev.filter((i) => i.id !== id));
     if (existing) {

@@ -1,6 +1,13 @@
 "use client";
 
-import { Download, Eye, FileText, Presentation, ScrollText } from "lucide-react";
+import { useState } from "react";
+import {
+  Download,
+  Eye,
+  FileText,
+  Presentation,
+  ScrollText,
+} from "lucide-react";
 import type { MaterialUpload } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,6 +26,16 @@ const kindMeta: Record<
 };
 
 export function MaterialUploadCard({ item }: { item: MaterialUpload }) {
+  const [downloading, setDownloading] = useState(false);
+  async function handleDownload() {
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      await downloadMaterial(item);
+    } finally {
+      setDownloading(false);
+    }
+  }
   const meta = kindMeta[item.kind] ?? kindMeta.notes;
   const Icon = meta.icon;
 
@@ -52,10 +69,11 @@ export function MaterialUploadCard({ item }: { item: MaterialUpload }) {
         <Button
           size="sm"
           type="button"
-          onClick={() => void downloadMaterial(item)}
+          disabled={downloading}
+          onClick={() => void handleDownload()}
         >
           <Download className="h-4 w-4" />
-          Download
+          {downloading ? "Downloading…" : "Download"}
         </Button>
       </div>
     </div>

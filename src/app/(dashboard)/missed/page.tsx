@@ -1,13 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  BookOpen,
-  CalendarDays,
-  Clock,
-  FileText,
-  MapPin,
-} from "lucide-react";
+import { BookOpen, CalendarDays, Clock, FileText, MapPin } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,6 +16,7 @@ import { useMaterialsStore } from "@/lib/materials-store";
 import { buildMissedSummary } from "@/lib/missed-day";
 import { useTimetableStore } from "@/lib/timetable-store";
 import { useTopicProgress } from "@/lib/topic-progress-store";
+import { useStudentProfile } from "@/components/providers/student-profile-provider";
 import { formatDate } from "@/lib/utils";
 
 function todayIso() {
@@ -33,6 +28,8 @@ function todayIso() {
 }
 
 export default function MissedPage() {
+  const { profile } = useStudentProfile();
+  const streamId = profile?.class_name ?? DEFAULT_CLASS_STREAM;
   const [date, setDate] = useState(todayIso);
   const { entries, ready: timetableReady } = useTimetableStore();
   const { published, ready: materialsReady } = useMaterialsStore();
@@ -45,13 +42,13 @@ export default function MissedPage() {
     () =>
       buildMissedSummary({
         date,
-        streamId: DEFAULT_CLASS_STREAM,
+        streamId,
         timetable,
         materials: published,
         assignments,
         topics,
       }),
-    [date, timetable, published, assignments, topics],
+    [date, streamId, timetable, published, assignments, topics],
   );
 
   const loading = !timetableReady || !materialsReady;
@@ -78,7 +75,7 @@ export default function MissedPage() {
         </label>
         <div className="sm:text-right">
           <p className="text-[11px] text-muted-foreground">
-            {formatDate(date)} · stream {DEFAULT_CLASS_STREAM}
+            {formatDate(date)} · stream {streamId}
           </p>
           <p className="mt-1 font-heading text-lg font-semibold">
             {loading
@@ -99,27 +96,24 @@ export default function MissedPage() {
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
           {summary.items.map((item) => {
-            const module = getModule(item.moduleId);
+            const courseModule = getModule(item.moduleId);
             return (
               <article
                 key={`${item.moduleId}-${item.startTime ?? ""}`}
                 className="surface overflow-hidden rounded-[20px]"
               >
-                <div
-                  className="flex items-start justify-between gap-3 px-5 py-4 text-white"
-                  style={{ backgroundColor: module?.accent ?? "#1E88E5" }}
-                >
+                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border bg-primary/5 px-5 py-4">
                   <div className="min-w-0">
                     <h2 className="font-heading text-[15px] font-semibold leading-snug">
-                      {module?.name ?? "Module"}
+                      {courseModule?.name ?? "Module"}
                     </h2>
-                    <p className="mt-1 text-[11px] text-white/80">
-                      {module?.code}
+                    <p className="mt-1 text-[11px] text-muted-foreground">
+                      {courseModule?.code}
                       {item.room ? ` · ${item.room}` : ""}
                     </p>
                   </div>
                   {item.startTime && item.endTime ? (
-                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-medium">
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary/10 text-primary px-2.5 py-1 text-[11px] font-medium">
                       <Clock className="h-3 w-3" />
                       {item.startTime}–{item.endTime}
                     </span>
@@ -134,7 +128,9 @@ export default function MissedPage() {
                         <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
                           Focus topic
                         </p>
-                        <p className="mt-0.5 text-[13px] font-medium">{item.topic}</p>
+                        <p className="mt-0.5 text-[13px] font-medium">
+                          {item.topic}
+                        </p>
                       </div>
                     </div>
                   ) : null}
@@ -163,7 +159,9 @@ export default function MissedPage() {
                       <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
                         Open assignment
                       </p>
-                      <p className="mt-0.5 text-[13px] font-medium">{item.assignment}</p>
+                      <p className="mt-0.5 text-[13px] font-medium">
+                        {item.assignment}
+                      </p>
                       {item.deadline ? (
                         <p className="mt-0.5 text-[11px] text-muted-foreground">
                           Due {item.deadline}
@@ -184,13 +182,18 @@ export default function MissedPage() {
                   ) : null}
 
                   {item.room ? (
-                    <p className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                    <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <MapPin className="h-3.5 w-3.5" />
                       {item.room}
                     </p>
                   ) : null}
 
-                  <Button href={`/modules/${item.moduleId}`} className="mt-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    href={`/modules/${item.moduleId}`}
+                    className="mt-1 w-fit"
+                  >
                     Open module
                   </Button>
                 </div>

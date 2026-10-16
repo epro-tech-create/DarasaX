@@ -35,15 +35,10 @@ export function downloadResource(resource: Resource) {
   if (typeof window === "undefined") return;
 
   if (resource.url) {
-    const anchor = document.createElement("a");
-    anchor.href = resource.url;
-    anchor.download = "";
-    anchor.target = "_blank";
-    anchor.rel = "noopener noreferrer";
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-    return;
+    return downloadFile(
+      resource.url,
+      `${slugify(resource.title) || resource.id}${resource.type === "pdf" ? ".pdf" : ""}`,
+    );
   }
 
   const content = getResourceDownloadContent(resource);
@@ -60,20 +55,34 @@ export function downloadResource(resource: Resource) {
   URL.revokeObjectURL(objectUrl);
 }
 
-export function downloadFile(url: string, filename: string) {
-  if (typeof window === "undefined") return;
-
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = filename;
-  anchor.rel = "noopener noreferrer";
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
+export async function downloadFile(
+  url: string,
+  filename: string,
+): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Download failed");
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = objectUrl;
+    anchor.download = filename || "download";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+    return true;
+  } catch {
+    window.alert(
+      "Could not download this file. Check your connection or ask the uploader to check the attachment.",
+    );
+    return false;
+  }
 }
 
 export function downloadPastPaper(paper: PastPaper) {
-  downloadFile(paper.fileUrl, `${slugify(paper.title) || paper.id}.pdf`);
+  return downloadFile(paper.fileUrl, `${slugify(paper.title) || paper.id}.pdf`);
 }
 
 export function viewPastPaper(paper: PastPaper) {

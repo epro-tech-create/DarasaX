@@ -39,10 +39,7 @@ export default function ModulesPage() {
 
   return (
     <div>
-      <PageHeader
-        title="Modules"
-        description="Year 3 · Semester 1 (Semester V) — progress starts at zero and updates only when you complete a published topic."
-      />
+      <PageHeader title="Modules" description="Year 3 · Semester 1" />
 
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative min-w-0 flex-1">
