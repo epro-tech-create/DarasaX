@@ -15,6 +15,10 @@ import {
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
+import {
+  CampusGallery,
+  CampusStories,
+} from "@/components/landing/campus-gallery";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const tools = [
@@ -109,7 +113,7 @@ export default function LandingPage() {
         <main id="main-content">
           <section className="relative isolate overflow-hidden bg-[#0B1B2B] text-white">
             <Image
-              src="/landing-hero.jpg"
+              src="/images/campus/study-together.jpg"
               alt="University students studying together on campus"
               fill
               priority
@@ -153,56 +157,7 @@ export default function LandingPage() {
                   <ArrowDown className="h-3.5 w-3.5" aria-hidden />
                 </a>
               </motion.div>
-              <motion.div
-                {...reveal}
-                transition={{ duration: 0.28, delay: 0.12 }}
-                className="hidden rounded-3xl border border-white/15 bg-[#0B1B2B]/60 p-6 shadow-2xl backdrop-blur-xl lg:block"
-              >
-                <div className="mb-6 flex items-center justify-between">
-                  <p className="text-xs font-medium text-white/60">
-                    A look inside
-                  </p>
-                  <span className="rounded-full border border-white/15 px-2 py-1 text-[10px] text-white/60">
-                    Workspace preview
-                  </span>
-                </div>
-                <h2 className="font-heading text-2xl font-semibold">
-                  Your day, in focus.
-                </h2>
-                <p className="mt-2 text-sm leading-relaxed text-white/60">
-                  The essentials, without the noise.
-                </p>
-                <div className="mt-7 divide-y divide-white/10">
-                  {[
-                    {
-                      icon: CalendarDays,
-                      title: "Know where to go",
-                      text: "Your class timetable",
-                    },
-                    {
-                      icon: BookOpen,
-                      title: "Pick up where you left off",
-                      text: "Topics and lecture notes",
-                    },
-                    {
-                      icon: ClipboardList,
-                      title: "Keep the next deadline close",
-                      text: "Upcoming coursework",
-                    },
-                  ].map(({ icon: Icon, title, text }) => (
-                    <div key={title} className="flex items-start gap-3 py-4">
-                      <Icon
-                        className="mt-0.5 h-4 w-4 text-[#4FC3F7]"
-                        aria-hidden
-                      />
-                      <div>
-                        <p className="text-sm font-medium">{title}</p>
-                        <p className="mt-1 text-xs text-white/50">{text}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
+              <CampusGallery />
             </div>
             <div className="border-t border-white/10">
               <div className="mx-auto flex max-w-6xl flex-wrap gap-x-8 gap-y-3 px-5 py-5 text-xs text-white/65 sm:px-8">
@@ -268,7 +223,7 @@ export default function LandingPage() {
                 className="relative aspect-[4/3] overflow-hidden rounded-3xl"
               >
                 <Image
-                  src="/landing-study.jpg"
+                  src="/images/campus/classroom.jpg"
                   alt="Student working with a laptop in a library"
                   fill
                   sizes="(max-width: 1024px) 100vw, 50vw"
@@ -317,6 +272,8 @@ export default function LandingPage() {
               </motion.div>
             </div>
           </section>
+
+          <CampusStories />
 
           <section
             id="how"
@@ -385,7 +342,7 @@ export default function LandingPage() {
               className="relative isolate mx-auto max-w-6xl overflow-hidden rounded-3xl bg-[#0B1B2B] px-6 py-14 text-center sm:py-20"
             >
               <Image
-                src="/landing-catchup.jpg"
+                src="/images/campus/campus-group.jpg"
                 alt=""
                 fill
                 sizes="1152px"
