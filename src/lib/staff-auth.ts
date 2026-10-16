@@ -14,6 +14,7 @@ import type { StaffProfile } from "@/types/database";
 const SESSION_EVENT = "darasax:staff-session";
 
 export type StaffSession = {
+  id: string;
   role: StaffRole;
   email: string;
   name: string;
@@ -40,6 +41,7 @@ function toSession(profile: StaffProfile, emailFallback = ""): StaffSession {
         streamIds.length > 0 &&
         moduleIds.length > 0;
   return {
+    id: profile.id,
     role: profile.role,
     email: profile.email ?? emailFallback,
     name: profile.full_name ?? "Staff",

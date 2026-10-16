@@ -4,7 +4,8 @@ import { useMemo, useState } from "react";
 import { Check, Pencil, Plus, Trash2, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { classStreams, modules } from "@/data/mock";
+import { useClassRegistry } from "@/lib/class-registry";
+import { modules } from "@/data/mock";
 import { useTimetableStore } from "@/lib/timetable-store";
 import { cn } from "@/lib/utils";
 import type { ClassStreamId, TimetableEntry } from "@/types";
@@ -24,6 +25,7 @@ export function TimetableEditor({
   title?: string;
   description?: string;
 }) {
+  const { streams: classStreams } = useClassRegistry();
   const { forStream, updateEntry, addEntry, deleteEntry, ready } =
     useTimetableStore();
   const [streamId, setStreamId] = useState<ClassStreamId>(
@@ -48,7 +50,9 @@ export function TimetableEditor({
     () =>
       forStream(activeStream)
         .slice()
-        .sort((a, b) => a.day - b.day || a.startTime.localeCompare(b.startTime)),
+        .sort(
+          (a, b) => a.day - b.day || a.startTime.localeCompare(b.startTime),
+        ),
     [forStream, activeStream],
   );
 
@@ -93,7 +97,9 @@ export function TimetableEditor({
       lecturer: draft.lecturer.trim(),
       day: draft.day,
       moduleId: draft.moduleId,
-    }).catch(() => setFlash("Could not save. Check your connection and try again."));
+    }).catch(() =>
+      setFlash("Could not save. Check your connection and try again."),
+    );
     setEditingId(null);
     setDraft({});
     setSavedId(id);
@@ -147,7 +153,9 @@ export function TimetableEditor({
     <div className="space-y-4">
       <div className="surface flex flex-col gap-3 rounded-2xl p-4 sm:flex-row sm:items-end sm:justify-between sm:p-5">
         <div className="min-w-0">
-          <h2 className="font-heading text-[15px] font-semibold tracking-tight">{title}</h2>
+          <h2 className="font-heading text-[15px] font-semibold tracking-tight">
+            {title}
+          </h2>
           <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-muted-foreground">
             {description}
           </p>
@@ -207,7 +215,10 @@ export function TimetableEditor({
       ) : null}
 
       {showAdd ? (
-        <form onSubmit={onAdd} className="surface space-y-4 rounded-[20px] p-4 sm:p-5">
+        <form
+          onSubmit={onAdd}
+          className="surface space-y-4 rounded-[20px] p-4 sm:p-5"
+        >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h3 className="font-heading text-[13px] font-semibold">
               New session · {activeStream}
@@ -256,7 +267,9 @@ export function TimetableEditor({
               <input
                 required
                 value={addForm.room}
-                onChange={(e) => setAddForm((f) => ({ ...f, room: e.target.value }))}
+                onChange={(e) =>
+                  setAddForm((f) => ({ ...f, room: e.target.value }))
+                }
                 className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </label>
@@ -285,7 +298,9 @@ export function TimetableEditor({
               />
             </label>
             <label className="block space-y-1">
-              <span className="text-[11px] text-muted-foreground">Lecturer</span>
+              <span className="text-[11px] text-muted-foreground">
+                Lecturer
+              </span>
               <input
                 required
                 value={addForm.lecturer}
@@ -307,7 +322,10 @@ export function TimetableEditor({
           <div>
             <p className="text-[12px] font-semibold">{activeStream}</p>
             <p className="text-[11px] text-muted-foreground">
-              {ready ? `${entries.length} session${entries.length === 1 ? "" : "s"}` : "Loading…"} · shared with students
+              {ready
+                ? `${entries.length} session${entries.length === 1 ? "" : "s"}`
+                : "Loading…"}{" "}
+              · shared with students
             </p>
           </div>
           <Badge>{ready ? `${entries.length} total` : "…"}</Badge>
@@ -339,7 +357,9 @@ export function TimetableEditor({
               ) : null}
               {entries.map((entry) => {
                 const isEditing = editingId === entry.id;
-                const module = modules.find((m) => m.id === entry.moduleId);
+                const courseModule = modules.find(
+                  (m) => m.id === entry.moduleId,
+                );
                 return (
                   <tr
                     key={entry.id}
@@ -354,7 +374,10 @@ export function TimetableEditor({
                         <select
                           value={draft.day ?? entry.day}
                           onChange={(e) =>
-                            setDraft((d) => ({ ...d, day: Number(e.target.value) }))
+                            setDraft((d) => ({
+                              ...d,
+                              day: Number(e.target.value),
+                            }))
                           }
                           className="h-8 rounded-lg border border-border bg-background px-2"
                         >
@@ -374,7 +397,10 @@ export function TimetableEditor({
                           type="time"
                           value={draft.startTime ?? entry.startTime}
                           onChange={(e) =>
-                            setDraft((d) => ({ ...d, startTime: e.target.value }))
+                            setDraft((d) => ({
+                              ...d,
+                              startTime: e.target.value,
+                            }))
                           }
                           className="h-8 rounded-lg border border-border bg-background px-2 tabular-nums"
                         />
@@ -421,7 +447,9 @@ export function TimetableEditor({
                           ))}
                         </select>
                       ) : (
-                        <span className="font-medium">{module?.name}</span>
+                        <span className="font-medium">
+                          {courseModule?.name}
+                        </span>
                       )}
                     </td>
                     <td className="px-3 py-2.5">
@@ -442,12 +470,17 @@ export function TimetableEditor({
                         <input
                           value={draft.lecturer ?? entry.lecturer}
                           onChange={(e) =>
-                            setDraft((d) => ({ ...d, lecturer: e.target.value }))
+                            setDraft((d) => ({
+                              ...d,
+                              lecturer: e.target.value,
+                            }))
                           }
                           className="h-8 w-40 rounded-lg border border-border bg-background px-2"
                         />
                       ) : (
-                        <span className="text-muted-foreground">{entry.lecturer}</span>
+                        <span className="text-muted-foreground">
+                          {entry.lecturer}
+                        </span>
                       )}
                     </td>
                     <td className="px-4 py-2.5">
@@ -488,7 +521,10 @@ export function TimetableEditor({
                             variant="ghost"
                             className="text-danger hover:bg-danger/10 hover:text-danger"
                             onClick={() =>
-                              onDelete(entry.id, module?.name ?? "session")
+                              onDelete(
+                                entry.id,
+                                courseModule?.name ?? "session",
+                              )
                             }
                           >
                             <Trash2 className="h-3 w-3" />

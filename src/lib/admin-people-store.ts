@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { classStreams } from "@/data/mock";
+import { useClassRegistry } from "@/lib/class-registry";
 import type {
   AuditLogRow,
   Database,
@@ -81,6 +81,7 @@ export type ClassRepInput = {
 };
 
 export function useAdminPeopleStore() {
+  const { streams: classStreams } = useClassRegistry();
   const [students, setStudents] = useState<StudentMonitor[]>([]);
   const [classReps, setClassReps] = useState<ClassRepAccount[]>([]);
   const [audit, setAudit] = useState<AuditLogEntry[]>([]);

@@ -20,7 +20,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StaffModal } from "@/components/staff/staff-modal";
-import { classStreams, getModule, modules } from "@/data/mock";
+import { getModule, modules } from "@/data/mock";
+import { useClassRegistry } from "@/lib/class-registry";
 import {
   downloadMaterial,
   useMaterialsStore,
@@ -125,6 +126,7 @@ export function MaterialsLibrary({
   title?: string;
   filterItems?: (items: MaterialUpload[]) => MaterialUpload[];
 }) {
+  const { streams: classStreams } = useClassRegistry();
   const { items, ready, updateItem, deleteItem, bumpDownloads } =
     useMaterialsStore();
   const [query, setQuery] = useState("");

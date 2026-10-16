@@ -5,7 +5,8 @@ import { CheckCircle2, FileUp, UploadCloud } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ClassStreamId, StaffRole, UploadKind } from "@/types";
-import { modules, classStreams } from "@/data/mock";
+import { modules } from "@/data/mock";
+import { useClassRegistry } from "@/lib/class-registry";
 import { useMaterialsStore } from "@/lib/materials-store";
 
 const kinds: { id: UploadKind; label: string }[] = [
@@ -39,6 +40,7 @@ export function UploadWorkspace({
   allowedModuleIds?: string[];
   allowedStreamIds?: ClassStreamId[];
 }) {
+  const { streams: classStreams } = useClassRegistry();
   const { publish } = useMaterialsStore();
   const catalog = (() => {
     if (!allowedModuleIds || allowedModuleIds.length === 0) return modules;

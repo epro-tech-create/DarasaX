@@ -13,17 +13,13 @@ import {
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
-import {
-  classStreams,
-  DEFAULT_CLASS_STREAM,
-  getModule,
-} from "@/data/mock";
+import { DEFAULT_CLASS_STREAM, getModule } from "@/data/mock";
 import { getNextClass } from "@/lib/academic";
 import { useTimetableStore } from "@/lib/timetable-store";
 import { useStudentProfile } from "@/components/providers/student-profile-provider";
+import { useClassRegistry } from "@/lib/class-registry";
 import { cn, formatTime } from "@/lib/utils";
 import type { ClassStreamId, TimetableEntry } from "@/types";
-
 
 const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const dayFull = [
@@ -137,10 +133,20 @@ function ClassBlock({
 export default function TimetablePage() {
   const [view, setView] = useState<"today" | "week">("week");
   const { profile } = useStudentProfile();
-  const streamId = (profile?.class_name ?? DEFAULT_CLASS_STREAM) as ClassStreamId;
+  const [browsingStream, setBrowsingStream] = useState<ClassStreamId | null>(
+    null,
+  );
+  const { streams: classStreams } = useClassRegistry();
+  const streamId =
+    browsingStream ??
+    ((profile?.class_name ?? DEFAULT_CLASS_STREAM) as ClassStreamId);
   const today = new Date().getDay();
-  const selectedStream =
-    classStreams.find((s) => s.id === streamId) ?? classStreams[0];
+  const selectedStream = classStreams.find((s) => s.id === streamId) ?? {
+    id: streamId,
+    label: streamId,
+    description: "Class timetable",
+    isEvening: false,
+  };
   const { forStream, entries: allEntries } = useTimetableStore();
   const next = getNextClass(new Date(), streamId, allEntries);
   const hours = useMemo(
@@ -177,9 +183,7 @@ export default function TimetablePage() {
 
   const isWeekday = weekDays.includes(today as 1 | 2 | 3 | 4 | 5);
   const showNowLine =
-    isWeekday &&
-    nowMinutes >= GRID_START * 60 &&
-    nowMinutes <= GRID_END * 60;
+    isWeekday && nowMinutes >= GRID_START * 60 && nowMinutes <= GRID_END * 60;
   const nowTop = ((nowMinutes - GRID_START * 60) / 60) * HOUR_HEIGHT;
   const gridHeight = hours.length * HOUR_HEIGHT;
 
@@ -232,10 +236,13 @@ export default function TimetablePage() {
           </span>
           <select
             value={streamId}
-            disabled aria-label="Your assigned class"
+            onChange={(event) =>
+              setBrowsingStream(event.target.value as ClassStreamId)
+            }
+            aria-label="View class timetable"
             className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px] font-medium outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
           >
-            {classStreams.filter((stream) => stream.id === streamId).map((stream) => (
+            {classStreams.map((stream) => (
               <option key={stream.id} value={stream.id}>
                 {stream.label}
                 {stream.isEvening ? " (Evening)" : ""}
@@ -263,7 +270,9 @@ export default function TimetablePage() {
           },
           {
             label: "Next up",
-            value: next ? (getModule(next.entry.moduleId)?.code ?? "—") : "Free",
+            value: next
+              ? (getModule(next.entry.moduleId)?.code ?? "—")
+              : "Free",
             hint: next
               ? `${formatTime(next.entry.startTime)} · ${next.entry.room}`
               : "Nothing scheduled",
@@ -494,7 +503,9 @@ export default function TimetablePage() {
                   <div className="sticky left-0 top-0 z-30 border-b border-r border-border/70 bg-background/95 px-2 py-3 backdrop-blur" />
                   {weekDays.map((day) => {
                     const isToday = day === today;
-                    const count = weekEntries.filter((e) => e.day === day).length;
+                    const count = weekEntries.filter(
+                      (e) => e.day === day,
+                    ).length;
                     return (
                       <div
                         key={day}
@@ -563,7 +574,10 @@ export default function TimetablePage() {
                           isToday && "bg-primary/[0.03]",
                         )}
                       >
-                        <div className="relative" style={{ height: gridHeight }}>
+                        <div
+                          className="relative"
+                          style={{ height: gridHeight }}
+                        >
                           {hours.map((hour) => (
                             <div
                               key={hour}

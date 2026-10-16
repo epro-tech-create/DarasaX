@@ -132,11 +132,8 @@ export interface Announcement {
   moduleId?: string;
 }
 
-export type ClassStreamId =
-  | "BENG24COE-1"
-  | "BENG24COE-2"
-  | "BENG24COE-3"
-  | "BENG24COE-4";
+// Class identifiers are managed in the academic_classes registry.
+export type ClassStreamId = string;
 
 export interface ClassStream {
   id: ClassStreamId;

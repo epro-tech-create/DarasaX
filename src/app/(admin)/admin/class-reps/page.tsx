@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StaffModal } from "@/components/staff/staff-modal";
 import { StaffSection, StaffStatCard } from "@/components/staff/staff-ui";
-import { classStreams } from "@/data/mock";
+import { useClassRegistry } from "@/lib/class-registry";
 import { useAdminPeopleStore } from "@/lib/admin-people-store";
 import type { ClassRepAccount, ClassStreamId } from "@/types";
 
@@ -20,6 +20,7 @@ const emptyForm = {
 };
 
 export default function AdminClassRepsPage() {
+  const { streams: classStreams } = useClassRegistry();
   const {
     classReps,
     addClassRep,

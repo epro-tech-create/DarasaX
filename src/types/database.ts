@@ -22,6 +22,13 @@ export type AuditLogRow = Database["public"]["Tables"]["audit_log"]["Row"];
 export type Database = {
   public: {
     Tables: {
+      academic_classes: {
+        Row: { id: string; label: string; institution: string; programme: string; year: number; semester: number; is_evening: boolean; archived: boolean; created_by: string | null; created_at: string };
+        Insert: { id: string; label: string; institution: string; programme: string; year: number; semester: number; is_evening?: boolean; archived?: boolean; created_by?: string | null; created_at?: string };
+        Update: { archived?: boolean };
+        Relationships: [];
+      };
+
       notifications: {
         Row: { id: string; recipient_id: string; source_type: string; source_id: string; title: string; body: string; type: string; href: string; created_at: string; read_at: string | null };
         Insert: { recipient_id: string; source_type: string; source_id: string; title: string; body: string; type: string; href: string; id?: string; created_at?: string; read_at?: string | null };
@@ -430,6 +437,9 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      add_academic_class: { Args: {class_id: string; class_label: string; class_institution: string; class_programme: string; class_year: number; class_semester: number; evening?: boolean}; Returns: void };
+      archive_academic_class: { Args: {class_id: string}; Returns: void };
+
       record_student_activity: { Args: Record<string, never>; Returns: void };
       record_material_view: { Args: { mid: string }; Returns: void };
       engagement_summary: { Args: Record<string, never>; Returns: Json };

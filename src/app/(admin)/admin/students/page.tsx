@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { StaffModal } from "@/components/staff/staff-modal";
 import { StaffSection, StaffStatCard } from "@/components/staff/staff-ui";
-import { classStreams } from "@/data/mock";
+import { useClassRegistry } from "@/lib/class-registry";
 import { useAdminPeopleStore } from "@/lib/admin-people-store";
 import type { ClassStreamId, StudentMonitor } from "@/types";
 
@@ -18,6 +18,7 @@ const emptyForm = {
 };
 
 export default function AdminStudentsPage() {
+  const { streams: classStreams } = useClassRegistry();
   const { students, addStudent, updateStudent, deleteStudent } =
     useAdminPeopleStore();
   const [stream, setStream] = useState("all");

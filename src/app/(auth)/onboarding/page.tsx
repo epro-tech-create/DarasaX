@@ -17,7 +17,12 @@ import {
 import { WelcomeCelebration } from "@/components/auth/welcome-celebration";
 import { getAuthErrorMessage } from "@/lib/auth/errors";
 import { createClient } from "@/lib/supabase/client";
-import { classStreams } from "@/data/mock";
+import {
+  UNIVERSITIES,
+  ACTIVE_INSTITUTION,
+  activeCohort,
+  useClassRegistry,
+} from "@/lib/class-registry";
 import { cn } from "@/lib/utils";
 
 const STEPS = [
@@ -27,20 +32,38 @@ const STEPS = [
   "Congratulations",
 ];
 
-const UNIVERSITIES = ["Dar es Salaam Institute of Technology (DIT)"];
-const YEARS = [{ value: 3, label: "Year 3", hint: "BENG24COE current academic year" }] as const;
-const SEMESTERS = [{ value: 1, label: "Semester 1", hint: "Current semester / registration is open" }] as const;
+const YEARS = [1, 2, 3, 4].map((value) => ({
+  value,
+  label: `Year ${value}`,
+  hint: "Year of study",
+}));
+const SEMESTERS = [1, 2].map((value) => ({
+  value,
+  label: `Semester ${value}`,
+  hint: "Select your current semester",
+}));
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const {
+    classes,
+    ready: classesReady,
+    error: classesError,
+    refresh: refreshClasses,
+  } = useClassRegistry();
   const [streamId, setStreamId] = useState("");
   const [step, setStep] = useState(0);
   const [institution, setInstitution] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [year, setYear] = useState<(typeof YEARS)[number]["value"] | null>(null);
-  const [semester, setSemester] = useState<(typeof SEMESTERS)[number]["value"] | null>(
+  const [year, setYear] = useState<(typeof YEARS)[number]["value"] | null>(
     null,
+  );
+  const [semester, setSemester] = useState<
+    (typeof SEMESTERS)[number]["value"] | null
+  >(null);
+  const availableClasses = classes.filter(
+    (c) => c.institution === institution && c.year === year,
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -52,7 +75,19 @@ export default function OnboardingPage() {
   }, [search]);
 
   async function finish() {
-    if (!institution || year !== 3 || semester !== 1 || !classStreams.some((stream) => stream.id === streamId)) { setError("Choose DIT, BENG24COE Year 3, Semester 1 and your class."); return; }
+    const chosenClass = classes.find((c) => c.id === streamId);
+    if (
+      institution !== ACTIVE_INSTITUTION ||
+      year !== 3 ||
+      semester !== 1 ||
+      !chosenClass ||
+      !activeCohort(chosenClass)
+    ) {
+      setError(
+        "Registration is currently open only for DIT, BENG24COE, Year 3, Semester 1. Other classes are not available yet.",
+      );
+      return;
+    }
     setLoading(true);
     setError("");
     try {
@@ -69,13 +104,15 @@ export default function OnboardingPage() {
         .from("profiles")
         .update({
           institution,
-          programme: "BENG24COE",
+          programme: chosenClass.programme,
           class_name: streamId,
           year_of_study: year,
           semester,
           onboarding_completed: true,
         })
-        .eq("id", user.id);
+        .eq("id", user.id)
+        .select("id")
+        .single();
 
       if (updateError) throw updateError;
       setStep(3);
@@ -92,7 +129,7 @@ export default function OnboardingPage() {
       return;
     }
     if (step === 1 && (!year || !streamId)) {
-      setError("Please select Year 3 and your class stream.");
+      setError("Please select your year and class.");
       return;
     }
     if (step === 2) {
@@ -136,7 +173,10 @@ export default function OnboardingPage() {
 
         <div className="mt-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm">
           <p className="font-semibold">DIT / BENG24COE / Year 3 / Semester 1</p>
-          <p className="mt-1 text-xs text-muted-foreground">Only this current cohort is open. Your class controls which materials you can access.</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Only this current cohort is open. Your class controls which
+            materials you can access.
+          </p>
         </div>
         <HorizontalStepper steps={STEPS} current={step} />
 
@@ -222,6 +262,7 @@ export default function OnboardingPage() {
                                     type="button"
                                     onClick={() => {
                                       setInstitution(name);
+                                      setStreamId("");
                                       setDropdownOpen(false);
                                       setSearch("");
                                       setError("");
@@ -266,6 +307,7 @@ export default function OnboardingPage() {
                             type="button"
                             onClick={() => {
                               setYear(item.value);
+                              setStreamId("");
                               setError("");
                             }}
                             className={cn(
@@ -275,7 +317,9 @@ export default function OnboardingPage() {
                                 : "border-border bg-background hover:bg-muted/60",
                             )}
                           >
-                            <p className="text-sm font-semibold">{item.label}</p>
+                            <p className="text-sm font-semibold">
+                              {item.label}
+                            </p>
                             <p
                               className={cn(
                                 "mt-0.5 text-[11px]",
@@ -289,11 +333,42 @@ export default function OnboardingPage() {
                           </button>
                         ))}
                       </div>
-                    <label className="mt-4 block text-sm font-medium">Your class
-                      <select required value={streamId} onChange={(event) => setStreamId(event.target.value)} className="focus-ring mt-2 h-11 w-full rounded-xl border border-border bg-background px-3">
-                        <option value="">Choose your class</option>{classStreams.map((stream) => <option key={stream.id} value={stream.id}>{stream.label}</option>)}
-                      </select>
-                    </label>
+                      <label className="mt-4 block text-sm font-medium">
+                        Your class
+                        <select
+                          disabled={!classesReady}
+                          required
+                          value={streamId}
+                          onChange={(event) => setStreamId(event.target.value)}
+                          className="focus-ring mt-2 h-11 w-full rounded-xl border border-border bg-background px-3"
+                        >
+                          <option value="">Choose your class</option>
+                          {availableClasses.map((stream) => (
+                            <option key={stream.id} value={stream.id}>
+                              {stream.label}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      {classesError ? (
+                        <p role="alert" className="mt-2 text-xs text-danger">
+                          {classesError}{" "}
+                          <button
+                            type="button"
+                            onClick={() => void refreshClasses()}
+                            className="underline"
+                          >
+                            Retry
+                          </button>
+                        </p>
+                      ) : classesReady &&
+                        year &&
+                        availableClasses.length === 0 ? (
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          No classes are available for this institution and year
+                          yet.
+                        </p>
+                      ) : null}
                     </div>
                     <YearIllustration className="mx-auto h-40 w-full max-w-[260px] md:h-44" />
                   </div>
@@ -324,7 +399,9 @@ export default function OnboardingPage() {
                                 : "border-border bg-background hover:bg-muted/60",
                             )}
                           >
-                            <p className="text-sm font-semibold">{item.label}</p>
+                            <p className="text-sm font-semibold">
+                              {item.label}
+                            </p>
                             <p
                               className={cn(
                                 "mt-0.5 text-xs",

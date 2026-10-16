@@ -4,11 +4,13 @@ import { Moon, Sun, Users } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { classStreams } from "@/data/mock";
+import { ClassManager } from "@/components/staff/class-manager";
+import { useClassRegistry } from "@/lib/class-registry";
 import { useAdminPeopleStore } from "@/lib/admin-people-store";
 import { useTimetableStore } from "@/lib/timetable-store";
 
 export default function AdminStreamsPage() {
+  const { streams: classStreams } = useClassRegistry();
   const { studentsForStream } = useAdminPeopleStore();
   const { forStream } = useTimetableStore();
   return (
@@ -23,6 +25,7 @@ export default function AdminStreamsPage() {
         }
       />
 
+      <ClassManager />
       <div className="grid gap-3 md:grid-cols-2">
         {classStreams.map((stream) => {
           const students = studentsForStream(stream.id);

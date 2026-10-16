@@ -63,6 +63,7 @@ const crNav: StaffNavItem[] = [
   { href: "/cr/materials", label: "Library", icon: BookOpen },
   { href: "/cr/past-papers", label: "Past papers", icon: ClipboardList },
   { href: "/cr/timetable", label: "Timetable", icon: CalendarDays },
+  { href: "/cr/classes", label: "Classes", icon: GraduationCap },
   { href: "/cr/members", label: "Members", icon: Users },
   { href: "/cr/issues", label: "Issues", icon: Flag },
   { href: "/cr/attendance", label: "Attendance", icon: Activity },
