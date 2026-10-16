@@ -54,9 +54,8 @@ export function AppSidebar() {
 
   return (
     <aside
-      style={{ background: "linear-gradient(165deg, #1e88e5 0%, #1565c0 55%, #0d47a1 100%)", color: "#ffffff" }}
       className={cn(
-        "student-sidebar sticky top-0 hidden h-screen shrink-0 flex-col border-r border-border text-white transition-[width,background-color] duration-300 motion-reduce:transition-none lg:flex",
+        "sticky top-0 hidden h-screen shrink-0 flex-col border-r border-border bg-sidebar text-sidebar-foreground transition-all duration-300 lg:flex",
         collapsed ? "w-[76px]" : "w-[232px]",
       )}
     >
@@ -71,14 +70,13 @@ export function AppSidebar() {
         <Logo
           href="/dashboard"
           size="sm"
-          variant="dark"
           markOnly={collapsed}
-          className={cn("[&_img]:brightness-0 [&_img]:invert", !collapsed && "min-w-0 pl-0.5")}
+          className={cn(!collapsed && "min-w-0 pl-0.5")}
         />
         <button
           type="button"
           onClick={() => setCollapsed((v) => !v)}
-          className="focus-ring inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white/75 transition-colors duration-200 hover:bg-white hover:text-[#1565C0] motion-reduce:transition-none"
+          className="focus-ring inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? (
@@ -98,13 +96,12 @@ export function AppSidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "focus-ring group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium transition-[background-color,color,transform] duration-200 motion-safe:hover:translate-x-0.5 motion-reduce:transition-none",
+                "focus-ring group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium transition-colors",
                 active
-                  ? "bg-white text-[#1565C0] shadow-sm"
-                  : "text-white/75 hover:bg-white hover:text-[#1565C0]",
+                  ? "btn-gradient shadow-sm shadow-primary/25"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 collapsed && "justify-center px-0",
               )}
-              aria-current={active ? "page" : undefined}
               title={collapsed ? item.label : undefined}
             >
               <Icon className="h-4 w-4 shrink-0" />
@@ -124,13 +121,12 @@ export function AppSidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "focus-ring flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium transition-[background-color,color,transform] duration-200 motion-safe:hover:translate-x-0.5 motion-reduce:transition-none",
+                  "focus-ring flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium transition-colors",
                   active
-                    ? "bg-white text-[#1565C0]"
-                    : "text-white/75 hover:bg-white hover:text-[#1565C0]",
+                    ? "bg-muted text-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   collapsed && "justify-center px-0",
                 )}
-                aria-current={active ? "page" : undefined}
                 title={collapsed ? item.label : undefined}
               >
                 <Icon className="h-4 w-4 shrink-0" />
