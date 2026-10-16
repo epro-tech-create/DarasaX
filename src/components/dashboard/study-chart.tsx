@@ -71,9 +71,12 @@ export function StudyChart() {
   const innerH = H - PAD_TOP - PAD_BOTTOM;
   const x = (i: number) => PAD_X + (innerW * i) / (days.length - 1);
   const y = (v: number) => PAD_TOP + innerH * (1 - v / max);
-  const line = days
-    .map((d, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(d.count).toFixed(1)}`)
-    .join(" ");
+  // Horizontal Bézier handles keep every segment between its measured values.
+  const line = days.reduce((path, day, i) => {
+    if (i === 0) return `M${x(i)},${y(day.count)}`;
+    const middle = (x(i - 1) + x(i)) / 2;
+    return `${path} C${middle},${y(days[i - 1].count)} ${middle},${y(day.count)} ${x(i)},${y(day.count)}`;
+  }, "");
   const area = `${line} L${x(days.length - 1).toFixed(1)},${(PAD_TOP + innerH).toFixed(1)} L${x(0).toFixed(1)},${(PAD_TOP + innerH).toFixed(1)} Z`;
   const gridVals = [0, max / 2, max];
   const latest = [...published].sort(
@@ -99,10 +102,12 @@ export function StudyChart() {
         </span>
       </div>
 
-      <div className="mt-3 text-primary">
+      {ready && total === 0 ? (
+        <p className="mt-4 rounded-xl bg-muted/40 p-4 text-sm text-muted-foreground">No new materials this week. Your existing notes are available in Modules.</p>
+      ) : <div className="mt-3 text-primary">
         <svg
           viewBox={`0 0 ${W} ${H}`}
-          className="h-48 w-full sm:h-56"
+          className="h-36 w-full sm:h-44"
           role="img"
           aria-label={`New class files per day, ${rangeLabel}`}
         >
@@ -188,7 +193,7 @@ export function StudyChart() {
             </g>
           ))}
         </svg>
-      </div>
+      </div>}
 
       <p className="mt-1 text-[12px] text-muted-foreground">
         {latest

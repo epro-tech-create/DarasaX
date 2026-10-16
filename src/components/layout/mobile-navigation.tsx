@@ -4,24 +4,26 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BookOpen,
-  CalendarRange,
+  CalendarDays,
   Home,
   Megaphone,
   Sparkles,
   User,
 } from "lucide-react";
+import { useNotifications } from "@/lib/notifications-store";
 import { cn } from "@/lib/utils";
 
 const items = [
   { href: "/dashboard", label: "Home", icon: Home },
   { href: "/modules", label: "Modules", icon: BookOpen },
-  { href: "/planner", label: "Planner", icon: CalendarRange },
+  { href: "/timetable", label: "Timetable", icon: CalendarDays },
   { href: "/announcements", label: "Updates", icon: Megaphone },
   { href: "/profile", label: "Profile", icon: User },
 ];
 
 export function MobileNavigation() {
   const pathname = usePathname();
+  const { unreadCount } = useNotifications();
 
   return (
     <>
@@ -43,13 +45,17 @@ export function MobileNavigation() {
               <li key={item.href}>
                 <Link
                   href={item.href}
+                  aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex flex-col items-center gap-0.5 px-1 py-2 text-[11px] font-medium transition-colors",
+                    "relative flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 py-2 text-[11px] font-medium transition-colors",
                     active ? "text-primary" : "text-muted-foreground",
                   )}
                 >
                   <Icon className={cn("h-4 w-4", active && "stroke-[2.25px]")} />
                   {item.label}
+                  {item.href === "/announcements" && unreadCount > 0 ? (
+                    <span className="absolute right-2 top-1 rounded-full bg-primary px-1.5 text-[10px] font-semibold text-white" aria-label={`${unreadCount} unread updates`}>{unreadCount > 9 ? "9+" : unreadCount}</span>
+                  ) : null}
                 </Link>
               </li>
             );

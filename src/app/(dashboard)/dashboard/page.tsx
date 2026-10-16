@@ -1,9 +1,7 @@
 import { OverviewHeader } from "@/components/dashboard/overview-ui";
 import { StudentGreeting } from "@/components/dashboard/student-greeting";
 import { ExamCountdown } from "@/components/dashboard/exam-countdown";
-import {
-  DashboardUpcoming,
-} from "@/components/dashboard/live-sections";
+import { ComingUp } from "@/components/dashboard/coming-up";
 import { NextClassCard, StatCard } from "@/components/dashboard/next-class-card";
 import { DashboardAssignmentStatCard } from "@/components/dashboard/assignment-stat-card";
 import { StudyChart } from "@/components/dashboard/study-chart";
@@ -82,11 +80,11 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
+        <ComingUp />
         <StudyChart />
-        <ExamCountdown />
       </div>
 
-      <DashboardUpcoming />
+      <ExamCountdown />
     </div>
   );
 }
