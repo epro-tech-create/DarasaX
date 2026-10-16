@@ -22,7 +22,7 @@ The same Next.js codebase serves four role-isolated web portals from one reposit
 - Dashboard with greeting, date pill, next-class banner, stat cards, and upcoming work.
 - Next-class banner with Time, Room, and Lecturer blocks, humanized countdown, and white `View Module` action.
 - Modules, topics, notes and materials, assignments, timetable, past papers, announcements, planner, Ask DarasaX, What Did I Miss, profile, and settings.
-- Light and dark themes with Figtree typography across body and headings.
+- Light and dark themes with Inter body typography and Outfit headings.
 
 ### Admin portal
 
@@ -38,7 +38,7 @@ The same Next.js codebase serves four role-isolated web portals from one reposit
 
 ### Shared UX
 
-- Figtree loaded with `next/font/google` and applied through the root layout.
+- Inter loaded with `next/font/google` and applied through the root layout.
 - Responsive mobile-first layouts, dashboard shells, command search, notifications, empty states, and reusable UI primitives.
 - Hard role isolation in routing so students cannot open `/admin` or `/cr`, and staff portals cannot open student routes.
 
@@ -50,7 +50,7 @@ The same Next.js codebase serves four role-isolated web portals from one reposit
 - Framer Motion
 - Lucide icons
 - Supabase Auth and Postgres for student identity and profiles
-- `next/font/google` self-hosted Figtree
+- `next/font/google` self-hosted Inter
 - ESLint with `eslint-config-next`
 
 ## Repository structure
@@ -59,7 +59,7 @@ The same Next.js codebase serves four role-isolated web portals from one reposit
 src/
   app/
     page.tsx                  # Public landing page
-    layout.tsx                # Root layout, Figtree, theme bootstrap
+    layout.tsx                # Root layout, Inter, theme bootstrap
     globals.css               # Design tokens and global styles
     (auth)/                   # login, signup, register, verify-email, password flows, onboarding
     (dashboard)/              # dashboard, modules, assignments, timetable, past-papers, planner, ask, missed, profile, settings

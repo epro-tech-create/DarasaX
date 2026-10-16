@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { Figtree, Outfit } from "next/font/google";
+import { Inter, Outfit } from "next/font/google";
 import Script from "next/script";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { SessionTimeout } from "@/components/auth/session-timeout";
 import { BootSplash } from "@/components/brand/boot-splash";
 import "./globals.css";
 
-const figtree = Figtree({
+const inter = Inter({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-figtree",
+  variable: "--font-inter",
 });
 
 const outfit = Outfit({
@@ -50,7 +50,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${figtree.variable} ${outfit.variable} ${figtree.className} h-full dark`}
+      className={`${inter.variable} ${outfit.variable} ${inter.className} h-full dark`}
     >
       <body className="min-h-full bg-background font-sans text-sm antialiased">
         <Script
