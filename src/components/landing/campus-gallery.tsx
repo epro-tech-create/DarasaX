@@ -37,105 +37,77 @@ const photos = [
   },
 ];
 
-export function CampusGallery() {
+const heroPhotos = [
+  {
+    src: "/landing-hero.jpg",
+    alt: "University students studying together on campus",
+    position: "center",
+  },
+  ...photos,
+];
+
+export function HeroBackground() {
   const reduced = useReducedMotion();
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [hovering, setHovering] = useState(false);
   useEffect(() => {
-    if (reduced !== false || paused || hovering) return;
+    if (reduced !== false || paused) return;
     const timer = setInterval(() => {
       if (document.visibilityState === "visible")
-        setActive((value) => (value + 1) % photos.length);
-    }, 5000);
+        setActive((value) => (value + 1) % heroPhotos.length);
+    }, 6000);
     return () => clearInterval(timer);
-  }, [reduced, paused, hovering]);
+  }, [reduced, paused]);
 
   return (
-    <div
-      className="relative isolate aspect-[4/3] w-full overflow-hidden rounded-3xl border border-white/20 bg-[#0B1B2B] shadow-2xl lg:aspect-[4/5]"
-      onMouseEnter={() => setHovering(true)}
-      onMouseLeave={() => setHovering(false)}
-      onFocusCapture={() => setHovering(true)}
-      onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget))
-          setHovering(false);
-      }}
-      role="region"
-      aria-roledescription="carousel"
-      aria-label="Student life gallery"
-    >
-      {photos.map((photo, index) => (
-        <motion.div
-          key={photo.src}
-          className="absolute inset-0"
-          initial={false}
-          animate={{
-            opacity: active === index ? 1 : 0,
-            scale: !reduced && active === index ? 1.035 : 1,
-          }}
-          transition={{
-            opacity: { duration: reduced ? 0 : 0.6 },
-            scale: { duration: reduced ? 0 : 5 },
-          }}
-          aria-hidden={active !== index}
-        >
-          <Image
-            src={photo.src}
-            alt={photo.alt}
-            fill
-            sizes="(max-width: 640px) 90vw, (max-width: 1024px) 70vw, 420px"
-            priority={index === 0}
-            className="object-cover"
-            style={{ objectPosition: photo.position }}
-          />
-        </motion.div>
-      ))}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0B1B2B]/95 via-transparent to-black/10" />
-      <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
-        <p className="mb-2 text-xs font-medium uppercase tracking-widest text-white/65">
-          Life beyond the lecture
-        </p>
-        <p className="font-heading text-2xl font-semibold text-white">
-          {photos[active].label}
-        </p>
-        <div className="mt-4 flex items-center justify-between gap-3">
-          <div className="flex gap-1" role="group" aria-label="Choose a photo">
-            {photos.map((photo, index) => (
-              <button
-                key={photo.src}
-                type="button"
-                onClick={() => {
-                  setActive(index);
-                  setPaused(true);
-                }}
-                aria-label={`Show photo ${index + 1}: ${photo.label}`}
-                aria-pressed={active === index}
-                className="focus-ring flex h-11 w-10 items-center justify-center rounded-lg"
-              >
-                <span
-                  className={`h-1 rounded-full transition-all duration-300 ${active === index ? "w-8 bg-white" : "w-3 bg-white/40"}`}
-                />
-              </button>
-            ))}
-          </div>
-          {reduced === false && (
-            <button
-              type="button"
-              onClick={() => setPaused(!paused)}
-              aria-label={paused ? "Play slideshow" : "Pause slideshow"}
-              className="focus-ring flex h-11 w-11 items-center justify-center rounded-full border border-white/25 text-white"
-            >
-              {paused ? (
-                <Play className="h-4 w-4" />
-              ) : (
-                <Pause className="h-4 w-4" />
-              )}
-            </button>
-          )}
-        </div>
+    <>
+      <div
+        className="absolute inset-0 -z-20 overflow-hidden"
+        aria-hidden="true"
+      >
+        {heroPhotos.map((photo, index) => (
+          <motion.div
+            key={photo.src}
+            className="absolute inset-0"
+            initial={false}
+            animate={{
+              opacity: active === index ? 1 : 0,
+              scale: !reduced && active === index ? 1.04 : 1,
+            }}
+            transition={{
+              opacity: { duration: reduced ? 0 : 0.8 },
+              scale: { duration: reduced ? 0 : 6 },
+            }}
+          >
+            <Image
+              src={photo.src}
+              alt=""
+              fill
+              sizes="100vw"
+              priority={index === 0}
+              className="object-cover"
+              style={{ objectPosition: photo.position }}
+            />
+          </motion.div>
+        ))}
       </div>
-    </div>
+      {reduced === false && (
+        <button
+          type="button"
+          onClick={() => setPaused(!paused)}
+          aria-label={
+            paused ? "Play background slideshow" : "Pause background slideshow"
+          }
+          className="focus-ring absolute bottom-5 right-5 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-white/25 bg-black/20 text-white backdrop-blur-sm transition hover:bg-black/40 sm:right-8"
+        >
+          {paused ? (
+            <Play className="h-4 w-4" />
+          ) : (
+            <Pause className="h-4 w-4" />
+          )}
+        </button>
+      )}
+    </>
   );
 }
 

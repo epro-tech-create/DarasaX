@@ -16,7 +16,7 @@ import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import {
-  CampusGallery,
+  HeroBackground,
   CampusStories,
 } from "@/components/landing/campus-gallery";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -111,53 +111,46 @@ export default function LandingPage() {
         </header>
 
         <main id="main-content">
-          <section className="relative isolate overflow-hidden bg-[#0B1B2B] text-white">
-            <Image
-              src="/images/campus/study-together.jpg"
-              alt="University students studying together on campus"
-              fill
-              priority
-              sizes="100vw"
-              className="-z-20 object-cover object-center"
-            />
-            <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0B1B2B]/95 via-[#0B1B2B]/80 to-[#0B1B2B]/40" />
-            <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 pb-12 pt-40 sm:px-8 sm:pb-16 sm:pt-48 lg:grid-cols-[1.3fr_0.7fr] lg:pb-24">
-              <motion.div {...reveal}>
-                <p className="mb-5 flex items-center gap-2 text-xs font-medium tracking-wide text-white/75">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#4FC3F7]" /> A
-                  little less searching. A lot more learning.
-                </p>
-                <h1 className="max-w-2xl font-heading text-[clamp(2.6rem,6vw,4.8rem)] font-semibold leading-[1.04] tracking-tight">
-                  Everything for class.
-                  <br />
-                  <span className="text-[#4FC3F7]">One place.</span>
-                </h1>
-                <p className="mt-6 max-w-md text-base leading-relaxed text-white/70">
-                  Your notes, next class and upcoming deadlines. A calmer way to
-                  keep up with university life.
-                </p>
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <Button href="/signup" className="h-12 px-6">
-                    Find your workspace{" "}
-                    <ArrowRight className="h-4 w-4" aria-hidden />
-                  </Button>
-                  <Button
-                    href="/login"
-                    variant="outline"
-                    className="h-12 border-white/25 bg-white/5 px-6 text-white hover:bg-white/10 hover:text-white"
+          <section className="relative isolate bg-[#0B1B2B] text-white">
+            <div className="relative isolate flex min-h-[90svh] items-end overflow-hidden sm:min-h-[100svh]">
+              <HeroBackground />
+              <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/90 via-black/55 to-black/25" />
+              <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black/50 via-transparent to-[#1565C0]/20" />
+              <div className="mx-auto w-full max-w-6xl px-5 pb-20 pt-36 sm:px-8 sm:pb-24">
+                <motion.div {...reveal} className="max-w-xl">
+                  <p className="mb-4 text-xs font-medium uppercase tracking-[0.18em] text-[#4FC3F7]">
+                    Darasa<span className="text-white">X</span>
+                  </p>
+                  <h1 className="font-heading text-[2.6rem] font-semibold leading-[1.1] tracking-tight text-white sm:text-[3.25rem] lg:text-[3.85rem]">
+                    Everything for class.
+                    <br />
+                    One place.
+                  </h1>
+                  <p className="mt-4 max-w-md text-base leading-relaxed text-white/80">
+                    Modules, notes, assignments, timetable, past papers and
+                    study tools — organized so you can focus on learning.
+                  </p>
+                  <div className="mt-7 flex flex-wrap gap-3">
+                    <Button href="/signup" className="h-11 px-5 text-sm">
+                      Get Started <ArrowRight className="h-4 w-4" aria-hidden />
+                    </Button>
+                    <Button
+                      href="#features"
+                      variant="outline"
+                      className="h-11 border-white/30 bg-white/5 px-5 text-sm text-white hover:bg-white/15 hover:text-white"
+                    >
+                      Explore DarasaX
+                    </Button>
+                  </div>
+                  <a
+                    href="#features"
+                    className="focus-ring mt-8 inline-flex items-center gap-2 rounded text-xs text-white/65 transition hover:text-white"
                   >
-                    Log in
-                  </Button>
-                </div>
-                <a
-                  href="#features"
-                  className="focus-ring mt-10 inline-flex items-center gap-2 rounded text-xs text-white/60 transition hover:text-white"
-                >
-                  Take a look around{" "}
-                  <ArrowDown className="h-3.5 w-3.5" aria-hidden />
-                </a>
-              </motion.div>
-              <CampusGallery />
+                    Take a look around{" "}
+                    <ArrowDown className="h-3.5 w-3.5" aria-hidden />
+                  </a>
+                </motion.div>
+              </div>
             </div>
             <div className="border-t border-white/10">
               <div className="mx-auto flex max-w-6xl flex-wrap gap-x-8 gap-y-3 px-5 py-5 text-xs text-white/65 sm:px-8">
