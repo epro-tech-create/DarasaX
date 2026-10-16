@@ -66,7 +66,7 @@
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-ring: var(--ring);
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
   --font-heading: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
   --radius-card: 1.25rem;
   --radius-button: 0.875rem;
@@ -82,7 +82,7 @@ html {
   scroll-behavior: smooth;
   /*
    * Vercel/Geist dashboard scale (font families unchanged — Outfit headings,
-   * Inter body):
+   * Figtree body):
    *   headings 20px (page/section titles) · 24px max (hero/countdown)
    *   section/card titles 14–16px · body/menus/buttons 14px
    *   secondary text 13px · tertiary/captions 12px · pills/kbd 11px min
@@ -95,7 +95,7 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
   min-height: 100vh;
   font-size: 0.875rem;
   line-height: 1.5;
@@ -262,4 +262,27 @@ h4,
 
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Slightly larger reading sizes on phones; retain the desktop title scale. */
+@media (width < 640px) {
+  :root {
+    --text-xs: 0.8125rem;
+    --text-sm: 0.9375rem;
+    --text-base: 1.0625rem;
+  }
+
+  body {
+    font-size: 0.9375rem;
+  }
+
+  [class~="text-[10px]"] { font-size: 11px; }
+  [class~="text-[11px]"] { font-size: 12px; }
+  [class~="text-[12px]"] { font-size: 13px; }
+  [class~="text-[13px]"] { font-size: 14px; }
+  [class~="text-[14px]"] { font-size: 15px; }
+
+  input:not([type="checkbox"]):not([type="radio"]), select, textarea {
+    font-size: 16px;
+  }
 }
