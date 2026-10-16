@@ -56,21 +56,21 @@ export function NextClassCard({
         aria-hidden
       />
 
-      <div className="relative z-10 flex flex-col gap-7 p-5 sm:flex-row sm:items-end sm:justify-between sm:gap-8 sm:p-7">
+      <div className="relative z-10 flex flex-col gap-5 p-4 sm:flex-row sm:items-end sm:justify-between sm:gap-8 sm:p-7">
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/70">
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 sm:justify-start">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] sm:text-[11px] text-white/70">
               Next class
             </p>
-            <span className="h-1 w-1 rounded-full bg-white/40" aria-hidden />
-            <p className="text-[12px] font-medium text-white/90">{startsLabel}</p>
+            <span className="hidden h-1 w-1 rounded-full bg-white/40 sm:block" aria-hidden />
+            <p className="text-[10px] font-medium text-white/80 sm:text-[12px]">{startsLabel}</p>
           </div>
 
-          <h2 className="mt-3 font-heading text-[1.65rem] font-semibold leading-[1.15] tracking-tight sm:text-[2rem]">
+          <h2 className="mt-3 font-heading text-xl font-semibold leading-snug tracking-tight sm:text-[2rem] sm:leading-[1.15]">
             {module.name}
           </h2>
 
-          <ul className="mt-5 flex flex-col gap-2.5 text-[13px] text-white/90 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-2">
+          <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs text-white/90 sm:mt-5 sm:flex-row sm:text-[13px] sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-2">
             <li className="inline-flex min-w-0 items-center gap-2">
               <Clock className="h-3.5 w-3.5 shrink-0 text-white/65" aria-hidden />
               <span className="truncate font-medium">
@@ -83,24 +83,24 @@ export function NextClassCard({
               <span className="truncate font-medium">{entry.room}</span>
             </li>
             <li className="hidden h-3 w-px bg-white/25 sm:block" aria-hidden />
-            <li className="inline-flex min-w-0 items-center gap-2">
+            <li className="inline-flex w-full min-w-0 items-center gap-2 sm:w-auto">
               <UserRound className="h-3.5 w-3.5 shrink-0 text-white/65" aria-hidden />
               <span className="truncate font-medium">{entry.lecturer}</span>
             </li>
           </ul>
         </div>
 
-        <div className="flex shrink-0 flex-wrap gap-2.5">
+        <div className="grid shrink-0 grid-cols-2 gap-2 border-t border-white/15 pt-4 sm:flex sm:flex-wrap sm:gap-2.5 sm:border-0 sm:pt-0">
           <Button
             variant="secondary"
-            className="h-10 bg-white px-4 text-sm font-semibold text-[#0a3d8f] shadow-none hover:bg-white/90"
+            className="h-11 min-w-0 bg-white px-3 text-xs font-semibold sm:h-10 sm:px-4 sm:text-sm text-[#0a3d8f] shadow-none hover:bg-white/90"
             href={`/modules/${module.id}`}
           >
             View Module
           </Button>
           <Button
             variant="outline"
-            className="h-10 border-white/35 bg-white/10 px-4 text-sm text-white backdrop-blur-sm hover:bg-white/20"
+            className="h-11 min-w-0 border-white/25 bg-transparent px-3 text-xs text-white sm:h-10 sm:bg-white/10 sm:px-4 sm:text-sm backdrop-blur-sm hover:bg-white/20"
             href="/timetable"
           >
             View Timetable
