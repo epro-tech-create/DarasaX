@@ -9,6 +9,7 @@ import {
   ScrollText,
 } from "lucide-react";
 import type { MaterialUpload } from "@/types";
+import { MaterialShareButton } from "@/components/modules/material-share-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { downloadMaterial, viewMaterial } from "@/lib/materials-store";
@@ -75,6 +76,10 @@ export function MaterialUploadCard({ item }: { item: MaterialUpload }) {
           <Download className="h-4 w-4" />
           {downloading ? "Downloading…" : "Download"}
         </Button>
+        {item.status === "published" &&
+          ["notes", "slides", "assignment", "past_paper"].includes(
+            item.kind,
+          ) && <MaterialShareButton materialId={item.id} title={item.title} />}
       </div>
     </div>
   );

@@ -18,6 +18,7 @@ import {
   Trash2,
   type LucideIcon,
 } from "lucide-react";
+import { MaterialShareButton } from "@/components/modules/material-share-button";
 import { Button } from "@/components/ui/button";
 import { StaffModal } from "@/components/staff/staff-modal";
 import { getModule, modules } from "@/data/mock";
@@ -59,6 +60,7 @@ function resolveIcon(item: MaterialUpload): LucideIcon {
 }
 
 function FileActions({
+  item,
   busy,
   onView,
   onDownload,
@@ -66,6 +68,7 @@ function FileActions({
   onDelete,
   className,
 }: {
+  item: MaterialUpload;
   busy: boolean;
   onView: () => void;
   onDownload: () => void;
@@ -95,6 +98,7 @@ function FileActions({
       >
         <Download className="h-3.5 w-3.5" />
       </button>
+      {item.status === "published" && ["notes","slides","assignment","past_paper"].includes(item.kind) && <MaterialShareButton materialId={item.id} title={item.title} compact />}
       <button
         type="button"
         disabled={busy}
@@ -368,6 +372,7 @@ export function MaterialsLibrary({
                   </div>
                 </div>
                 <FileActions
+                  item={item}
                   busy={busy}
                   className="mt-5 border-t border-border/50 pt-3 opacity-70 transition group-hover:opacity-100"
                   onView={() => onView(item)}
@@ -403,6 +408,7 @@ export function MaterialsLibrary({
                     </p>
                   </div>
                   <FileActions
+                  item={item}
                     busy={busy}
                     className="shrink-0"
                     onView={() => onView(item)}

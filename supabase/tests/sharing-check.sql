@@ -1,0 +1,27 @@
+begin;
+do $$ declare administrator uuid; student uuid; material text; share_token uuid; object_path text; denied boolean;
+begin
+ select id into administrator from public.staff_profiles where role='admin' and status='active' limit 1;
+ select id,file_path into material,object_path from public.materials where status='published' and kind in ('notes','slides','assignment','past_paper') and file_path is not null limit 1;
+ if administrator is null or material is null then raise exception 'Missing sharing fixtures'; end if;
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',administrator,'role','authenticated')::text,true);
+ share_token:=public.create_material_share(material);
+ if public.create_material_share(material)<>share_token then raise exception 'Sharing token is not stable'; end if;
+ perform set_config('request.jwt.claims','{"role":"anon"}',true);
+ if public.get_shared_material(share_token) is null then raise exception 'Anonymous preview unavailable'; end if;
+ perform set_config('request.headers',jsonb_build_object('x-material-share',share_token::text)::text,true);
+ if not public.shared_material_file_access(object_path) then raise exception 'Share token cannot access its file'; end if;
+ if public.shared_material_file_access('unrelated-file.pdf') then raise exception 'Share leaks other files'; end if;
+ perform set_config('request.headers','{}',true);
+ if public.shared_material_file_access(object_path) then raise exception 'File accessible without token'; end if;
+ denied:=false;
+ begin perform public.create_material_share(material); exception when insufficient_privilege then denied:=true; end;
+ if not denied then raise exception 'Anonymous caller created a share'; end if;
+ update public.materials set status='pending' where id=material;
+ if public.get_shared_material(share_token) is not null then raise exception 'Unpublished material still exposed'; end if;
+ perform set_config('request.headers',jsonb_build_object('x-material-share',share_token::text)::text,true);
+ if public.shared_material_file_access(object_path) then raise exception 'Unpublished file still accessible'; end if;
+ if has_table_privilege('anon','public.material_shares','SELECT') then raise exception 'Anonymous caller can list tokens'; end if;
+end; $$;
+select 'Public preview, stable QR links, per-file scope, anonymous denial and unpublish protection passed' as result;
+rollback;

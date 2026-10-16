@@ -437,6 +437,9 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      create_material_share: { Args: {mid: string}; Returns: string };
+      get_shared_material: { Args: {share_token: string}; Returns: Json };
+
       add_academic_class: { Args: {class_id: string; class_label: string; class_institution: string; class_programme: string; class_year: number; class_semester: number; evening?: boolean}; Returns: void };
       archive_academic_class: { Args: {class_id: string}; Returns: void };
 

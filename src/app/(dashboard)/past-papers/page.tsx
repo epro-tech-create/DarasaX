@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Archive, Download, Eye, Filter, Search, X } from "lucide-react";
+import { MaterialShareButton } from "@/components/modules/material-share-button";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -47,13 +48,13 @@ export default function PastPapersPage() {
 
   const filtered = useMemo(() => {
     return papers.filter((p) => {
-      const module = p.moduleId ? getModule(p.moduleId) : null;
+      const courseModule = p.moduleId ? getModule(p.moduleId) : null;
       const paperType = inferPaperType(p.title);
       const paperYear = new Date(p.createdAt).getFullYear();
       const matchesQuery =
         !query ||
         p.title.toLowerCase().includes(query.toLowerCase()) ||
-        (module?.name.toLowerCase().includes(query.toLowerCase()) ?? false);
+        (courseModule?.name.toLowerCase().includes(query.toLowerCase()) ?? false);
       return (
         matchesQuery &&
         (moduleId === "all" || p.moduleId === moduleId) &&
@@ -209,7 +210,7 @@ export default function PastPapersPage() {
 }
 
 function PaperCard({ paper }: { paper: MaterialUpload }) {
-  const module = paper.moduleId ? getModule(paper.moduleId) : null;
+  const courseModule = paper.moduleId ? getModule(paper.moduleId) : null;
   const paperType = inferPaperType(paper.title);
   const paperYear = new Date(paper.createdAt).getFullYear();
 
@@ -220,7 +221,7 @@ function PaperCard({ paper }: { paper: MaterialUpload }) {
         <Badge>{paperYear}</Badge>
       </div>
       <h3 className="font-heading text-[15px] font-semibold tracking-tight">
-        {module?.name ?? "Module"}
+        {courseModule?.name ?? "Module"}
       </h3>
       <p className="mt-1 line-clamp-2 text-[12px] text-muted-foreground">
         {paper.title}
@@ -246,6 +247,7 @@ function PaperCard({ paper }: { paper: MaterialUpload }) {
           <Download className="h-4 w-4" />
           Download
         </Button>
+        <MaterialShareButton materialId={paper.id} title={paper.title} />
       </div>
     </article>
   );
