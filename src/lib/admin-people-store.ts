@@ -65,6 +65,7 @@ function toAudit(row: AuditLogRow): AuditLogEntry {
 }
 
 export type StudentInput = {
+  temporaryPassword: string;
   name: string;
   email: string;
   streamId: ClassStreamId;
@@ -198,23 +199,16 @@ export function useAdminPeopleStore() {
       meta?: { actor?: string; role?: AuditLogEntry["role"] },
     ) => {
       const supabase = createClient();
-      const { data, error } = await supabase
-        .from("monitored_students")
-        .insert({
-          id: `st-${Date.now()}`,
-          name: input.name.trim(),
-          email: input.email.trim().toLowerCase(),
-          stream_id: input.streamId,
-          year: input.year ?? 3,
-          attendance_pct: input.attendancePct ?? 100,
-          assignments_done: 0,
-          assignments_total: 5,
-          last_active: new Date().toISOString(),
-        })
-        .select("*")
-        .single();
-      if (error) throw error;
-      const student = toStudent(data);
+      const { data, error } = await supabase.functions.invoke("create-student", {
+        body: { name: input.name.trim(), email: input.email.trim().toLowerCase(),
+          streamId: input.streamId, temporaryPassword: input.temporaryPassword },
+      });
+      if (error) {
+        const detail = await error.context?.json?.().catch(() => null);
+        throw new Error(detail?.error || "Could not create the student account. Please try again.");
+      }
+      if (!data?.student) throw new Error("Student account creation failed.");
+      const student = toStudent(data.student);
       setStudents((prev) => [student, ...prev]);
       await log({
         actor: meta?.actor,

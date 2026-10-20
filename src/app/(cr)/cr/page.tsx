@@ -2,14 +2,12 @@
 
 import Link from "next/link";
 import { formatRelativeTime } from "@/lib/utils";
-import { ArrowUpRight, FileUp, Flag, Users, BookOpen, ListOrdered, Megaphone } from "lucide-react";
+import { ArrowUpRight, FileUp, Users, BookOpen, ListOrdered, Megaphone } from "lucide-react";
 import { OverviewHeader, OverviewShortcut } from "@/components/dashboard/overview-ui";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StaffSection, StaffStatCard } from "@/components/staff/staff-ui";
 import { StaffFadeItem, StaffStagger } from "@/components/staff/staff-motion";
 import { useAdminPeopleStore } from "@/lib/admin-people-store";
-import { useIssuesStore } from "@/lib/issues-store";
 import { useMaterialsStore } from "@/lib/materials-store";
 import { useStaffSession } from "@/lib/staff-auth";
 
@@ -25,12 +23,8 @@ export default function ClassRepOverviewPage() {
   const streamId = session?.streamId ?? "BENG24COE-1";
   const displayName = session?.name ?? "Class Rep";
   const { studentsForStream } = useAdminPeopleStore();
-  const { forStream } = useIssuesStore();
   const { items: uploads } = useMaterialsStore();
   const members = studentsForStream(streamId);
-  const openIssues = forStream(streamId).filter(
-    (i) => i.status !== "resolved",
-  );
   const classUploads = uploads.filter((upload) => upload.streamId === streamId && upload.status === "published");
 
   return (
@@ -41,7 +35,7 @@ export default function ClassRepOverviewPage() {
         description={`Keep ${streamId} connected with useful materials, clear notices, and an up-to-date timetable.`}
         actions={
           <div className="flex flex-wrap gap-2">
-            <Button href="/cr/uploads" size="sm">
+            <Button href="/cr/materials" size="sm">
               <FileUp className="h-3.5 w-3.5" />
               Upload
             </Button>
@@ -52,15 +46,7 @@ export default function ClassRepOverviewPage() {
         }
       />
 
-      <StaffStagger className="grid gap-3 sm:grid-cols-3">
-        <StaffFadeItem>
-          <StaffStatCard
-            label="Open issues"
-            value={String(openIssues.length)}
-            icon={Flag}
-            tone="warning"
-          />
-        </StaffFadeItem>
+      <StaffStagger className="grid gap-3 sm:grid-cols-2">
         <StaffFadeItem>
           <StaffStatCard
             label="Members"
@@ -86,45 +72,8 @@ export default function ClassRepOverviewPage() {
         ].map((item) => <StaffFadeItem key={item.href}><OverviewShortcut {...item} /></StaffFadeItem>)}
       </StaffStagger>
 
-      <div className="grid items-start gap-5 xl:grid-cols-2">
-      <StaffSection
-        title="Needs attention"
-        action={
-          <Link
-            href="/cr/issues"
-            className="inline-flex items-center gap-1 text-[11px] font-medium text-primary"
-          >
-            Issues <ArrowUpRight className="h-3 w-3" />
-          </Link>
-        }
-      >
-        <div className="space-y-2">
-          {openIssues.slice(0, 4).map((issue) => (
-            <div
-              key={issue.id}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border/70 px-3 py-2.5"
-            >
-              <p className="truncate text-[12px] font-semibold">{issue.title}</p>
-              <Badge
-                tone={
-                  issue.severity === "high"
-                    ? "danger"
-                    : issue.severity === "medium"
-                      ? "warning"
-                      : "default"
-                }
-              >
-                {issue.severity}
-              </Badge>
-            </div>
-          ))}
-          {openIssues.length === 0 ? (
-            <p className="rounded-xl bg-success/5 px-4 py-10 text-center text-sm text-muted-foreground">
-              No open issues.
-            </p>
-          ) : null}
-        </div>
-      </StaffSection>
+      <div className="grid items-start gap-5">
+
         <StaffSection title="Recent class materials" description="Published files ready for your class."
           action={<Link href="/cr/materials" className="text-xs font-medium text-primary">View library</Link>}>
           <div className="space-y-2">

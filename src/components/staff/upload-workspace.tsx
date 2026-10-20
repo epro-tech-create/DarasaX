@@ -28,6 +28,7 @@ export function UploadWorkspace({
   footerNote,
   allowedModuleIds,
   allowedStreamIds,
+  onBusyChange,
 }: {
   title: string;
   description: string;
@@ -39,6 +40,7 @@ export function UploadWorkspace({
   footerNote?: ReactNode;
   allowedModuleIds?: string[];
   allowedStreamIds?: ClassStreamId[];
+  onBusyChange?: (busy: boolean) => void;
 }) {
   const { streams: classStreams } = useClassRegistry();
   const { publish } = useMaterialsStore();
@@ -84,6 +86,7 @@ export function UploadWorkspace({
       return;
     }
     setPublishing(true);
+    onBusyChange?.(true);
     setError("");
     try {
       await publish({
@@ -99,10 +102,11 @@ export function UploadWorkspace({
       setPublished(true);
       setFile(null);
       setTitleValue("");
-    } catch {
-      setError("Could not save the file. Try a smaller file and publish again.");
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Could not save the file. Check your connection and try again.");
     } finally {
       setPublishing(false);
+      onBusyChange?.(false);
     }
   }
 

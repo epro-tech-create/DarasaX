@@ -20,7 +20,7 @@ export default function LecturerPastPapersPage() {
         title="Past papers"
         description="Upload exam papers for your modules. Students find them under Past Papers the moment you publish."
         actions={
-          <Button href="/lecturer/uploads" size="sm" variant="outline">
+          <Button href="/lecturer/materials" size="sm" variant="outline">
             Full upload desk
           </Button>
         }

@@ -1,4 +1,5 @@
 "use client";
+import { ChangePasswordForm } from "@/components/auth/change-password-form";
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -305,6 +306,7 @@ export default function ProfilePage() {
           </div>
         </fieldset>
       </form>
+      <ChangePasswordForm />
     </div>
   );
 }

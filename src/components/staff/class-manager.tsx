@@ -82,7 +82,7 @@ export function ClassManager() {
       setMessage("Class removed from available choices.");
     } catch {
       setMessage(
-        "Could not remove class. CRs may remove their own class or a class they created.",
+        "Could not remove class. Only active administrators can manage classes.",
       );
     } finally {
       setBusy(false);
@@ -99,6 +99,7 @@ export function ClassManager() {
         </div>
         <Button
           size="sm"
+          disabled={session?.role !== "admin"}
           onClick={() => {
             setMessage("");
             setOpen(true);
@@ -139,9 +140,7 @@ export function ClassManager() {
                     : "Not open for registration"}
                 </p>
               </div>
-              {(session?.role === "admin" ||
-                item.created_by === session?.id ||
-                item.id === session?.streamId) && (
+              {session?.role === "admin" && (
                 <Button
                   size="icon"
                   variant="ghost"

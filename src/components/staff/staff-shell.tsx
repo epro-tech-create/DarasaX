@@ -4,14 +4,11 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import {
-  Activity,
   BarChart3,
   Bell,
   BookOpen,
   CalendarDays,
   ClipboardList,
-  FileUp,
-  Flag,
   GraduationCap,
   Home,
   LogOut,
@@ -43,7 +40,6 @@ export type StaffNavItem = {
 
 const adminNav: StaffNavItem[] = [
   { href: "/admin", label: "Overview", icon: Home },
-  { href: "/admin/uploads", label: "Upload", icon: FileUp },
   { href: "/admin/topics", label: "Topics", icon: ListOrdered },
   { href: "/admin/materials", label: "Library", icon: BookOpen },
   { href: "/admin/past-papers", label: "Past papers", icon: ClipboardList },
@@ -58,20 +54,15 @@ const adminNav: StaffNavItem[] = [
 
 const crNav: StaffNavItem[] = [
   { href: "/cr", label: "Overview", icon: Home },
-  { href: "/cr/uploads", label: "Upload", icon: FileUp },
   { href: "/cr/topics", label: "Topics", icon: ListOrdered },
   { href: "/cr/materials", label: "Library", icon: BookOpen },
   { href: "/cr/past-papers", label: "Past papers", icon: ClipboardList },
   { href: "/cr/timetable", label: "Timetable", icon: CalendarDays },
-  { href: "/cr/classes", label: "Classes", icon: GraduationCap },
   { href: "/cr/members", label: "Members", icon: Users },
-  { href: "/cr/issues", label: "Issues", icon: Flag },
-  { href: "/cr/attendance", label: "Attendance", icon: Activity },
 ];
 
 const lecturerNav: StaffNavItem[] = [
   { href: "/lecturer", label: "Overview", icon: Home },
-  { href: "/lecturer/uploads", label: "Upload", icon: FileUp },
   { href: "/lecturer/topics", label: "Topics", icon: ListOrdered },
   { href: "/lecturer/materials", label: "Library", icon: BookOpen },
   { href: "/lecturer/past-papers", label: "Past papers", icon: ClipboardList },

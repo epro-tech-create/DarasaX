@@ -237,9 +237,11 @@ export function useMaterialsStore() {
       void refresh();
     };
     window.addEventListener("focus", onFocus);
+    window.addEventListener("darasax:materials", onFocus);
     return () => {
       clearTimeout(timer);
       window.removeEventListener("focus", onFocus);
+      window.removeEventListener("darasax:materials", onFocus);
     };
   }, [refresh]);
 
@@ -278,6 +280,7 @@ export function useMaterialsStore() {
       .single();
 
     if (error) throw error;
+    window.dispatchEvent(new Event("darasax:materials"));
     const entry = toUpload(data);
     invalidateQueries("materials");
     setItems((prev) => [entry, ...prev]);
@@ -358,6 +361,7 @@ export function useMaterialsStore() {
       if (patch.file && existing.file_path?.startsWith("r2:") && existing.file_path !== filePath) {
         await fileAction({ action: "cleanup", materialId: id, path: existing.file_path }).catch(() => null);
       }
+      window.dispatchEvent(new Event("darasax:materials"));
       const updated = toUpload(data);
       invalidateQueries("materials");
       setItems((prev) => prev.map((i) => (i.id === id ? updated : i)));
@@ -406,6 +410,7 @@ export function useMaterialsStore() {
         .select("*")
         .single();
       if (error) throw error;
+      window.dispatchEvent(new Event("darasax:materials"));
       const entry = toUpload(data);
       invalidateQueries("materials");
       setItems((prev) => [entry, ...prev]);
@@ -442,6 +447,7 @@ export function useMaterialsStore() {
         .remove([existing.file_path])
         .catch(() => null);
     }
+    window.dispatchEvent(new Event("darasax:materials"));
     setItems((prev) => prev.filter((i) => i.id !== id));
     if (existing) {
       await recordAudit({

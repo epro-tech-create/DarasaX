@@ -57,7 +57,7 @@ export default function LecturerOverviewPage() {
 
   const quickLinks = [
     {
-      href: "/lecturer/uploads",
+      href: "/lecturer/materials",
       title: "Upload materials",
       body: "Notes, slides, past papers, assignments",
       icon: FilePlus2,
@@ -98,7 +98,7 @@ export default function LecturerOverviewPage() {
     <div className="space-y-6 sm:space-y-7">
       <OverviewHeader label="Lecturer workspace" title={`${getGreeting()}, ${displayName}`}
         description={`${activeLabel || "Your teaching workspace"} / ${moduleCount} modules / ${streamCount} classes. Bring your next lesson to life.`}
-        actions={<><Button href="/lecturer/uploads" size="sm"><FileUp className="h-4 w-4" />Upload material</Button><Button href="/lecturer/topics" size="sm" variant="outline">Manage topics</Button></>}
+        actions={<><Button href="/lecturer/materials" size="sm"><FileUp className="h-4 w-4" />Upload material</Button><Button href="/lecturer/topics" size="sm" variant="outline">Manage topics</Button></>}
       />
 
       <StaffStagger className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -200,7 +200,7 @@ export default function LecturerOverviewPage() {
                   No uploads yet. Publish notes or an assignment to reach
                   students instantly.
                 </p>
-                <Button href="/lecturer/uploads" size="sm" className="mt-1">
+                <Button href="/lecturer/materials" size="sm" className="mt-1">
                   Upload your first file
                 </Button>
               </div>

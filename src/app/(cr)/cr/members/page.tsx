@@ -11,6 +11,7 @@ import { useStaffSession } from "@/lib/staff-auth";
 import type { StudentMonitor } from "@/types";
 
 const emptyForm = {
+  temporaryPassword: "",
   name: "",
   email: "",
   year: 3,
@@ -36,6 +37,7 @@ export default function ClassRepMembersPage() {
   const [editing, setEditing] = useState<StudentMonitor | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const meta = useMemo(
     () => ({ actor: session?.name ?? "Class Rep", role: "class_rep" as const }),
@@ -43,6 +45,7 @@ export default function ClassRepMembersPage() {
   );
 
   function openAdd() {
+    setMessage("");
     setEditing(null);
     setForm(emptyForm);
     setModalOpen(true);
@@ -51,6 +54,7 @@ export default function ClassRepMembersPage() {
   function openEdit(s: StudentMonitor) {
     setEditing(s);
     setForm({
+      temporaryPassword: "",
       name: s.name,
       email: s.email,
       year: s.year,
@@ -61,11 +65,13 @@ export default function ClassRepMembersPage() {
   function closeModal() {
     setModalOpen(false);
     setEditing(null);
+    setForm(emptyForm);
   }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.name.trim() || !form.email.trim()) return;
+    if (saving || !form.name.trim() || !form.email.trim()) return;
+    setSaving(true);
     setMessage("");
     try {
       if (editing) {
@@ -84,6 +90,7 @@ export default function ClassRepMembersPage() {
         await addStudent(
           {
             name: form.name,
+            temporaryPassword: form.temporaryPassword,
             email: form.email,
             streamId,
             year: form.year,
@@ -93,9 +100,9 @@ export default function ClassRepMembersPage() {
         setMessage("Member added to your class.");
       }
       closeModal();
-    } catch {
-      setMessage("Could not save. Check your connection and try again.");
-    }
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not save. Check your connection and try again.");
+    } finally { setSaving(false); }
   }
 
   function onDelete(s: StudentMonitor) {
@@ -207,6 +214,13 @@ export default function ClassRepMembersPage() {
         description={`Details for ${streamId}. Also visible on the Admin students list.`}
       >
         <form onSubmit={onSubmit} className="space-y-3">
+          {message && <p role="status" className="text-sm">{message}</p>}
+          {!editing && <label className="block space-y-1 text-sm">Temporary password
+            <input required type="password" minLength={8} autoComplete="new-password" value={form.temporaryPassword}
+              onChange={e => setForm(f => ({ ...f, temporaryPassword: e.target.value }))}
+              className="h-11 w-full rounded-xl border border-border bg-background px-3" />
+            <span className="block text-xs text-muted-foreground">At least 8 characters. Share it privately; the student can change it in Profile.</span>
+          </label>}
           <label className="block space-y-1">
             <span className="text-[11px] text-muted-foreground">Full name</span>
             <input
@@ -248,7 +262,7 @@ export default function ClassRepMembersPage() {
             <Button type="button" variant="outline" onClick={closeModal}>
               Cancel
             </Button>
-            <Button type="submit">{editing ? "Save changes" : "Add student"}</Button>
+            <Button type="submit" disabled={saving}>{saving ? "Saving…" : editing ? "Save changes" : "Add student"}</Button>
           </div>
         </form>
       </StaffModal>

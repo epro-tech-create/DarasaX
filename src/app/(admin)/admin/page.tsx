@@ -44,7 +44,7 @@ export default function AdminOverviewPage() {
             <Button href="/admin/class-reps" size="sm" variant="outline">
               Add CR
             </Button>
-            <Button href="/admin/uploads" size="sm">
+            <Button href="/admin/materials" size="sm">
               <FileUp className="h-3.5 w-3.5" />
               Upload
             </Button>

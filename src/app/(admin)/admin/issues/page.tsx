@@ -1,4 +1,2 @@
 import { redirect } from "next/navigation";
-export default function RemovedIssuesPage() {
-  redirect("/admin");
-}
+export default function RemovedPage() { redirect("/admin"); }

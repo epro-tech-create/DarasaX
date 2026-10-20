@@ -11,6 +11,7 @@ import { useAdminPeopleStore } from "@/lib/admin-people-store";
 import type { ClassStreamId, StudentMonitor } from "@/types";
 
 const emptyForm = {
+  temporaryPassword: "",
   name: "",
   email: "",
   streamId: "BENG24COE-1" as ClassStreamId,
@@ -26,6 +27,7 @@ export default function AdminStudentsPage() {
   const [editing, setEditing] = useState<StudentMonitor | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const filtered = useMemo(() => {
     return students.filter(
@@ -46,6 +48,7 @@ export default function AdminStudentsPage() {
   }
 
   function openAdd() {
+    setMessage("");
     setEditing(null);
     setForm(emptyForm);
     setModalOpen(true);
@@ -54,6 +57,7 @@ export default function AdminStudentsPage() {
   function openEdit(s: StudentMonitor) {
     setEditing(s);
     setForm({
+      temporaryPassword: "",
       name: s.name,
       email: s.email,
       streamId: s.streamId,
@@ -65,11 +69,13 @@ export default function AdminStudentsPage() {
   function closeModal() {
     setModalOpen(false);
     setEditing(null);
+    setForm(emptyForm);
   }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.name.trim() || !form.email.trim()) return;
+    if (saving || !form.name.trim() || !form.email.trim()) return;
+    setSaving(true);
     setMessage("");
     try {
       if (editing) {
@@ -83,6 +89,7 @@ export default function AdminStudentsPage() {
       } else {
         await addStudent({
           name: form.name,
+          temporaryPassword: form.temporaryPassword,
           email: form.email,
           streamId: form.streamId,
           year: form.year,
@@ -90,9 +97,9 @@ export default function AdminStudentsPage() {
         setMessage("Student added.");
       }
       closeModal();
-    } catch {
-      setMessage("Could not save. Check your connection and try again.");
-    }
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not save. Check your connection and try again.");
+    } finally { setSaving(false); }
   }
 
   function onDelete(s: StudentMonitor) {
@@ -216,6 +223,13 @@ export default function AdminStudentsPage() {
         }
       >
         <form onSubmit={onSubmit} className="space-y-3">
+          {message && <p role="status" className="text-sm">{message}</p>}
+          {!editing && <label className="block space-y-1 text-sm">Temporary password
+            <input required type="password" minLength={8} autoComplete="new-password" value={form.temporaryPassword}
+              onChange={e => setForm(f => ({ ...f, temporaryPassword: e.target.value }))}
+              className="h-11 w-full rounded-xl border border-border bg-background px-3" />
+            <span className="block text-xs text-muted-foreground">At least 8 characters. Share it privately; the student can change it in Profile.</span>
+          </label>}
           <label className="block space-y-1">
             <span className="text-[11px] text-muted-foreground">Full name</span>
             <input
@@ -276,7 +290,7 @@ export default function AdminStudentsPage() {
             <Button type="button" variant="outline" onClick={closeModal}>
               Cancel
             </Button>
-            <Button type="submit">{editing ? "Save changes" : "Add student"}</Button>
+            <Button type="submit" disabled={saving}>{saving ? "Saving…" : editing ? "Save changes" : "Add student"}</Button>
           </div>
         </form>
       </StaffModal>
