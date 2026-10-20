@@ -135,7 +135,7 @@ export function UploadWorkspace({
           <p className="mt-1 max-w-sm text-[11px] leading-snug text-muted-foreground">
             {file
               ? `${(file.size / 1024).toFixed(1)} KB · stored so students (and you) can view or download it.`
-              : "PDF, slides, docs, images, or ZIP. The real file is stored so students can view or download it."}
+              : "PDF, slides, docs, images, or ZIP. Maximum 500 MB per file."}
           </p>
         </label>
 

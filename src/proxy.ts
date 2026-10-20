@@ -35,6 +35,8 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   // Capability links expose only the explicitly shared published file.
   if (pathname.startsWith("/share/")) return NextResponse.next();
+  // This endpoint verifies the session and database permissions itself.
+  if (pathname === "/api/material-files") return NextResponse.next();
   if (/^\/(assignments|past-papers)\/[^/]+\.[a-z0-9]+$/i.test(pathname))
     return new NextResponse("Use the private class library to access files.", {
       status: 403,

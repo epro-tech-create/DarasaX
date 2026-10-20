@@ -62,9 +62,22 @@ function slugify(value: string) {
     .slice(0, 60);
 }
 
-function storagePath(streamId: string | null, id: string, fileName: string) {
-  const safe = fileName.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 120);
-  return `${streamId ?? "all"}/${id}/${safe}`;
+async function fileAction(body: Record<string, unknown>) {
+  const response = await fetch("/api/material-files", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error || "File request failed.");
+  return result;
+}
+
+async function uploadFile(file: File, streamId: string | null, materialId: string, moduleId?: string | null) {
+  const mimeType = file.type || "application/octet-stream";
+  const result = await fileAction({ action: "upload", fileName: file.name,
+    size: file.size, mimeType, streamId, materialId, moduleId });
+  const response = await fetch(result.url, { method: "PUT", headers: { "Content-Type": mimeType }, body: file });
+  if (!response.ok) throw new Error("Upload failed. Check your connection and the bucket CORS settings.");
+  return result.path as string;
 }
 
 export async function resolveMaterialObjectUrl(
@@ -92,6 +105,12 @@ export async function resolveMaterialObjectUrl(
       filePath = data.file_path;
       fileName ??= data.file_name ?? undefined;
       mimeType ??= data.mime_type ?? undefined;
+    }
+
+    if (filePath.startsWith("r2:")) {
+      const result = await fileAction({ action: "read", materialId: item.id, download: options?.download === true });
+      return { url: result.url, revoke: false, fileName: result.fileName,
+        mimeType: result.mimeType || "application/octet-stream" };
     }
 
     const resolvedFileName = fileName ?? `${slugify(item.title)}.bin`;
@@ -229,19 +248,11 @@ export function useMaterialsStore() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    const id = `up-${Date.now()}`;
+    const id = `up-${crypto.randomUUID()}`;
     const streamId = input.streamId === "all" ? null : (input.streamId ?? null);
     if (!streamId)
       throw new Error("Choose the particular class receiving this file.");
-    const path = storagePath(streamId, id, input.file.name);
-
-    const { error: uploadError } = await supabase.storage
-      .from(BUCKET)
-      .upload(path, input.file, {
-        contentType: input.file.type || "application/octet-stream",
-        upsert: false,
-      });
-    if (uploadError) throw uploadError;
+    const path = await uploadFile(input.file, streamId, id, input.moduleId);
 
     const { data, error } = await supabase
       .from("materials")
@@ -266,13 +277,7 @@ export function useMaterialsStore() {
       .select("*")
       .single();
 
-    if (error) {
-      await supabase.storage
-        .from(BUCKET)
-        .remove([path])
-        .catch(() => null);
-      throw error;
-    }
+    if (error) throw error;
     const entry = toUpload(data);
     invalidateQueries("materials");
     setItems((prev) => [entry, ...prev]);
@@ -314,20 +319,7 @@ export function useMaterialsStore() {
             : patch.streamId === "all" || patch.streamId === null
               ? null
               : patch.streamId;
-        const nextPath = storagePath(streamForPath, id, patch.file.name);
-        const { error: uploadError } = await supabase.storage
-          .from(BUCKET)
-          .upload(nextPath, patch.file, {
-            contentType: patch.file.type || "application/octet-stream",
-            upsert: true,
-          });
-        if (uploadError) throw uploadError;
-        if (filePath && filePath !== nextPath) {
-          await supabase.storage
-            .from(BUCKET)
-            .remove([filePath])
-            .catch(() => null);
-        }
+        const nextPath = await uploadFile(patch.file, streamForPath, id, patch.moduleId ?? existing.module_id);
         filePath = nextPath;
         fileName = patch.file.name;
         mimeType = patch.file.type || "application/octet-stream";
@@ -360,6 +352,12 @@ export function useMaterialsStore() {
         .select("*")
         .single();
       if (error) throw error;
+      if (patch.file && existing.file_path && !existing.file_path.startsWith("r2:") && existing.file_path !== filePath) {
+        await supabase.storage.from(BUCKET).remove([existing.file_path]).catch(() => null);
+      }
+      if (patch.file && existing.file_path?.startsWith("r2:") && existing.file_path !== filePath) {
+        await fileAction({ action: "cleanup", materialId: id, path: existing.file_path }).catch(() => null);
+      }
       const updated = toUpload(data);
       invalidateQueries("materials");
       setItems((prev) => prev.map((i) => (i.id === id ? updated : i)));
@@ -431,10 +429,14 @@ export function useMaterialsStore() {
       .select("*")
       .eq("id", id)
       .maybeSingle();
-    const { error } = await supabase.from("materials").delete().eq("id", id);
-    if (error) throw error;
+    if (existing?.file_path?.startsWith("r2:")) {
+      await fileAction({ action: "delete", materialId: id });
+    } else {
+      const { error } = await supabase.from("materials").delete().eq("id", id);
+      if (error) throw error;
+    }
     invalidateQueries("materials");
-    if (existing?.file_path) {
+    if (existing?.file_path && !existing.file_path.startsWith("r2:")) {
       await supabase.storage
         .from(BUCKET)
         .remove([existing.file_path])

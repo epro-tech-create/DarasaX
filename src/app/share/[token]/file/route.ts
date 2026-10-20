@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSharedMaterial, shareClient } from "@/lib/material-sharing";
+import { readUrl } from "@/lib/r2";
 export const dynamic = "force-dynamic";
 export async function GET(
   request: NextRequest,
@@ -11,6 +12,21 @@ export async function GET(
     return new NextResponse("This shared file is unavailable.", {
       status: 404,
     });
+  if (item.file_path.startsWith("r2:")) {
+    try {
+      // getSharedMaterial validates the capability token and publication state.
+      const key = item.file_path.slice(3);
+      if (key.split("/")[1] !== item.id) throw new Error("Invalid file location");
+      const url = await readUrl(key, item.file_name || item.title,
+        request.nextUrl.searchParams.get("download") === "1");
+      const response = NextResponse.redirect(url);
+      response.headers.set("Cache-Control", "private, no-store");
+      response.headers.set("Referrer-Policy", "no-referrer");
+      return response;
+    } catch {
+      return new NextResponse("File storage is temporarily unavailable.", { status: 503 });
+    }
+  }
   const { data, error } = await shareClient(token)
     .storage.from("materials")
     .createSignedUrl(
