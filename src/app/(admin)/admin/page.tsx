@@ -15,7 +15,6 @@ import { useMaterialsStore } from "@/lib/materials-store";
 import { useStaffSession } from "@/lib/staff-auth";
 
 import { EngagementAnalytics } from "@/components/staff/engagement-analytics";
-import { SiteVisitorAnalytics } from "@/components/staff/site-visitor-analytics";
 
 function greeting() {
   const h = new Date().getHours();
@@ -89,7 +88,6 @@ export default function AdminOverviewPage() {
         </StaffFadeItem>
       </StaffStagger>
 
-      <SiteVisitorAnalytics />
       <EngagementAnalytics />
     </div>
   );
