@@ -1,5 +1,10 @@
 # Staff loading and CR timetable
 
+Vercel Functions are pinned to Dublin (dub1), matching the existing Supabase
+project in eu-west-1, instead of using the default US region (iad1). Static
+assets continue to use the global CDN. This reduces the geographic distance
+for server-to-database requests; it is not a measured latency guarantee.
+
 Staff layouts pass their already verified server profile to a shared client
 session provider. Staff guards, navigation, library controls and page components
 use that profile immediately instead of independently repeating getUser and
