@@ -318,14 +318,10 @@ export default function LandingPage() {
                   A question on your mind?
                 </h2>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Ask DarasaX gives your study questions a place in the same
-                  workspace.
+                  Ask DarasaX will be available in the next version of the app.
                 </p>
               </div>
-              <Button variant="outline" href="/ask" className="w-fit">
-                Explore Ask DarasaX{" "}
-                <ArrowRight className="h-4 w-4" aria-hidden />
-              </Button>
+              <span className="w-fit rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary">Coming next version</span>
             </motion.div>
           </section>
 

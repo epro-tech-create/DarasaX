@@ -11,7 +11,6 @@ import {
   Archive,
   Megaphone,
   CalendarRange,
-  Sparkles,
   User,
   Settings,
   PanelLeftClose,
@@ -35,7 +34,6 @@ const mainNav = [
   { href: "/announcements", label: "Announcements", icon: Megaphone },
   { href: "/planner", label: "Study Planner", icon: CalendarRange },
   { href: "/missed", label: "What Did I Miss?", icon: History },
-  { href: "/ask", label: "Ask DarasaX", icon: Sparkles },
 ];
 
 const bottomNav = [
