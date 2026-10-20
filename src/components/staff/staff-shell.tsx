@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import {
-  BarChart3,
   Bell,
   BookOpen,
   CalendarDays,
@@ -49,7 +48,6 @@ const adminNav: StaffNavItem[] = [
   { href: "/admin/streams", label: "Streams", icon: Shield },
   { href: "/admin/announcements", label: "Announce", icon: Megaphone },
   { href: "/admin/audit", label: "Audit logs", icon: ScrollText },
-  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
 ];
 
 const crNav: StaffNavItem[] = [

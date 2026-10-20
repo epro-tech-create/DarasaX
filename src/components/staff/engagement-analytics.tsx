@@ -134,7 +134,7 @@ export function EngagementAnalytics() {
           </div>
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-success" />
+              <span className="h-2 w-2 rounded-full bg-primary" />
               This period
             </span>
             <span className="flex items-center gap-2">
@@ -186,12 +186,12 @@ export function EngagementAnalytics() {
                   <linearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">
                     <stop
                       offset="0%"
-                      stopColor="var(--success)"
+                      stopColor="var(--primary)"
                       stopOpacity="0.22"
                     />
                     <stop
                       offset="100%"
-                      stopColor="var(--success)"
+                      stopColor="var(--primary)"
                       stopOpacity="0.02"
                     />
                   </linearGradient>
@@ -234,7 +234,7 @@ export function EngagementAnalytics() {
                 <path
                   d={line}
                   fill="none"
-                  stroke="var(--success)"
+                  stroke="var(--primary)"
                   strokeWidth="2.5"
                   strokeLinecap="round"
                 />

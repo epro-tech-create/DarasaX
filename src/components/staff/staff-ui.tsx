@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 
@@ -8,12 +9,14 @@ export function StaffStatCard({
   hint,
   icon: Icon,
   tone = "primary",
+  href,
 }: {
   label: string;
   value: string;
   hint?: string;
   icon: LucideIcon;
   tone?: "primary" | "success" | "warning" | "danger";
+  href?: string;
 }) {
   const tones = {
     primary: "bg-primary/10 text-primary",
@@ -22,7 +25,7 @@ export function StaffStatCard({
     danger: "bg-danger/15 text-danger",
   };
 
-  return (
+  const content = (
     <div className="surface relative overflow-hidden rounded-2xl p-4 transition duration-200 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 motion-safe:hover:-translate-y-0.5 sm:p-5">
       <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -47,6 +50,7 @@ export function StaffStatCard({
       </div>
     </div>
   );
+  return href ? <Link href={href} className="focus-ring block rounded-2xl">{content}</Link> : content;
 }
 
 export function StaffSection({

@@ -437,6 +437,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      site_visitor_summary: { Args: Record<string, never>; Returns: Json };
       staff_material_scope: { Args: { target_stream: string; target_module: string | null }; Returns: boolean };
       create_material_share: { Args: {mid: string}; Returns: string };
       get_shared_material: { Args: {share_token: string}; Returns: Json };

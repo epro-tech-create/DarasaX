@@ -4,6 +4,7 @@ import Script from "next/script";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { SessionTimeout } from "@/components/auth/session-timeout";
 import { BootSplash } from "@/components/brand/boot-splash";
+import { SiteVisitorTracker } from "@/components/analytics/site-visitor-tracker";
 import "./globals.css";
 
 const figtree = Figtree({
@@ -61,6 +62,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ThemeProvider>
           <SessionTimeout />
           <BootSplash />
+          <SiteVisitorTracker />
           {children}
         </ThemeProvider>
         <noscript>

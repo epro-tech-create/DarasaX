@@ -1,10 +1,2 @@
-import { PageHeader } from "@/components/layout/page-header";
-import { EngagementAnalytics } from "@/components/staff/engagement-analytics";
-export default function AnalyticsPage() {
-  return (
-    <div className="space-y-5">
-      <PageHeader title="Analytics" />
-      <EngagementAnalytics />
-    </div>
-  );
-}
+import { redirect } from "next/navigation";
+export default function LegacyAnalyticsPage() { redirect("/admin"); }

@@ -1,21 +1,21 @@
 "use client";
 
-import Link from "next/link";
 import {
-  ArrowUpRight,
-  CalendarDays,
   FileUp,
   GraduationCap,
   ScrollText,
   Users,
 } from "lucide-react";
-import { OverviewHeader, OverviewShortcut } from "@/components/dashboard/overview-ui";
+import { OverviewHeader } from "@/components/dashboard/overview-ui";
 import { Button } from "@/components/ui/button";
-import { StaffSection, StaffStatCard } from "@/components/staff/staff-ui";
+import { StaffStatCard } from "@/components/staff/staff-ui";
 import { StaffFadeItem, StaffStagger } from "@/components/staff/staff-motion";
 import { useAdminPeopleStore } from "@/lib/admin-people-store";
 import { useMaterialsStore } from "@/lib/materials-store";
 import { useStaffSession } from "@/lib/staff-auth";
+
+import { EngagementAnalytics } from "@/components/staff/engagement-analytics";
+import { SiteVisitorAnalytics } from "@/components/staff/site-visitor-analytics";
 
 function greeting() {
   const h = new Date().getHours();
@@ -56,6 +56,7 @@ export default function AdminOverviewPage() {
         <StaffFadeItem>
           <StaffStatCard
             label="Students"
+            href="/admin/students"
             value={String(students.length)}
             icon={Users}
           />
@@ -63,6 +64,7 @@ export default function AdminOverviewPage() {
         <StaffFadeItem>
           <StaffStatCard
             label="Active CRs"
+            href="/admin/class-reps"
             value={String(activeCrs)}
             icon={GraduationCap}
             tone="success"
@@ -71,6 +73,7 @@ export default function AdminOverviewPage() {
         <StaffFadeItem>
           <StaffStatCard
             label="Published materials"
+            href="/admin/materials"
             value={String(published.length)}
             icon={FileUp}
             tone="primary"
@@ -79,59 +82,15 @@ export default function AdminOverviewPage() {
         <StaffFadeItem>
           <StaffStatCard
             label="Audit events"
+            href="/admin/audit"
             value={String(audit.length)}
             icon={ScrollText}
           />
         </StaffFadeItem>
       </StaffStagger>
 
-      <StaffStagger className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          { href: "/admin/students", title: "Students", body: "Manage your student community", icon: Users },
-          { href: "/admin/class-reps", title: "Class reps", body: "Manage class representatives", icon: GraduationCap },
-          { href: "/admin/timetable", title: "Timetable", body: "Keep class schedules up to date", icon: CalendarDays },
-          { href: "/admin/audit", title: "Audit logs", body: "Follow activity across your campus", icon: ScrollText },
-        ].map((card) => (
-          <StaffFadeItem key={card.href}>
-            <OverviewShortcut href={card.href} title={card.title} description={card.body} icon={card.icon} />
-          </StaffFadeItem>
-        ))}
-      </StaffStagger>
-
-      <div className="grid gap-4">
-        <StaffSection
-          title="Latest audit"
-          action={
-            <Link
-              href="/admin/audit"
-              className="inline-flex items-center gap-1 text-[11px] font-medium text-primary"
-            >
-              Full log <ArrowUpRight className="h-3 w-3" />
-            </Link>
-          }
-        >
-          <div className="space-y-2">
-            {audit.length === 0 && <p className="rounded-xl bg-muted/40 px-4 py-8 text-center text-sm text-muted-foreground">No activity yet. New actions will appear here.</p>}
-            {audit.slice(0, 5).map((row) => (
-              <div
-                key={row.id}
-                className="rounded-xl border border-border/70 px-3 py-2.5"
-              >
-                <p className="text-[12px] font-semibold">{row.summary}</p>
-                <p className="mt-0.5 text-[11px] text-muted-foreground">
-                  {row.actor} ·{" "}
-                  {new Date(row.at).toLocaleString("en-GB", {
-                    day: "numeric",
-                    month: "short",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-              </div>
-            ))}
-          </div>
-        </StaffSection>
-      </div>
+      <SiteVisitorAnalytics />
+      <EngagementAnalytics />
     </div>
   );
 }
