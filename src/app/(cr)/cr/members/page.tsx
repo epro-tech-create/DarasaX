@@ -21,7 +21,7 @@ export default function ClassRepMembersPage() {
   const { session } = useStaffSession();
   const streamId = session?.streamId ?? "BENG24COE-1";
   const { studentsForStream, addStudent, updateStudent, deleteStudent } =
-    useAdminPeopleStore();
+    useAdminPeopleStore({ rosterOnly: true });
   const members = studentsForStream(streamId);
 
   function initials(name: string) {

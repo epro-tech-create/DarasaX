@@ -1,7 +1,8 @@
 import { requireStaff } from "@/lib/auth/require-staff";
+import { StaffSessionProvider } from "@/components/providers/staff-session-provider";
 import Workspace from "./workspace";
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
-  await requireStaff("class_rep");
-  return <Workspace>{children}</Workspace>;
+  const profile = await requireStaff("class_rep");
+  return <StaffSessionProvider initialProfile={profile}><Workspace>{children}</Workspace></StaffSessionProvider>;
 }

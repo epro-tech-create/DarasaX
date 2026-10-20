@@ -17,10 +17,16 @@ export function NextClassCard({
   entry,
   module,
   dayOffset = 0,
+  moduleHref,
+  timetableHref = "/timetable",
+  moduleLabel = "View Module",
 }: {
   entry: TimetableEntry;
   module: Module;
   dayOffset?: number;
+  moduleHref?: string;
+  timetableHref?: string;
+  moduleLabel?: string;
 }) {
   const mins = minutesUntil(entry.startTime, dayOffset);
   const days = Math.floor(mins / (60 * 24));
@@ -94,14 +100,14 @@ export function NextClassCard({
           <Button
             variant="secondary"
             className="h-11 min-w-0 bg-white px-3 text-xs font-semibold sm:h-10 sm:px-4 sm:text-sm text-[#0a3d8f] shadow-none hover:bg-white/90"
-            href={`/modules/${module.id}`}
+            href={moduleHref ?? `/modules/${module.id}`}
           >
-            View Module
+            {moduleLabel}
           </Button>
           <Button
             variant="outline"
             className="h-11 min-w-0 border-white/25 bg-transparent px-3 text-xs text-white sm:h-10 sm:bg-white/10 sm:px-4 sm:text-sm backdrop-blur-sm hover:bg-white/20"
-            href="/timetable"
+            href={timetableHref}
           >
             View Timetable
           </Button>

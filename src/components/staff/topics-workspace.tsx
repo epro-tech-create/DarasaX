@@ -116,14 +116,13 @@ export function TopicsWorkspace({
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     const number = Number(form.number);
-    const durationMinutes = Number(form.durationMinutes);
+
     if (
       !form.title.trim() ||
       !form.moduleId ||
-      number < 1 ||
-      durationMinutes < 1
+      !Number.isInteger(number) || number < 1
     ) {
-      setError("Fill in title, module, topic number, and duration.");
+      setError("Choose a module and enter a title and valid topic number.");
       return;
     }
     setBusy(true);
@@ -135,7 +134,7 @@ export function TopicsWorkspace({
           moduleId: form.moduleId,
           number,
           title: form.title,
-          durationMinutes,
+          durationMinutes: Number(form.durationMinutes),
           summary: form.summary,
           content: form.content,
           learningObjectives: form.objectives.split("\n").map((line) => line.trim()).filter(Boolean),
@@ -147,7 +146,7 @@ export function TopicsWorkspace({
           moduleId: form.moduleId,
           number,
           title: form.title,
-          durationMinutes,
+          durationMinutes: Number(form.durationMinutes),
           summary: form.summary,
           content: form.content,
           learningObjectives: form.objectives.split("\n").map((line) => line.trim()).filter(Boolean),
@@ -163,7 +162,7 @@ export function TopicsWorkspace({
       setError(
         msg.toLowerCase().includes("duplicate") ||
           msg.toLowerCase().includes("unique")
-          ? "That topic number already exists for this courseModule. Pick another number."
+          ? "That topic number already exists for this module. Pick another number."
           : msg,
       );
     } finally {
@@ -193,7 +192,7 @@ export function TopicsWorkspace({
       <PageHeader
         size="lg"
         title="Module topics"
-        description="Add the course outline per courseModule. Students mark topics done to drive progress — this is not a file upload."
+        description="Manage the topics students follow in each module."
         actions={
           <Button
             size="sm"
@@ -292,7 +291,7 @@ export function TopicsWorkspace({
                       {row.title}
                     </p>
                     <p className="mt-0.5 text-[11px] text-muted-foreground">
-                      {courseModule?.name} · {row.duration_minutes} min
+                      {courseModule?.name}
                       {row.summary
                         ? ` · ${row.summary.slice(0, 80)}${row.summary.length > 80 ? "…" : ""}`
                         : ""}
@@ -351,7 +350,7 @@ export function TopicsWorkspace({
               ))}
             </select>
           </label>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3">
             <label className="block space-y-1.5">
               <span className="text-[11px] font-medium text-muted-foreground">
                 Topic number
@@ -362,21 +361,6 @@ export function TopicsWorkspace({
                 value={form.number}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, number: e.target.value }))
-                }
-                className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px]"
-                required
-              />
-            </label>
-            <label className="block space-y-1.5">
-              <span className="text-[11px] font-medium text-muted-foreground">
-                Duration (minutes)
-              </span>
-              <input
-                type="number"
-                min={1}
-                value={form.durationMinutes}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, durationMinutes: e.target.value }))
                 }
                 className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px]"
                 required
@@ -396,29 +380,9 @@ export function TopicsWorkspace({
             />
           </label>
           <label className="block space-y-1.5">
-            <span className="text-[11px] font-medium text-muted-foreground">
-              Summary (optional)
-            </span>
-            <textarea
-              value={form.summary}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, summary: e.target.value }))
-              }
-              rows={3}
-              placeholder="Short description students see on the topic page"
-              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-[13px]"
-            />
-          </label>
-          <label className="block space-y-1.5">
-            <span className="text-[11px] font-medium text-muted-foreground">Topic explanation</span>
+            <span className="text-[11px] font-medium text-muted-foreground">Description (optional)</span>
             <textarea value={form.content} onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-              rows={6} maxLength={30000} placeholder="Explain the topic, key concepts, examples, and important information."
-              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-[13px]" />
-          </label>
-          <label className="block space-y-1.5">
-            <span className="text-[11px] font-medium text-muted-foreground">Learning objectives (one per line)</span>
-            <textarea value={form.objectives} onChange={(e) => setForm((f) => ({ ...f, objectives: e.target.value }))}
-              rows={4} maxLength={6000} placeholder="What should students understand after this topic?"
+              rows={4} maxLength={30000} placeholder="Explain the topic, key concepts, examples, and important information."
               className="w-full rounded-xl border border-border bg-background px-3 py-2 text-[13px]" />
           </label>
           <label className="flex items-center gap-2 text-[12px]">

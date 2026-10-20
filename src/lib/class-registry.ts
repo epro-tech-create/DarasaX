@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { cachedQuery, invalidateQueries } from "@/lib/supabase/query-cache";
 import { createClient } from "@/lib/supabase/client";
 import type { Database } from "@/types/database";
 import type { ClassStream } from "@/types";
@@ -25,34 +26,35 @@ export function activeCohort(c: AcademicClass) {
     c.semester === 1
   );
 }
-export function useClassRegistry() {
+export function useClassRegistry({ enabled = true }: { enabled?: boolean } = {}) {
   const [classes, setClasses] = useState<AcademicClass[]>([]);
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(!enabled);
   const [error, setError] = useState("");
   const refresh = useCallback(async () => {
-    const { data, error } = await createClient()
-      .from("academic_classes")
-      .select("*")
-      .eq("archived", false)
-      .order("label");
-    if (error) setError("Could not load classes. Please try again.");
-    else {
-      setClasses(data ?? []);
-      setError("");
-    }
-    setReady(true);
-  }, []);
+    if (!enabled) return;
+    try {
+      const data = await cachedQuery("classes:all", async () => {
+        const { data, error } = await createClient().from("academic_classes").select("*").eq("archived", false).order("label");
+        if (error) throw error;
+        return data ?? [];
+      });
+      setClasses(data); setError("");
+    } catch { setError("Could not load classes. Please try again."); }
+    finally { setReady(true); }
+  }, [enabled]);
   useEffect(() => {
+    if (!enabled) return;
     const t = setTimeout(() => void refresh(), 0);
     const reload = () => void refresh();
     window.addEventListener("focus", reload);
-    window.addEventListener("darasax:classes", reload);
+    const changed = () => { invalidateQueries("classes"); void refresh(); };
+    window.addEventListener("darasax:classes", changed);
     return () => {
       clearTimeout(t);
       window.removeEventListener("focus", reload);
-      window.removeEventListener("darasax:classes", reload);
+      window.removeEventListener("darasax:classes", changed);
     };
-  }, [refresh]);
+  }, [enabled, refresh]);
   const streams = useMemo<ClassStream[]>(
     () =>
       classes.map((c) => ({

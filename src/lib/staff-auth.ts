@@ -1,6 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
+import { StaffSessionContext } from "@/lib/staff-session-context";
+import { cachedQuery, invalidateQueries } from "@/lib/supabase/query-cache";
 import { createClient } from "@/lib/supabase/client";
 import { ensureStaffProfile, getStaffProfile } from "@/lib/auth/staff-profile";
 import {
@@ -31,7 +33,7 @@ function asStreamIds(profile: StaffProfile): ClassStreamId[] {
   return [];
 }
 
-function toSession(profile: StaffProfile, emailFallback = ""): StaffSession {
+export function toSession(profile: StaffProfile, emailFallback = ""): StaffSession {
   const streamIds = asStreamIds(profile);
   const moduleIds = Array.isArray(profile.module_ids) ? profile.module_ids : [];
   const onboarded =
@@ -114,6 +116,7 @@ export async function loginStaff(input: {
   }
 
   const session = toSession(profile, data.user.email ?? input.email);
+  invalidateQueries("staff");
   window.dispatchEvent(new Event(SESSION_EVENT));
   return session;
 }
@@ -161,6 +164,7 @@ export async function completeLecturerOnboarding(input: {
   }
 
   const session = toSession(data, user.email ?? "");
+  invalidateQueries("staff");
   window.dispatchEvent(new Event(SESSION_EVENT));
   return session;
 }
@@ -169,10 +173,11 @@ export async function logoutStaff() {
   clearActiveLecturerStream();
   const supabase = createClient();
   await supabase.auth.signOut();
+  invalidateQueries("staff");
   window.dispatchEvent(new Event(SESSION_EVENT));
 }
 
-export async function fetchStaffSession(): Promise<StaffSession | null> {
+async function loadStaffSession(): Promise<StaffSession | null> {
   try {
     if (!isConfigured()) return null;
     const supabase = createClient();
@@ -195,7 +200,12 @@ export async function fetchStaffSession(): Promise<StaffSession | null> {
   }
 }
 
+export function fetchStaffSession(): Promise<StaffSession | null> {
+  return cachedQuery("staff:session", loadStaffSession, 15000);
+}
+
 export function useStaffSession() {
+  const shared = useContext(StaffSessionContext);
   const [session, setSession] = useState<StaffSession | null>(null);
   const [ready, setReady] = useState(false);
 
@@ -206,6 +216,7 @@ export function useStaffSession() {
   }, []);
 
   useEffect(() => {
+    if (shared) return;
     const timer = setTimeout(() => void refresh(), 0);
     const onFocus = () => void refresh();
     window.addEventListener(SESSION_EVENT, onFocus);
@@ -215,7 +226,7 @@ export function useStaffSession() {
       window.removeEventListener(SESSION_EVENT, onFocus);
       window.removeEventListener("focus", onFocus);
     };
-  }, [refresh]);
+  }, [refresh, shared]);
 
-  return { session, ready, refresh };
+  return shared ?? { session, ready, refresh };
 }

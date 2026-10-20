@@ -70,7 +70,8 @@ export function useTimetableStore() {
     const timer = setTimeout(() => void refresh(), 0);
     const onFocus = () => { invalidateQueries("timetable"); void refresh(); };
     window.addEventListener("focus", onFocus);
-    return () => { clearTimeout(timer); window.removeEventListener("focus", onFocus); };
+    window.addEventListener("darasax:timetable", onFocus);
+    return () => { clearTimeout(timer); window.removeEventListener("focus", onFocus); window.removeEventListener("darasax:timetable", onFocus); };
   }, [refresh]);
 
   const updateEntry = useCallback(
@@ -93,6 +94,7 @@ export function useTimetableStore() {
       if (error) throw error;
       const next = toEntry(data);
       invalidateQueries("timetable");
+      window.dispatchEvent(new Event("darasax:timetable"));
       setEntries((prev) => prev.map((e) => (e.id === id ? next : e)));
       await recordAudit({
         action: "timetable_edit",
@@ -128,6 +130,7 @@ export function useTimetableStore() {
     if (error) throw error;
     const entry = toEntry(data);
     invalidateQueries("timetable");
+    window.dispatchEvent(new Event("darasax:timetable"));
     setEntries((prev) => [...prev, entry]);
     await recordAudit({
       action: "timetable_edit",
@@ -147,6 +150,7 @@ export function useTimetableStore() {
       .eq("id", id);
     if (error) throw error;
     invalidateQueries("timetable");
+    window.dispatchEvent(new Event("darasax:timetable"));
     setEntries((prev) => prev.filter((e) => e.id !== id));
     await recordAudit({
       action: "timetable_edit",

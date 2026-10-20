@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { cachedQuery, invalidateQueries } from "@/lib/supabase/query-cache";
 import { createClient } from "@/lib/supabase/client";
 import { useClassRegistry } from "@/lib/class-registry";
 import type {
@@ -81,8 +82,8 @@ export type ClassRepInput = {
   status?: ClassRepAccount["status"];
 };
 
-export function useAdminPeopleStore() {
-  const { streams: classStreams } = useClassRegistry();
+export function useAdminPeopleStore({ rosterOnly = false }: { rosterOnly?: boolean } = {}) {
+  const { streams: classStreams } = useClassRegistry({ enabled: !rosterOnly });
   const [students, setStudents] = useState<StudentMonitor[]>([]);
   const [classReps, setClassReps] = useState<ClassRepAccount[]>([]);
   const [audit, setAudit] = useState<AuditLogEntry[]>([]);
@@ -97,22 +98,22 @@ export function useAdminPeopleStore() {
         return;
       }
       const supabase = createClient();
-      const [studentsRes, crsRes, auditRes] = await Promise.all([
+      const [studentsRes, crsRes, auditRes] = await cachedQuery(rosterOnly ? "people:roster" : "people:all", async () => await Promise.all([
         supabase
           .from("monitored_students")
           .select("*")
           .order("name"),
-        supabase
+        rosterOnly ? { data: [], error: null } : supabase
           .from("staff_profiles")
           .select("*")
           .eq("role", "class_rep")
           .order("created_at"),
-        supabase
+        rosterOnly ? { data: [], error: null } : supabase
           .from("audit_log")
           .select("*")
           .order("at", { ascending: false })
           .limit(200),
-      ]);
+      ]), 15000);
       if (studentsRes.error) throw studentsRes.error;
       if (crsRes.error) throw crsRes.error;
       if (auditRes.error) throw auditRes.error;
@@ -124,11 +125,11 @@ export function useAdminPeopleStore() {
     } finally {
       setReady(true);
     }
-  }, []);
+  }, [rosterOnly]);
 
   useEffect(() => {
     const timer = setTimeout(() => void refresh(), 0);
-    const poll = setInterval(() => void refresh(), 30000);
+    const poll = setInterval(() => { if (document.visibilityState === "visible") void refresh(); }, 30000);
     const onFocus = () => void refresh();
     window.addEventListener("focus", onFocus);
     return () => { clearTimeout(timer); clearInterval(poll); window.removeEventListener("focus", onFocus); };
@@ -161,6 +162,7 @@ export function useAdminPeopleStore() {
         .select("*")
         .single();
       if (error) throw error;
+      invalidateQueries("people");
       const entry = toAudit(data);
       setAudit((prev) => [entry, ...prev]);
       return entry;
@@ -175,6 +177,7 @@ export function useAdminPeopleStore() {
       .delete()
       .eq("id", Number(id));
     if (error) throw error;
+    invalidateQueries("people");
     setAudit((prev) => prev.filter((row) => row.id !== id));
   }, []);
 
@@ -189,6 +192,7 @@ export function useAdminPeopleStore() {
         ids.map((id) => Number(id)),
       );
     if (error) throw error;
+    invalidateQueries("people");
     const gone = new Set(ids);
     setAudit((prev) => prev.filter((row) => !gone.has(row.id)));
   }, []);
@@ -208,6 +212,7 @@ export function useAdminPeopleStore() {
         throw new Error(detail?.error || "Could not create the student account. Please try again.");
       }
       if (!data?.student) throw new Error("Student account creation failed.");
+      invalidateQueries("people");
       const student = toStudent(data.student);
       setStudents((prev) => [student, ...prev]);
       await log({
@@ -250,6 +255,7 @@ export function useAdminPeopleStore() {
         .select("*")
         .single();
       if (error) throw error;
+      invalidateQueries("people");
       const updated = toStudent(data);
       setStudents((prev) => prev.map((s) => (s.id === id ? updated : s)));
       await log({
@@ -281,6 +287,7 @@ export function useAdminPeopleStore() {
         .delete()
         .eq("id", id);
       if (error) throw error;
+      invalidateQueries("people");
       setStudents((prev) => prev.filter((s) => s.id !== id));
       if (removed) {
         await log({
@@ -306,6 +313,7 @@ export function useAdminPeopleStore() {
       account_status: input.status ?? "active",
     });
     if (error || !data) throw new Error("Could not appoint CR. Confirm the student has a verified account and this class has fewer than two active representatives.");
+    invalidateQueries("people");
     const account = toClassRep(data);
     setClassReps((previous) => [account, ...previous.filter((entry) => entry.id !== account.id)]);
     return account;
@@ -336,6 +344,7 @@ export function useAdminPeopleStore() {
         .select("*")
         .single();
       if (error) throw error;
+      invalidateQueries("people");
       const updated = toClassRep(data);
       setClassReps((prev) => prev.map((c) => (c.id === id ? updated : c)));
       await log({
@@ -360,6 +369,7 @@ export function useAdminPeopleStore() {
         .delete()
         .eq("id", id);
       if (error) throw error;
+      invalidateQueries("people");
       setClassReps((prev) => prev.filter((c) => c.id !== id));
       if (removed) {
         await log({

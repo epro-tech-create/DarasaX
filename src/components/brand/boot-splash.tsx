@@ -15,10 +15,10 @@ export function BootSplash() {
   const [gone, setGone] = useState(false);
 
   useEffect(() => {
-    const fade = window.setTimeout(() => setLeaving(true), 450);
-    const remove = window.setTimeout(() => setGone(true), 850);
+    const fade = window.requestAnimationFrame(() => setLeaving(true));
+    const remove = window.setTimeout(() => setGone(true), 180);
     return () => {
-      window.clearTimeout(fade);
+      window.cancelAnimationFrame(fade);
       window.clearTimeout(remove);
     };
   }, []);

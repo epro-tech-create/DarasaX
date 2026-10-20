@@ -29,15 +29,16 @@ export async function cachedQuery<T>(
   }
   const promise = fetcher().then(
     (value) => {
-      store.set(key, { at: Date.now(), value });
+      if (store.get(key) === entry) store.set(key, { at: Date.now(), value });
       return value;
     },
     (error) => {
-      store.delete(key);
+      if (store.get(key) === entry) store.delete(key);
       throw error;
     },
   );
-  store.set(key, { at: now, promise });
+  const entry: Entry = { at: now, promise };
+  store.set(key, entry);
   return promise;
 }
 
