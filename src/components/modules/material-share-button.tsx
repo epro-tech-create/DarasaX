@@ -43,7 +43,7 @@ export function MaterialShareButton({
         window.location.hostname === "127.0.0.1";
       const origin = local
         ? window.location.origin
-        : "https://darasax.eprotechtz.com";
+        : "https://darasax.com";
       setUrl(`${origin}/share/${shareToken}`);
     } catch {
       setMessage(

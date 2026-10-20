@@ -31,19 +31,20 @@ export function roleFromHost(host: string | null | undefined): AppRole | null {
   if (port === "3006") return "admin";
   if (port === "3007") return "class_rep";
   if (port === "3008") return "lecturer";
-  if (name === "admin.eprotechtz.com" || name.startsWith("darasax-admin")) {
+  if (name === "admin.darasax.com" || name === "admin.eprotechtz.com" || name.startsWith("darasax-admin")) {
     return "admin";
   }
-  if (name === "cr.eprotechtz.com" || name.startsWith("darasax-cr")) {
+  if (name === "cr.darasax.com" || name === "cr.eprotechtz.com" || name.startsWith("darasax-cr")) {
     return "class_rep";
   }
   if (
+    name === "lecturer.darasax.com" ||
     name === "lecturer.eprotechtz.com" ||
     name.startsWith("darasax-lecturer")
   ) {
     return "lecturer";
   }
-  if (name === "darasax.eprotechtz.com" || name === "darasax.vercel.app") {
+  if (name === "darasax.com" || name === "www.darasax.com" || name === "darasax.eprotechtz.com" || name === "darasax.vercel.app") {
     return "student";
   }
   return null;

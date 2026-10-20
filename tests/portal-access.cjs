@@ -10,6 +10,12 @@ function load(file, dependencies) {
   return exports;
 }
 const roles = load('src/lib/app-role.ts', {});
+for (const [host, role] of [
+  ['darasax.com', 'student'], ['www.darasax.com', 'student'],
+  ['admin.darasax.com', 'admin'], ['lecturer.darasax.com', 'lecturer'],
+  ['cr.darasax.com', 'class_rep'],
+]) assert.equal(roles.roleFromHost(host), role, host);
+assert.equal(roles.roleFromHost('admin.darasax.com.evil.invalid'), null);
 let user, staff, failed;
 class Response {
   constructor(body, options = {}) { this.status = options.status || 200; this.body = body; this.headers = new Headers(); this.cookies = { getAll: () => [], set() {} }; }
@@ -22,7 +28,7 @@ const { proxy } = load('src/proxy.ts', {
   '@/lib/auth/enrollment': { studentEnrollmentError: () => null },
   '@/lib/auth/profile': { getProfile: async () => ({ onboarding_completed: true, institution:"Dar es Salaam Institute of Technology (DIT)", programme:"BENG24COE", year_of_study:3, semester:1, class_name:"BENG24COE-1" }) },
   '@/lib/auth/staff-profile': { getStaffProfile: async () => { if (failed) throw Error(); return staff; } },
-  '@/lib/supabase/middleware': { updateSession: async () => ({ user, supabase: {}, supabaseResponse: Response.next() }) }
+  '@/lib/supabase/middleware': { updateSession: async () => ({ user, supabase: { from: () => ({ select() { return this; }, eq() { return this; }, maybeSingle: async () => ({ data: { id: 'BENG24COE-1', institution: 'Dar es Salaam Institute of Technology (DIT)', programme: 'BENG24COE', year: 3, semester: 1 } }) }) }, supabaseResponse: Response.next() }) }
 });
 const saved = { ...process.env };
 process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.invalid';
@@ -36,7 +42,7 @@ async function check(host, path, member, expected, destination) {
   if (destination) assert.equal(new URL(result.location).pathname, destination);
 }
 (async () => {
-  const host = 'darasax.eprotechtz.com';
+  const host = 'darasax.com';
   const cr = { role: 'class_rep', status: 'active' };
   await check(host, '/cr', undefined, 307, '/login');
   await check(host, '/cr', null, 403);
@@ -48,6 +54,8 @@ async function check(host, path, member, expected, destination) {
   await check(host, '/cr', { role: 'lecturer', status: 'active' }, 403);
   await check(host, '/dashboard', null, 200);
   for (const [domain, path, role] of [
+    ['admin.darasax.com', '/admin', 'admin'],
+    ['lecturer.darasax.com', '/lecturer', 'lecturer'],
     ['darasax-admin.eprotechtz.com', '/admin', 'admin'],
     ['lecturer.eprotechtz.com', '/lecturer', 'lecturer']
   ]) {
@@ -59,11 +67,12 @@ async function check(host, path, member, expected, destination) {
     await check(domain, '/register', undefined, 307, '/login');
   }
   await check('darasax-cr.eprotechtz.com', '/', undefined, 307, '/cr');
+  assert.equal(new URL((await proxy({ nextUrl: new URL('https://cr.darasax.com/'), url: 'https://cr.darasax.com/', headers: new Headers({ host: 'cr.darasax.com' }) })).location).origin, 'https://darasax.com');
   failed = true;
   await check(host, '/cr', cr, 503);
   failed = false;
   delete process.env.NEXT_PUBLIC_SUPABASE_URL;
   await check(host, '/cr', cr, 503);
   Object.assign(process.env, saved);
-  console.log('Passed 23 portal authorization scenarios (mocked Supabase sessions).');
+  console.log('Passed portal authorization and domain migration scenarios (mocked Supabase sessions).');
 })().catch(e => { console.error(e); process.exitCode = 1; });

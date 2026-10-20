@@ -76,7 +76,7 @@ export async function proxy(request: NextRequest) {
   };
   // Old CR deployments are entry links only; no cross-domain session transfer.
   if (portal === "class_rep") {
-    return redirect("https://darasax.eprotechtz.com/cr");
+    return redirect("https://darasax.com/cr");
   }
   if (pathname === "/register") return redirect("/login");
   if (!pathAllowedForRole(pathname, portal))
