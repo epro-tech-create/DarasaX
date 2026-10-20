@@ -18,12 +18,13 @@ assert.equal(redirects.studentPostAuthPath(true, '/modules/topic-1?tab=notes'), 
 assert.equal(redirects.studentPostAuthPath(false, '/modules/topic-1'), '/onboarding');
 let staff = null;
 let complete = false;
+const signIns = [];
 const callback = load('src/app/auth/callback/route.ts', {
   '@/lib/auth/redirect': redirects,
   '@/lib/auth/staff-profile': {getStaffProfile: async () => staff},
   '@/lib/app-role': {roleFromHost: () => 'student', getAppRole: () => 'student', APP_HOME: {class_rep:'/cr'}},
   'next/server': {NextResponse: {redirect: url => ({location:url.href})}},
-  '@/lib/supabase/server': {createClient: async () => ({auth: {
+  '@/lib/supabase/server': {createClient: async () => ({rpc: async name => { signIns.push({name, role: staff?.role ?? "student"}); return {error:null}; }, auth: {
     exchangeCodeForSession: async () => ({error:null}),
     getUser: async () => ({data:{user:{id:'user'}}}), signOut: async () => ({})
   }})},
@@ -39,6 +40,8 @@ const callback = load('src/app/auth/callback/route.ts', {
   assert.equal(new URL((await callback.GET(request)).location).pathname, '/cr');
   staff.status = 'inactive';
   assert.equal(new URL((await callback.GET(request)).location).pathname, '/login');
+  assert.deepEqual(signIns.map(x => x.role), ['student','student','class_rep']);
+  assert.ok(signIns.every(x => x.name === 'record_sign_in'));
   console.log('Passed return-URL validation and Google callback regression tests.');
 })().catch(error => {console.error(error);process.exitCode=1;});
 

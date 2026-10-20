@@ -41,7 +41,6 @@ const adminNav: StaffNavItem[] = [
   { href: "/admin", label: "Overview", icon: Home },
   { href: "/admin/topics", label: "Topics", icon: ListOrdered },
   { href: "/admin/materials", label: "Library", icon: BookOpen },
-  { href: "/admin/past-papers", label: "Past papers", icon: ClipboardList },
   { href: "/admin/timetable", label: "Timetable", icon: CalendarDays },
   { href: "/admin/students", label: "Students", icon: Users },
   { href: "/admin/class-reps", label: "Class reps", icon: GraduationCap },
@@ -54,7 +53,6 @@ const crNav: StaffNavItem[] = [
   { href: "/cr", label: "Overview", icon: Home },
   { href: "/cr/topics", label: "Topics", icon: ListOrdered },
   { href: "/cr/materials", label: "Library", icon: BookOpen },
-  { href: "/cr/past-papers", label: "Past papers", icon: ClipboardList },
   { href: "/cr/timetable", label: "Timetable", icon: CalendarDays },
   { href: "/cr/members", label: "Members", icon: Users },
 ];
@@ -84,7 +82,7 @@ function RoleIcon({ role }: { role: StaffRole }) {
 function staffNotificationHref(href: string, role: StaffRole): string {
   const base =
     role === "admin" ? "/admin" : role === "class_rep" ? "/cr" : "/lecturer";
-  if (href.startsWith("/past-papers")) return `${base}/past-papers`;
+  if (href.startsWith("/past-papers")) return role === "lecturer" ? `${base}/past-papers` : `${base}/materials`;
   if (href.startsWith("/announcements")) {
     return role === "class_rep" ? `${base}/materials` : `${base}/announcements`;
   }

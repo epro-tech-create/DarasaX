@@ -39,6 +39,7 @@ export async function GET(request: Request) {
             await supabase.auth.signOut();
             return NextResponse.redirect(new URL("/login?error=Account%20not%20authorized%20for%20this%20portal", origin));
           }
+          await supabase.rpc("record_sign_in");
           return NextResponse.redirect(new URL(APP_HOME[staff!.role], origin));
         }
         const profile = await ensureProfile(supabase, user);
@@ -49,6 +50,7 @@ export async function GET(request: Request) {
           destination.searchParams.set("error", restriction);
           return NextResponse.redirect(destination);
         }
+        await supabase.rpc("record_sign_in");
         const dest =
           studentPostAuthPath(profile.onboarding_completed, next);
         return NextResponse.redirect(new URL(dest, origin));

@@ -69,6 +69,7 @@ function StudentLoginForm() {
           await supabase.auth.signOut();
           throw new Error("Use your assigned portal or contact your administrator.");
         }
+        await recordAudit({ action: "login", summary: "Signed in" });
         router.replace("/cr");
         router.refresh();
         return;

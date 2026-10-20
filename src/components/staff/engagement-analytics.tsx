@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useId, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Download, Eye, FileUp, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useMaterialsStore } from "@/lib/materials-store";
@@ -9,14 +9,13 @@ import { Button } from "@/components/ui/button";
 
 type Day = { date: string; active: number; opens: number };
 type Summary = { days: Day[]; activeStudents: number; uniqueViewers: number };
-const W = 700,
-  H = 240,
+const H = 240,
   LEFT = 36,
   RIGHT = 12,
   TOP = 16,
   BOTTOM = 32;
-function curve(values: number[], ceiling: number) {
-  const x = (i: number) => LEFT + (i * (W - LEFT - RIGHT)) / 6;
+function curve(values: number[], ceiling: number, W: number) {
+  const x = (i: number) => LEFT + (i * (W - LEFT - RIGHT)) / Math.max(1, values.length - 1);
   const y = (n: number) => TOP + (1 - n / ceiling) * (H - TOP - BOTTOM);
   return values.reduce((path, n, i) => {
     if (!i) return `M${x(i)},${y(n)}`;
@@ -32,20 +31,34 @@ const dateLabel = (date: string) =>
 
 export function EngagementAnalytics() {
   const { items: materials, ready: materialsReady } = useMaterialsStore();
+  const [period, setPeriod] = useState<7 | 30>(7);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [error, setError] = useState(false);
   const [metric, setMetric] = useState<"active" | "opens">("active");
   const [selected, setSelected] = useState<number | null>(null);
   const fillId = useId();
+  const chartReady = summary !== null;
+  const chartRef = useRef<HTMLDivElement>(null);
+  const [W, setWidth] = useState(700);
+  useEffect(() => {
+    const container = chartRef.current;
+    if (!container) return;
+    const observer = new ResizeObserver(([entry]) => setWidth(Math.max(280, entry.contentRect.width)));
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [chartReady]);
+  const requestId = useRef(0);
   const refresh = useCallback(async () => {
-    const { data, error } = await createClient().rpc("engagement_summary");
+    const request = ++requestId.current;
+    const { data, error } = await createClient().rpc("engagement_summary", { period_days: period });
+    if (request !== requestId.current) return;
     if (error || !data) {
       setError(true);
       return;
     }
     setSummary(data as unknown as Summary);
     setError(false);
-  }, []);
+  }, [period]);
   useEffect(() => {
     const timer = setTimeout(() => void refresh(), 0);
     const onFocus = () => void refresh();
@@ -55,8 +68,8 @@ export function EngagementAnalytics() {
       window.removeEventListener("focus", onFocus);
     };
   }, [refresh]);
-  const current = summary?.days.slice(7) ?? [];
-  const previous = summary?.days.slice(0, 7) ?? [];
+  const current = summary?.days.slice(period) ?? [];
+  const previous = summary?.days.slice(0, period) ?? [];
   const max = Math.max(
     4,
     ...current.map((d) => d[metric]),
@@ -64,7 +77,7 @@ export function EngagementAnalytics() {
   );
   const ceiling = Math.ceil(max / 4) * 4;
   const values = current.map((d) => d[metric]);
-  const line = curve(values, ceiling);
+  const line = curve(values, ceiling, W);
   const baseline = H - BOTTOM;
   const currentTotal =
     metric === "active"
@@ -107,6 +120,7 @@ export function EngagementAnalytics() {
         title="Student engagement"
         description="Last 7 days compared with the previous 7 · Tanzania time"
       >
+        <label className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">Period<select aria-label="Engagement period" value={period} onChange={e => { requestId.current++; setPeriod(Number(e.target.value) as 7 | 30); setSummary(null); setSelected(null); }} className="focus-ring rounded-lg border border-border bg-card px-3 py-2 text-foreground"><option value={7}>Last 7 days</option><option value={30}>Last 30 days</option></select></label>
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div
             className="flex gap-1 rounded-xl bg-muted/50 p-1"
@@ -161,12 +175,13 @@ export function EngagementAnalytics() {
           </p>
         ) : (
           <>
-            <div className="relative">
+            <div className="relative" ref={chartRef}>
               <svg
                 viewBox={`0 0 ${W} ${H}`}
-                className="h-auto min-h-40 w-full"
+                className="h-[200px] w-full sm:h-[240px] lg:h-[260px]"
+                preserveAspectRatio="none"
                 role="img"
-                aria-label={`${metric === "active" ? "Daily active students" : "Daily material opens"} over the last 7 days compared with the previous week`}
+                aria-label={`${metric === "active" ? "Daily active students" : "Daily material opens"} over the last ${period} days compared with the previous period`}
                 onPointerMove={(event) => {
                   const box = event.currentTarget.getBoundingClientRect();
                   const local = ((event.clientX - box.left) / box.width) * W;
@@ -174,8 +189,8 @@ export function EngagementAnalytics() {
                     Math.max(
                       0,
                       Math.min(
-                        6,
-                        Math.round(((local - LEFT) / (W - LEFT - RIGHT)) * 6),
+                        period - 1,
+                        Math.round(((local - LEFT) / (W - LEFT - RIGHT)) * (period - 1)),
                       ),
                     ),
                   );
@@ -224,6 +239,7 @@ export function EngagementAnalytics() {
                   d={curve(
                     previous.map((d) => d[metric]),
                     ceiling,
+                    W,
                   )}
                   fill="none"
                   stroke="var(--muted-foreground)"
@@ -239,12 +255,12 @@ export function EngagementAnalytics() {
                   strokeLinecap="round"
                 />
                 {current.map((d, i) => (
-                  <text
+                  ((period === 7 ? W > 500 || i % 3 === 0 : i % (W > 500 ? 5 : 10) === 0) || i === period - 1) && <text
                     key={d.date}
-                    x={LEFT + (i * (W - LEFT - RIGHT)) / 6}
+                    x={LEFT + (i * (W - LEFT - RIGHT)) / (period - 1)}
                     y={H - 8}
                     fontSize="11"
-                    textAnchor={i === 0 ? "start" : i === 6 ? "end" : "middle"}
+                    textAnchor={i === 0 ? "start" : i === period - 1 ? "end" : "middle"}
                     fill="var(--muted-foreground)"
                   >
                     {dateLabel(d.date)}
@@ -252,8 +268,8 @@ export function EngagementAnalytics() {
                 ))}
                 {selected !== null && (
                   <line
-                    x1={LEFT + (selected * (W - LEFT - RIGHT)) / 6}
-                    x2={LEFT + (selected * (W - LEFT - RIGHT)) / 6}
+                    x1={LEFT + (selected * (W - LEFT - RIGHT)) / (period - 1)}
+                    x2={LEFT + (selected * (W - LEFT - RIGHT)) / (period - 1)}
                     y1={TOP}
                     y2={baseline}
                     stroke="var(--muted-foreground)"
@@ -273,7 +289,7 @@ export function EngagementAnalytics() {
               )}
             </div>
             <div
-              className="mt-2 flex justify-between gap-1"
+              className="mt-2 flex justify-between gap-1 overflow-x-auto"
               role="group"
               aria-label="Inspect daily values"
             >
@@ -284,7 +300,7 @@ export function EngagementAnalytics() {
                   onBlur={() => setSelected(null)}
                   onClick={() => setSelected(i)}
                   aria-label={`${dateLabel(d.date)}: ${d[metric]}, previous period ${previous[i][metric]}`}
-                  className="focus-ring min-h-11 flex-1 rounded-lg text-[11px] text-muted-foreground hover:bg-muted/50"
+                  className="focus-ring min-h-9 min-w-6 flex-1 rounded-lg text-[11px] text-muted-foreground hover:bg-muted/50"
                 >
                   {d[metric]}
                 </button>

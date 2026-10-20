@@ -437,6 +437,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      record_sign_in: { Args: Record<string, never>; Returns: undefined };
       site_visitor_summary: { Args: Record<string, never>; Returns: Json };
       staff_material_scope: { Args: { target_stream: string; target_module: string | null }; Returns: boolean };
       create_material_share: { Args: {mid: string}; Returns: string };
@@ -447,7 +448,7 @@ export type Database = {
 
       record_student_activity: { Args: Record<string, never>; Returns: void };
       record_material_view: { Args: { mid: string }; Returns: void };
-      engagement_summary: { Args: Record<string, never>; Returns: Json };
+      engagement_summary: { Args: { period_days?: number }; Returns: Json };
 
       appoint_class_rep: {
         Args: { student_email: string; assigned_stream: string; display_name: string; contact_phone: string | null; account_status: string };

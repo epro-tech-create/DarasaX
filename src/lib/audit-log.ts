@@ -13,6 +13,11 @@ export async function recordAudit(input: {
 }) {
   try {
     const supabase = createClient();
+    if (input.action === "login") {
+      const { error } = await supabase.rpc("record_sign_in");
+      if (error) console.warn("Sign-in log was not saved.", error.message);
+      return;
+    }
     const {
       data: { user },
     } = await supabase.auth.getUser();
