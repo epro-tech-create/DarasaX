@@ -207,7 +207,7 @@ export default function ModuleDetailPage() {
             />
           ) : (
             moduleAssignments.map((a) => (
-              <AssignmentCard key={a.id} assignment={a} module={module} />
+              <AssignmentCard key={a.id} assignment={a} module={courseModule} />
             ))
           )}
         </div>
