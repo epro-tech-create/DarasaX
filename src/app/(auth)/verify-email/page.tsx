@@ -105,6 +105,16 @@ function VerifyEmailForm() {
           if (registrationError) throw registrationError;
         }
         const staff = await ensureStaffProfile(supabase, user, { role: staffRole });
+        if (staffRole === "lecturer" && staff?.role === "lecturer" && staff.status !== "active") {
+          const { data: application, error } = await supabase.rpc("lecturer_application_status");
+          const status = (application as { status?: string } | null)?.status;
+          if (error || (status !== "pending" && status !== "rejected")) throw new Error("Staff access required");
+          sessionStorage.removeItem("darasax_verify_email");
+          sessionStorage.removeItem("darasax_verify_name");
+          setContinueTo("/lecturer-approval");
+          setSuccess(true);
+          return;
+        }
         if (!staff || staff.status !== "active" || staff.role !== staffRole) throw new Error("Staff access required");
         sessionStorage.removeItem("darasax_verify_email");
         sessionStorage.removeItem("darasax_verify_name");
@@ -166,11 +176,11 @@ function VerifyEmailForm() {
           <WelcomeCelebration
             title={translateUI("Email verified")}
             subtitle={
-              staffRole
+              continueTo === "/lecturer-approval" ? translateUI("Your email is verified. Your lecturer account is awaiting administrator approval.") : staffRole
                 ? translateUI("Great — your staff account is active.")
                 : translateUI("Great — your account is active. Next, set up your academic profile.")
             }
-            ctaLabel={staffRole ? "Continue to desk" : "Continue to profile"}
+            ctaLabel={continueTo === "/lecturer-approval" ? "View application" : staffRole ? "Continue to desk" : "Continue to profile"}
             onContinue={() => {
               router.replace(continueTo);
               router.refresh();

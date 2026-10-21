@@ -5,6 +5,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 import { getProfile } from "@/lib/auth/profile";
 import { getStaffProfile } from "@/lib/auth/staff-profile";
+import { adminEmailVerified, ADMIN_EMAIL_PATH } from "@/lib/auth/admin-security";
 import {
   APP_HOME,
   forbiddenRedirect,
@@ -43,6 +44,7 @@ export async function proxy(request: NextRequest) {
   // This endpoint verifies the session and database permissions itself.
   if (pathname === "/api/material-files") return NextResponse.next();
   if (pathname === "/api/students/export") return NextResponse.next();
+  if (pathname === "/api/admin-security") return NextResponse.next();
   if (pathname === "/api/site-visits") return NextResponse.next();
   if (/^\/(assignments|past-papers)\/[^/]+\.[a-z0-9]+$/i.test(pathname))
     return new NextResponse("Use the private class library to access files.", {
@@ -102,6 +104,21 @@ export async function proxy(request: NextRequest) {
     );
   }
   const active = staff?.status === "active";
+  if (portal === "lecturer" && user && staff?.role === "lecturer" && !active && (lecturerPath || pathname === "/login" || pathname === "/signup")) {
+    const { data: application, error } = await supabase.rpc("lecturer_application_status");
+    if (error) return new NextResponse("Account access could not be verified.", { status: 503 });
+    const state = (application as { status?: string } | null)?.status;
+    if (state === "pending" || state === "rejected") return redirect("/lecturer-approval");
+  }
+  if (portal === "admin" && pathname === ADMIN_EMAIL_PATH) {
+    if (!user || !active || staff?.role !== "admin") return redirect("/login");
+    supabaseResponse.headers.set("Cache-Control", "private, no-store");
+    return supabaseResponse;
+  }
+  if (portal === "admin" && active && staff?.role === "admin" && (adminPath || pathname === "/login" || pathname === "/")) {
+    try { if (!await adminEmailVerified(supabase)) return redirect(ADMIN_EMAIL_PATH); }
+    catch { return new NextResponse("Account security could not be verified. Please try again.", { status: 503 }); }
+  }
   // Verified users finish lecturer registration before entering the protected workspace.
   if (portal === "lecturer" && !staff && ["/signup", "/verify-email", "/login"].includes(pathname)) {
     supabaseResponse.headers.set("Cache-Control", "private, no-store");

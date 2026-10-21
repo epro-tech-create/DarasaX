@@ -5,6 +5,7 @@ import { getStaffProfile } from "@/lib/auth/staff-profile";
 import { roleFromHost, getAppRole, APP_HOME } from "@/lib/app-role";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { adminEmailVerified, ADMIN_EMAIL_PATH } from "@/lib/auth/admin-security";
 import {
   ensureProfile,
 } from "@/lib/auth/profile";
@@ -40,6 +41,11 @@ export async function GET(request: Request) {
           }
         }
         const staff = await getStaffProfile(supabase, user.id);
+        if (portal === "lecturer" && staff?.role === "lecturer" && staff.status !== "active") {
+          const { data } = await supabase.rpc("lecturer_application_status");
+          const status = (data as { status?: string } | null)?.status;
+          if (status === "pending" || status === "rejected") return NextResponse.redirect(new URL("/lecturer-approval", origin));
+        }
         if (staff || portal !== "student") {
           const allowed = staff?.status === "active" &&
             staff.role === (portal === "student" ? "class_rep" : portal);
@@ -47,6 +53,7 @@ export async function GET(request: Request) {
             await supabase.auth.signOut();
             return NextResponse.redirect(new URL("/login?error=Account%20not%20authorized%20for%20this%20portal", origin));
           }
+          if (staff?.role === "admin" && !await adminEmailVerified(supabase)) return NextResponse.redirect(new URL(ADMIN_EMAIL_PATH, origin));
           await supabase.rpc("record_sign_in");
           return NextResponse.redirect(new URL(staff!.role === "lecturer" && !staff!.onboarding_completed ? "/lecturer/onboarding" : APP_HOME[staff!.role], origin));
         }

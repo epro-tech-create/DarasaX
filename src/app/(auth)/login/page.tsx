@@ -22,6 +22,7 @@ import { createClient } from "@/lib/supabase/client";
 import { studentEnrollmentError } from "@/lib/auth/enrollment";
 import { getStaffProfile } from "@/lib/auth/staff-profile";
 import { APP_HOME, getAppRole } from "@/lib/app-role";
+import { ADMIN_EMAIL_PATH } from "@/lib/auth/admin-security";
 import {
   getLecturerEntryPath,
   loginStaff,
@@ -198,7 +199,7 @@ function StaffLoginForm({
     if (!ready || !session) return;
     if (session.role === role) {
       const dest =
-        role === "lecturer"
+        role === "admin" ? ADMIN_EMAIL_PATH : role === "lecturer"
           ? getLecturerEntryPath(session)
           : next && next.startsWith("/") && !next.startsWith("//")
             ? next
@@ -227,7 +228,7 @@ function StaffLoginForm({
         email: normalized,
         password,
       });
-      await recordAudit({
+      if (role !== "admin") await recordAudit({
         actor: staffSession.name,
         role: staffSession.role,
         action: "login",
@@ -235,7 +236,7 @@ function StaffLoginForm({
         streamId: staffSession.streamId,
       });
       const dest =
-        role === "lecturer"
+        role === "admin" ? ADMIN_EMAIL_PATH : role === "lecturer"
           ? getLecturerEntryPath(staffSession)
           : next && next.startsWith("/") && !next.startsWith("//")
             ? next
@@ -243,6 +244,10 @@ function StaffLoginForm({
       router.replace(dest);
       router.refresh();
     } catch (err) {
+      if (role === "lecturer" && err instanceof Error && err.message === "LECTURER_APPROVAL_REQUIRED") {
+        router.replace("/lecturer-approval");
+        return;
+      }
       if (role === "lecturer" && err instanceof Error && err.message.toLowerCase().includes("email not confirmed")) {
         sessionStorage.setItem("darasax_verify_email", normalized);
         router.push("/verify-email");

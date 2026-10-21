@@ -79,7 +79,7 @@ function SignupForm() {
           const { error: registrationError } = await supabase.rpc("complete_lecturer_registration");
           if (registrationError) throw registrationError;
         }
-        router.replace(lecturer ? "/lecturer/onboarding" : `/onboarding${nextQuery}`);
+        router.replace(lecturer ? "/lecturer-approval" : `/onboarding${nextQuery}`);
         router.refresh();
         return;
       }
@@ -116,12 +116,12 @@ function SignupForm() {
           {translateUI("Create your")}<br />
           {translateUI("academic home.")}</>
       }
-      subtitle="Sign up in minutes, join your class, and keep every module organized from day one."
+      subtitle={lecturer ? "Verify your email, then wait for administrator approval before opening your workspace." : "Sign up in minutes, join your class, and keep every module organized from day one."}
     >
       <h1 className="text-center font-heading text-xl font-semibold tracking-tight">
         {translateUI(lecturer ? "Create lecturer account" : "Create account")}</h1>
       <p className="mt-1 text-center text-sm text-muted-foreground sm:mt-0.5 sm:text-[11px]">
-        {translateUI(lecturer ? "Create your account and verify your email to start teaching." : "Start with your student details.")}</p>
+        {translateUI(lecturer ? "Create your account, verify your email, and request administrator approval." : "Start with your student details.")}</p>
 
       <form className="mt-5 space-y-3.5 sm:mt-3 sm:space-y-2.5" onSubmit={onSubmit} noValidate>
         {error ? <AuthAlert message={translateUI(error)} /> : null}

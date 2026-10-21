@@ -1,12 +1,12 @@
 const fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript'),assert=require('node:assert/strict');
 function load(file,deps={}){const exports={};vm.runInNewContext(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}}).outputText,{exports,require:n=>deps[n],URL,Uint8Array});return exports;}
 const directory=load('src/lib/student-directory.ts');
-let user={id:'staff'},staff={role:'class_rep',status:'active',stream_id:'class-1',stream_ids:[]},rpcError=false;
+let user={id:'staff'},staff={role:'class_rep',status:'active',stream_id:'class-1',stream_ids:[]},rpcError=false,adminVerified=true;
 let rows=[{id:'one',name:'Student one',email:'one@example.invalid',registration_number:'000230242400506123456789012345678901234567890',stream_id:'class-1',year:3,admission_status:'approved'},
 {id:'two',name:'Other class',email:'two@example.invalid',registration_number:'2500002',stream_id:'class-2',year:3,admission_status:'approved'}];
 const client={auth:{getUser:async()=>({data:{user}})},rpc:async()=>({data:rows,error:rpcError?{}:null})};
 class Response{constructor(body,opts={}){this.body=body instanceof Uint8Array?Buffer.from(body).toString():body;this.status=opts.status??200;this.headers=new Headers(opts.headers);}static json(body,opts){return new Response(body,opts);}}
-const {GET}=load('src/app/api/students/export/route.ts',{'next/server':{NextResponse:Response},'@/lib/supabase/server':{createClient:async()=>client},'@/lib/auth/staff-profile':{getStaffProfile:async()=>staff},'@/lib/student-directory':directory,'@/lib/student-pdf':{studentDetailsPdf:async rows=>Buffer.from(JSON.stringify(rows))}});
+const {GET}=load('src/app/api/students/export/route.ts',{'next/server':{NextResponse:Response},'@/lib/supabase/server':{createClient:async()=>client},'@/lib/auth/staff-profile':{getStaffProfile:async()=>staff},'@/lib/auth/admin-security':{adminEmailVerified:async()=>adminVerified},'@/lib/student-directory':directory,'@/lib/student-pdf':{studentDetailsPdf:async rows=>Buffer.from(JSON.stringify(rows))}});
 const call=(query='')=>GET({url:'https://www.darasax.com/api/students/export'+query});
 (async()=>{
  user=null;assert.equal((await call()).status,401);user={id:'staff'};
@@ -16,7 +16,7 @@ const call=(query='')=>GET({url:'https://www.darasax.com/api/students/export'+qu
  assert.equal((await call('?class=class-2')).status,403);
  staff={role:'lecturer',status:'active',stream_id:'class-1',stream_ids:['class-2']};
  const lecturer=await call();assert.ok(lecturer.body.includes('Other class'));assert.ok(!lecturer.body.includes('Student one'));assert.equal((await call('?class=class-1')).status,403);
- staff={role:'admin',status:'active',stream_ids:[]};const admin=await call();assert.ok(admin.body.includes('Student one')&&admin.body.includes('Other class'));const selected=await call('?class=class-2');assert.ok(!selected.body.includes('Student one'));assert.equal((await call('?class=%0d%0aheader')).status,400);
+ staff={role:'admin',status:'active',stream_ids:[]};adminVerified=false;assert.equal((await call()).status,403);adminVerified=true;const admin=await call();assert.ok(admin.body.includes('Student one')&&admin.body.includes('Other class'));const selected=await call('?class=class-2');assert.ok(!selected.body.includes('Student one'));assert.equal((await call('?class=%0d%0aheader')).status,400);
  rpcError=true;assert.equal((await call()).status,500);rpcError=false;
  rows=Array.from({length:1005},(_,i)=>({...rows[0],id:String(i),name:'Student-'+i,registration_number:null}));
  const large=await call();assert.ok(large.body.includes('Student-1004'));assert.ok(!large.body.includes('undefined'));

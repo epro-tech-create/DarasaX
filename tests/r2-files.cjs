@@ -22,6 +22,8 @@ const supabase = {
 };
 const { POST } = load('src/app/api/material-files/route.ts', {
   'node:crypto': require('node:crypto'),
+  '@/lib/auth/staff-profile':{getStaffProfile:async()=>({role:'class_rep',status:'active'})},
+  '@/lib/auth/admin-security':{adminEmailVerified:async()=>false},
   'next/server': { NextResponse: { json: (body, options) => ({ body, ...options }) } },
   '@/lib/supabase/server': { createClient: async () => supabase },
   '@/lib/r2': { materialKey: r2.materialKey, uploadUrl: async (...args) => { signed.push(args); return 'https://r2.invalid/upload'; },

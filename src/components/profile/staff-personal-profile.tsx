@@ -5,6 +5,7 @@ import { useStaffSession } from "@/lib/staff-auth";
 import { PageHeader } from "@/components/layout/page-header";
 import { LanguageSettings } from "@/components/profile/language-settings";
 import { ChangePasswordForm } from "@/components/auth/change-password-form";
+import { AdminBrowserSecurity } from "./admin-browser-security";
 
 export function StaffPersonalProfile() {
   const translateUI = useTranslate();
@@ -18,5 +19,6 @@ export function StaffPersonalProfile() {
     </section>
     <LanguageSettings />
     <ChangePasswordForm />
+    {session?.role === "admin" && <AdminBrowserSecurity />}
   </div>;
 }

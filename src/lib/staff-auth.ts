@@ -119,6 +119,11 @@ export async function loginStaff(input: {
     );
   }
   if (profile.status !== "active") {
+    if (input.role === "lecturer") {
+      const { data, error } = await supabase.rpc("lecturer_application_status");
+      const status = (data as { status?: string } | null)?.status;
+      if (!error && (status === "pending" || status === "rejected")) throw new Error("LECTURER_APPROVAL_REQUIRED");
+    }
     await supabase.auth.signOut();
     throw new Error("This account has been deactivated.");
   }

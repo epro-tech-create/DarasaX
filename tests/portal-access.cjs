@@ -16,7 +16,7 @@ for (const [host, role] of [
   ['cr.darasax.com', 'class_rep'],
 ]) assert.equal(roles.roleFromHost(host), role, host);
 assert.equal(roles.roleFromHost('admin.darasax.com.evil.invalid'), null);
-let user, staff, failed;
+let user, staff, failed, adminVerified=true, lecturerApplication=null;
 class Response {
   constructor(body, options = {}) { this.status = options.status || 200; this.body = body; this.headers = new Headers(); this.cookies = { getAll: () => [], set() {} }; }
   static next() { return new Response(); }
@@ -29,10 +29,11 @@ const { proxy } = load('src/proxy.ts', {
   '@/lib/auth/admission': {getStudentAdmission: async () => admission},
   'next/server': { NextResponse: Response },
   '@/lib/app-role': roles,
+  '@/lib/auth/admin-security': {adminEmailVerified:async()=>adminVerified,ADMIN_EMAIL_PATH:'/admin-verify-email'},
   '@/lib/auth/enrollment': { studentEnrollmentError: () => null },
   '@/lib/auth/profile': { getProfile: async () => ({ onboarding_completed: true, institution:"Dar es Salaam Institute of Technology (DIT)", programme:"BENG24COE", year_of_study:3, semester:1, class_name:"BENG24COE-1" }) },
   '@/lib/auth/staff-profile': { getStaffProfile: async () => { if (failed) throw Error(); return staff; } },
-  '@/lib/supabase/middleware': { updateSession: async () => ({ user, supabase: { from: () => ({ select() { return this; }, eq() { return this; }, maybeSingle: async () => ({ data: { id: 'BENG24COE-1', institution: 'Dar es Salaam Institute of Technology (DIT)', programme: 'BENG24COE', year: 3, semester: 1 } }) }) }, supabaseResponse: Response.next() }) }
+  '@/lib/supabase/middleware': { updateSession: async () => ({ user, supabase: { rpc:async()=>({data:lecturerApplication}),from: () => ({ select() { return this; }, eq() { return this; }, maybeSingle: async () => ({ data: { id: 'BENG24COE-1', institution: 'Dar es Salaam Institute of Technology (DIT)', programme: 'BENG24COE', year: 3, semester: 1 } }) }) }, supabaseResponse: Response.next() }) }
 });
 const saved = { ...process.env };
 process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.invalid';
@@ -83,6 +84,14 @@ async function check(host, path, member, expected, destination) {
   await check('lecturer.darasax.com', '/verify-email', null, 200);
   await check('lecturer.darasax.com', '/login', null, 200);
   await check('admin.darasax.com', '/signup', undefined, 307, '/login');
+  adminVerified=false;
+  await check('admin.darasax.com','/admin',{role:'admin',status:'active'},307,'/admin-verify-email');
+  await check('admin.darasax.com','/admin-verify-email',{role:'admin',status:'active'},200);
+  await check('admin.darasax.com','/admin-verify-email',undefined,307,'/login');
+  adminVerified=true;lecturerApplication={status:'pending'};
+  await check('lecturer.darasax.com','/lecturer',{role:'lecturer',status:'inactive'},307,'/lecturer-approval');
+  await check('lecturer.darasax.com','/login',{role:'lecturer',status:'inactive'},307,'/lecturer-approval');
+  lecturerApplication=null;
   await check('darasax-cr.eprotechtz.com', '/', undefined, 307, '/cr');
   assert.equal(new URL((await proxy({ nextUrl: new URL('https://cr.darasax.com/'), url: 'https://cr.darasax.com/', headers: new Headers({ host: 'cr.darasax.com' }) })).location).origin, 'https://darasax.com');
   failed = true;

@@ -1,8 +1,8 @@
 # Lecturer registration and verification
 
-Lecturers use `https://lecturer.darasax.com/signup` with full name, email and a password (minimum eight characters). Google and GitHub are absent from this flow. They enter the emailed verification code, then select their classes and modules before entering the lecturer workspace.
+Lecturers use `https://lecturer.darasax.com/signup` with full name, email and a password (minimum eight characters). Google and GitHub are absent from this flow. They enter the emailed verification code and wait on `/lecturer-approval`. An administrator reviews the application at **Admin > Lecturers**. Once approved, the lecturer selects their classes and modules before entering the workspace.
 
-Email verification activates a self-registered lecturer account. This is open lecturer registration, with no administrator approval step. Verified email proves control of the mailbox; it does not prove employment by the institution. Existing student registrations, other staff roles and deactivated accounts cannot use this flow to change roles. Administrator and CR provisioning remain restricted.
+Email verification reserves an inactive lecturer membership and submits a pending application; it does not grant portal or class access. Only an administrator can approve or reject an application. The existing lecturer is also moved to pending approval; their teaching setup is preserved for reactivation after approval. A rejected application cannot be resubmitted to bypass the decision. Existing student registrations and other staff roles cannot use this flow to change roles. Administrator and CR provisioning remain restricted.
 
 ## Supabase setup
 
@@ -20,7 +20,7 @@ Use production project `psrtifnhstkujmschwem`, shared by the portals.
    ```
 
 4. Keep the existing custom SMTP configuration that sends student verification emails. For Resend SMTP, the host is `smtp.resend.com`, username `resend`, password a Resend API key, and port 465 (TLS) or 587 (STARTTLS). The sender address must use a verified Resend domain. Configure secrets directly in Supabase, never in frontend environment variables.
-5. Test with a new email you control. Create the lecturer account, confirm receipt (including spam), enter the code, complete teaching setup, sign out and sign back in. A code expires according to the project's Auth settings. The verification screen provides resend after its cooldown.
+5. Test with a new email you control. Create the lecturer account, confirm receipt (including spam), enter the code, and check that access is pending. Approve it from **Admin > Lecturers**, then let the lecturer check approval status, complete teaching setup, sign out and sign back in. A code expires according to the project's Auth settings. The verification screen provides resend after its cooldown.
 
 SMTP and confirmation templates are shared across the project. Keep the message suitable for both students and lecturers. Delivery to a real mailbox still needs this manual test; automated database tests do not send emails.
 

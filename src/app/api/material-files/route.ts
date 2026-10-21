@@ -2,6 +2,8 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { materialKey, readUrl, removeObject, uploadUrl } from "@/lib/r2";
+import { getStaffProfile } from "@/lib/auth/staff-profile";
+import { adminEmailVerified } from "@/lib/auth/admin-security";
 
 export const runtime = "nodejs";
 const json = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: { "Cache-Control": "private, no-store" } });
@@ -12,6 +14,10 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) return json({ error: "Sign in to access files." }, 401);
+  try {
+    const staff = await getStaffProfile(supabase, user.id);
+    if (staff?.role === "admin" && (staff.status !== "active" || !await adminEmailVerified(supabase))) return json({ error: "Administrator email verification required." }, 403);
+  } catch { return json({ error: "Account security could not be verified." }, 503); }
   let body;
   try { body = await request.json(); } catch { return json({ error: "Invalid request." }, 400); }
   if (!body || typeof body !== "object") return json({ error: "Invalid request." }, 400);

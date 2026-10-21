@@ -443,6 +443,14 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      admin_email_verified: { Args: Record<string, never>; Returns: boolean };
+      start_admin_email_check: { Args: { challenge_token: string; browser_token: string }; Returns: Json };
+      admin_email_attempt: { Args: { challenge_token: string }; Returns: boolean };
+      finish_admin_email_check: { Args: { challenge_token: string; browser_token: string }; Returns: undefined };
+      forget_admin_browser: { Args: { browser_token: string }; Returns: undefined };
+      lecturer_application_status: { Args: Record<string, never>; Returns: Json };
+      list_lecturer_applications: { Args: Record<string, never>; Returns: Json };
+      review_lecturer_application: { Args: { applicant_id: string; decision: string }; Returns: undefined };
       complete_lecturer_registration: { Args: Record<string, never>; Returns: undefined };
       complete_lecturer_setup: { Args: { selected_classes: string[]; selected_modules: string[] }; Returns: undefined };
       list_staff_students: { Args: Record<string, never>; Returns: Json };
