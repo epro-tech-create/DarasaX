@@ -43,7 +43,6 @@ export interface User {
   year: 1 | 2 | 3 | 4;
   semester: 1 | 2;
   className: string;
-  studyStreak: number;
   modulesJoined: number;
   resourcesViewed: number;
 }
@@ -153,16 +152,6 @@ export interface TimetableEntry {
   lecturer: string;
 }
 
-export interface StudySession {
-  id: string;
-  moduleId: string;
-  topicId?: string;
-  title: string;
-  date: string;
-  durationMinutes: number;
-  completed: boolean;
-  goal?: string;
-}
 
 export interface NotificationItem {
   id: string;

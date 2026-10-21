@@ -7,16 +7,7 @@ import type { ClassStream } from "@/types";
 export type AcademicClass =
   Database["public"]["Tables"]["academic_classes"]["Row"];
 export const ACTIVE_INSTITUTION = "Dar es Salaam Institute of Technology (DIT)";
-export const UNIVERSITIES = [
-  ACTIVE_INSTITUTION,
-  "University of Dar es Salaam (UDSM)",
-  "University of Dodoma (UDOM)",
-  "Ardhi University (ARU)",
-  "Mzumbe University",
-  "Sokoine University of Agriculture (SUA)",
-  "Muhimbili University of Health and Allied Sciences (MUHAS)",
-  "Mbeya University of Science and Technology (MUST)",
-];
+export const UNIVERSITIES = [ACTIVE_INSTITUTION];
 export function activeCohort(c: AcademicClass) {
   return (
     !c.archived &&

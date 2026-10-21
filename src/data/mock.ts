@@ -12,7 +12,6 @@ import type {
   PastPaper,
   Programme,
   Resource,
-  StudySession,
   TimetableEntry,
   Topic,
   UpdateFeedItem,
@@ -78,7 +77,6 @@ export const currentUser: User = {
   year: 3,
   semester: 1,
   className: "COE Year 3A",
-  studyStreak: 5,
   modulesJoined: 11,
   resourcesViewed: 48,
 };
@@ -1280,54 +1278,6 @@ export const timetable: TimetableEntry[] = [...currentTimetable, ...legacyTimeta
 export function getTimetableForStream(streamId: ClassStreamId) {
   return timetable.filter((entry) => entry.streamId === streamId);
 }
-
-export const studySessions: StudySession[] = [
-  {
-    id: "ss-1",
-    moduleId: "mod-sensor-networks",
-    topicId: "topic-net-6",
-    title: "Routing Protocols deep dive",
-    date: "2026-09-18",
-    durationMinutes: 90,
-    completed: false,
-    goal: "Finish Topic 06 notes and practice 10 quiz questions",
-  },
-  {
-    id: "ss-2",
-    moduleId: "mod-db-admin",
-    topicId: "topic-db-4",
-    title: "Normalization practice",
-    date: "2026-09-18",
-    durationMinutes: 60,
-    completed: false,
-    goal: "Complete assignment draft",
-  },
-  {
-    id: "ss-3",
-    moduleId: "mod-dsa",
-    title: "Pipelining revision",
-    date: "2026-09-19",
-    durationMinutes: 75,
-    completed: false,
-    goal: "Prepare for Friday CAT",
-  },
-  {
-    id: "ss-4",
-    moduleId: "mod-electronics",
-    title: "Interrupt handling review",
-    date: "2026-09-16",
-    durationMinutes: 45,
-    completed: true,
-  },
-  {
-    id: "ss-5",
-    moduleId: "mod-dsp",
-    title: "Process scheduling summary",
-    date: "2026-09-20",
-    durationMinutes: 60,
-    completed: false,
-  },
-];
 
 export const notifications: NotificationItem[] = [
   {

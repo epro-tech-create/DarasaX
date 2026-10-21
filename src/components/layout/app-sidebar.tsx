@@ -11,7 +11,6 @@ import {
   Home,
   Archive,
   Megaphone,
-  CalendarRange,
   User,
   Settings,
   PanelLeftClose,
@@ -33,7 +32,6 @@ const mainNav = [
   { href: "/timetable", label: "Timetable", icon: CalendarDays },
   { href: "/past-papers", label: "Past Papers", icon: Archive },
   { href: "/announcements", label: "Announcements", icon: Megaphone },
-  { href: "/planner", label: "Study Planner", icon: CalendarRange },
   { href: "/missed", label: "What Did I Miss?", icon: History },
 ];
 

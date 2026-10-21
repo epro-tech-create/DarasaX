@@ -2212,5 +2212,13 @@
   "student delete": "kufuta mwanafunzi",
   "cr update": "kusasisha mwakilishi",
   "cr delete": "kufuta mwakilishi",
-  "other": "mengine"
+  "other": "mengine",
+  "School opening": "Kufunguliwa kwa chuo",
+  "Test 1 starts": "Jaribio la 1 linaanza",
+  "Test 1 · Week 7": "Jaribio la 1 · Wiki ya 7",
+  "Week 7": "Wiki ya 7",
+  "Test 1 period has started": "Kipindi cha Jaribio la 1 kimeanza",
+  "Started": "Kimeanza",
+  "Year 3": "Mwaka wa 3",
+  "Your module progress is visible only to you by default.": "Kwa kawaida, maendeleo yako ya masomo huonekana kwako pekee."
 }

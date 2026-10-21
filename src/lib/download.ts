@@ -22,12 +22,12 @@ export function getResourceDownloadContent(resource: Resource): string {
     "---",
     "",
     "Study notes for this resource.",
-    "Open DarasaX to review the related topic, ask DarasaX for explanations, or continue with the next lecture.",
+    "Open DarasaX to review the related topic or continue with the next lecture.",
     "",
     "## Key reminders",
     "- Skim the headings first, then dive into examples.",
     "- Write 3–5 recall questions before your next class.",
-    "- Link this material to your assignment deadlines in the planner.",
+    "- Check your assignment deadlines alongside this material.",
   ].join("\n");
 }
 

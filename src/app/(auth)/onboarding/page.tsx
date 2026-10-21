@@ -1,10 +1,9 @@
 "use client";
 
 import { useTranslate } from "@/components/providers/language-provider";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -19,7 +18,6 @@ import { WelcomeCelebration } from "@/components/auth/welcome-celebration";
 import { getAuthErrorMessage } from "@/lib/auth/errors";
 import { createClient } from "@/lib/supabase/client";
 import {
-  UNIVERSITIES,
   ACTIVE_INSTITUTION,
   activeCohort,
   useClassRegistry,
@@ -33,12 +31,12 @@ const STEPS = [
   "Congratulations",
 ];
 
-const YEARS = [1, 2, 3, 4].map((value) => ({
+const YEARS = [3].map((value) => ({
   value,
   label: `Year ${value}`,
   hint: "Year of study",
 }));
-const SEMESTERS = [1, 2].map((value) => ({
+const SEMESTERS = [1].map((value) => ({
   value,
   label: `Semester ${value}`,
   hint: "Select your current semester",
@@ -56,8 +54,6 @@ export default function OnboardingPage() {
   const [streamId, setStreamId] = useState("");
   const [step, setStep] = useState(0);
   const [institution, setInstitution] = useState("");
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [search, setSearch] = useState("");
   const [year, setYear] = useState<(typeof YEARS)[number]["value"] | null>(
     null,
   );
@@ -65,16 +61,10 @@ export default function OnboardingPage() {
     (typeof SEMESTERS)[number]["value"] | null
   >(null);
   const availableClasses = classes.filter(
-    (c) => c.institution === institution && c.year === year,
+    (c) => activeCohort(c) && c.institution === institution && c.year === year,
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const filteredUniversities = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return UNIVERSITIES;
-    return UNIVERSITIES.filter((name) => name.toLowerCase().includes(q));
-  }, [search]);
 
   async function finish() {
     const chosenClass = classes.find((c) => c.id === streamId);
@@ -170,11 +160,6 @@ export default function OnboardingPage() {
             {translateUI("A few quick details so we can personalize your semester workspace.")}</p>
         </div>
 
-        <div className="mt-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm">
-          <p className="font-semibold">{translateUI("DIT / BENG24COE / Year 3 / Semester 1")}</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {translateUI("Only this current cohort is open. Your class controls which materials you can access.")}</p>
-        </div>
         <HorizontalStepper steps={STEPS} current={step} />
 
         <div className="surface mt-4 rounded-[20px] p-4 sm:p-6">
@@ -217,69 +202,13 @@ export default function OnboardingPage() {
                       <p className="mt-0.5 text-[11px] text-muted-foreground">
                         {translateUI("Choose the university or college you attend.")}</p>
 
-                      <div className="relative mt-4">
-                        <button
-                          type="button"
-                          onClick={() => setDropdownOpen((o) => !o)}
-                          className="focus-ring flex h-10 w-full items-center justify-between rounded-[10px] border border-border bg-background px-3 text-left text-sm"
-                          aria-expanded={dropdownOpen}
-                        >
-                          <span
-                            className={cn(
-                              !institution && "text-muted-foreground",
-                            )}
-                          >
-                            {translateUI(institution || "Select university...")}
-                          </span>
-                          <ChevronDown
-                            className={cn(
-                              "h-4 w-4 text-muted-foreground transition",
-                              dropdownOpen && "rotate-180",
-                            )}
-                          />
-                        </button>
-
-                        {dropdownOpen ? (
-                          <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-[14px] border border-border bg-card shadow-soft">
-                            <div className="border-b border-border p-2">
-                              <input
-                                autoFocus
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                placeholder={translateUI("Search universities...")}
-                                className="focus-ring h-10 w-full rounded-[10px] border border-border bg-background px-3 text-sm"
-                              />
-                            </div>
-                            <ul className="max-h-56 overflow-y-auto p-1.5">
-                              {filteredUniversities.map((name) => (
-                                <li key={name}>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setInstitution(name);
-                                      setStreamId("");
-                                      setDropdownOpen(false);
-                                      setSearch("");
-                                      setError("");
-                                    }}
-                                    className={cn(
-                                      "w-full rounded-[10px] px-3 py-2.5 text-left text-sm transition hover:bg-muted",
-                                      institution === name &&
-                                        "bg-primary/10 text-primary",
-                                    )}
-                                  >
-                                    {name}
-                                  </button>
-                                </li>
-                              ))}
-                              {filteredUniversities.length === 0 ? (
-                                <li className="px-3 py-4 text-center text-sm text-muted-foreground">
-                                  {translateUI("No universities found")}</li>
-                              ) : null}
-                            </ul>
-                          </div>
-                        ) : null}
-                      </div>
+                      <label className="mt-4 block text-sm font-medium">
+                        {translateUI("Institution")}
+                        <select required value={institution} onChange={event => { setInstitution(event.target.value); setStreamId(""); setError(""); }} className="focus-ring mt-2 h-11 w-full rounded-xl border border-border bg-background px-3">
+                          <option value="">{translateUI("Select your institution")}</option>
+                          <option value={ACTIVE_INSTITUTION}>DIT</option>
+                        </select>
+                      </label>
                     </div>
                     <InstitutionIllustration className="mx-auto h-40 w-full max-w-[260px] md:h-44" />
                   </div>
@@ -292,7 +221,7 @@ export default function OnboardingPage() {
                         {translateUI("Academic year")}</h2>
                       <p className="mt-0.5 text-[11px] text-muted-foreground">
                         {translateUI("Which year of study are you currently in?")}</p>
-                      <div className="mt-4 grid grid-cols-2 gap-2.5">
+                      <div className="mt-4 grid max-w-sm grid-cols-1 gap-2.5">
                         {YEARS.map((item) => (
                           <button
                             key={item.value}

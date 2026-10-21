@@ -244,7 +244,7 @@ export default function ProfilePage() {
                   className={inputClass}
                 >
                   <option value="">{translateUI("Select year")}</option>
-                  {[1, 2, 3, 4, 5, 6].map((year) => (
+                  {[3].map((year) => (
                     <option key={year} value={year}>
                       {translateUI("Year ")}{translateUI(year)}
                     </option>
@@ -260,7 +260,6 @@ export default function ProfilePage() {
                 >
                   <option value="">{translateUI("Select semester")}</option>
                   <option value="1">{translateUI("Semester 1")}</option>
-                  <option value="2">{translateUI("Semester 2")}</option>
                 </select>
               </label>
               <label className="text-sm font-medium sm:col-span-2">

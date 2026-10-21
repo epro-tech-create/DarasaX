@@ -5,8 +5,8 @@ import Link from "next/link";
 import {
   BookOpen,
   ClipboardList,
+  CalendarDays,
   Clock,
-  Flame,
   GraduationCap,
   MapPin,
   UserRound,
@@ -121,8 +121,9 @@ export function NextClassCard({
 const statIcons = {
   Assignments: ClipboardList,
   Exams: GraduationCap,
+  "School opening": CalendarDays,
+  "Exam countdown": GraduationCap,
   Modules: BookOpen,
-  "Study streak": Flame,
 } as const;
 
 export function StatCard({

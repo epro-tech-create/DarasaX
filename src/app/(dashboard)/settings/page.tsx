@@ -170,7 +170,7 @@ export default function SettingsPage() {
 
             {section.id === "privacy" ? (
               <p className="mt-4 text-sm text-muted-foreground">
-                {translateUI("Your study streak and module progress are visible only to you by default.")}</p>
+                {translateUI("Your module progress is visible only to you by default.")}</p>
             ) : null}
           </section>
         ))}

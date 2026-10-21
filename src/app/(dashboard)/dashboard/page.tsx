@@ -1,6 +1,6 @@
 import { OverviewHeader } from "@/components/dashboard/overview-ui";
 import { StudentGreeting } from "@/components/dashboard/student-greeting";
-import { ExamCountdown } from "@/components/dashboard/exam-countdown";
+import { ExamCountdown, AcademicCountdownStatCard } from "@/components/dashboard/exam-countdown";
 import { ComingUp } from "@/components/dashboard/coming-up";
 import {
   NextClassCard,
@@ -8,9 +8,8 @@ import {
 } from "@/components/dashboard/next-class-card";
 import { DashboardAssignmentStatCard } from "@/components/dashboard/assignment-stat-card";
 import { StudyChart } from "@/components/dashboard/study-chart";
-import { currentUser, modules } from "@/data/mock";
+import { modules } from "@/data/mock";
 import { getNextClass } from "@/lib/academic";
-import { formatCountdownParts, getMsUntilSchoolOpen } from "@/lib/school";
 import { getGreeting } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/server";
 import { DEFAULT_CLASS_STREAM } from "@/data/mock";
@@ -58,8 +57,8 @@ export default async function DashboardPage() {
   } catch {
     // Fall back to bundled timetable and a generic greeting
   }
+  const initialNow = Date.now();
   const next = getNextClass(new Date(), studentStream, liveTimetable);
-  const examDays = formatCountdownParts(getMsUntilSchoolOpen()).days;
 
   return (
     <div className="space-y-6 sm:space-y-7">
@@ -73,20 +72,10 @@ export default async function DashboardPage() {
         />
       ) : null}
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
         <DashboardAssignmentStatCard />
-        <StatCard
-          label="Exams"
-          value={`${examDays} days`}
-          hint="Until school opens"
-          href="/planner"
-        />
+        <AcademicCountdownStatCard initialNow={initialNow} />
         <StatCard label="Modules" value={`${modules.length}`} href="/modules" />
-        <StatCard
-          label="Study streak"
-          value={`${currentUser.studyStreak} days`}
-          href="/planner"
-        />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
@@ -94,7 +83,7 @@ export default async function DashboardPage() {
         <StudyChart />
       </div>
 
-      <ExamCountdown />
+      <ExamCountdown initialNow={initialNow} />
     </div>
   );
 }

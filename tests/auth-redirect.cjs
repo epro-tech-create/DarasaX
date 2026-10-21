@@ -9,7 +9,7 @@ function load(file, deps = {}) {
   return exports;
 }
 const redirects = load('src/lib/auth/redirect.ts');
-for (const next of ['/cr','/cr/materials','/admin','/lecturer','//evil.invalid','/\\evil.invalid','https://evil.invalid','/%63r','/modules/../cr','/modules/%2e%2e/cr','/%','/login','/auth/callback','/modules%2f../cr']) {
+for (const next of ['/planner','/cr','/cr/materials','/admin','/lecturer','//evil.invalid','/\\evil.invalid','https://evil.invalid','/%63r','/modules/../cr','/modules/%2e%2e/cr','/%','/login','/auth/callback','/modules%2f../cr']) {
   assert.equal(redirects.safeStudentReturnPath(next), null, next);
   assert.equal(redirects.studentPostAuthPath(true, next), '/dashboard');
   assert.equal(redirects.studentPostAuthPath(false, next), '/onboarding');
