@@ -48,6 +48,10 @@ async function check(host, path, member, expected, destination) {
 }
 (async () => {
   const host = 'darasax.com';
+  for (const domain of ['darasax.com', 'admin.darasax.com', 'lecturer.darasax.com', 'cr.darasax.com']) {
+    for (const path of ['/robots.txt', '/sitemap.xml', '/opengraph-image']) await check(domain, path, undefined, 200);
+  }
+  await check(host, '/', undefined, 200);
   const cr = { role: 'class_rep', status: 'active' };
   // The export handler authenticates/scopes the caller itself on every portal.
   for (const domain of ['darasax.com','admin.darasax.com','lecturer.darasax.com']) await check(domain,'/api/students/export',undefined,200);

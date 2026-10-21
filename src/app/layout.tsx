@@ -6,6 +6,7 @@ import { LanguageProvider } from "@/components/providers/language-provider";
 import { SessionTimeout } from "@/components/auth/session-timeout";
 import { SiteVisitorTracker } from "@/components/analytics/site-visitor-tracker";
 import "./globals.css";
+import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from "@/lib/seo";
 
 const figtree = Figtree({
   subsets: ["latin"],
@@ -22,12 +23,15 @@ const outfit = Outfit({
 const themeInitScript = `(function(){try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark"){var d=document.documentElement;d.classList.remove("light","dark");d.classList.add(t);d.style.colorScheme=t;}}catch(e){}})();`;
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  applicationName: "DarasaX",
+  robots: { index: false, follow: false },
   title: {
-    default: "DarasaX — Everything for Class in One Place",
+    default: SITE_TITLE,
     template: "%s · DarasaX",
   },
   description:
-    "DarasaX helps university students organize modules, notes, assignments, past papers, timetables and study resources in one modern academic workspace.",
+    SITE_DESCRIPTION,
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "32x32" },
@@ -38,12 +42,15 @@ export const metadata: Metadata = {
     shortcut: ["/favicon.ico"],
   },
   openGraph: {
-    title: "DarasaX — Everything for Class in One Place",
+    title: SITE_TITLE,
     description:
-      "DarasaX helps university students organize modules, notes, assignments, past papers, timetables and study resources in one modern academic workspace.",
+      SITE_DESCRIPTION,
     type: "website",
     siteName: "DarasaX",
+    url: `${SITE_URL}/`,
+    locale: "en_GB",
   },
+  twitter: { card: "summary_large_image", title: SITE_TITLE, description: SITE_DESCRIPTION, images: [`${SITE_URL}/opengraph-image`] },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

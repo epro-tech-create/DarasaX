@@ -51,6 +51,8 @@ export async function proxy(request: NextRequest) {
       status: 403,
     });
   const portal = roleFromHost(request.headers.get("host")) ?? getAppRole();
+  // Public metadata and the non-personalized landing page need no Auth reads.
+  if (["/robots.txt", "/sitemap.xml", "/opengraph-image"].includes(pathname) || (portal === "student" && pathname === "/")) return NextResponse.next();
   // Static assets only: never exempt a protected path because it contains a dot.
   if (
     pathname.startsWith("/brand/") ||
