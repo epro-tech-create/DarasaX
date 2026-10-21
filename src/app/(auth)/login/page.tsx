@@ -4,7 +4,7 @@ import { getStudentAdmission } from "@/lib/auth/admission";
 import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, Suspense, useEffect, useState } from "react";
+import { FormEvent, Suspense, useState } from "react";
 import { AuthAlert } from "@/components/auth/auth-alert";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { AuthSubmitButton } from "@/components/auth/auth-submit-button";
@@ -17,6 +17,7 @@ import { safeStudentReturnPath, studentPostAuthPath } from "@/lib/auth/redirect"
 import { signInWithGoogle } from "@/lib/auth/oauth";
 import {
   ensureProfile,
+  getProfile,
 } from "@/lib/auth/profile";
 import { createClient } from "@/lib/supabase/client";
 import { studentEnrollmentError } from "@/lib/auth/enrollment";
@@ -26,7 +27,6 @@ import { ADMIN_EMAIL_PATH } from "@/lib/auth/admin-security";
 import {
   getLecturerEntryPath,
   loginStaff,
-  useStaffSession,
 } from "@/lib/staff-auth";
 
 function StudentLoginForm() {
@@ -67,7 +67,11 @@ function StudentLoginForm() {
       if (signInError) throw signInError;
       if (!data.user) throw new Error("No user");
 
-      const staff = await getStaffProfile(supabase, data.user.id);
+      const [staff, savedProfile, admission] = await Promise.all([
+        getStaffProfile(supabase, data.user.id),
+        getProfile(supabase, data.user.id),
+        getStudentAdmission(supabase, data.user.id),
+      ]);
       if (staff) {
         if (staff.status !== "active" || staff.role !== "class_rep") {
           await supabase.auth.signOut();
@@ -78,7 +82,7 @@ function StudentLoginForm() {
         router.refresh();
         return;
       }
-      const profile = await ensureProfile(supabase, data.user);
+      const profile = savedProfile ?? await ensureProfile(supabase, data.user);
       const restriction = studentEnrollmentError(profile);
       if (restriction) { await supabase.auth.signOut(); setError(restriction); return; }
       await recordAudit({
@@ -87,7 +91,7 @@ function StudentLoginForm() {
         action: "login",
         summary: "Signed in",
       });
-      const dest = studentPostAuthPath(profile.onboarding_completed, next, await getStudentAdmission(supabase, data.user.id));
+      const dest = studentPostAuthPath(profile.onboarding_completed, next, admission);
       router.replace(dest);
       router.refresh();
     } catch (err) {
@@ -187,26 +191,12 @@ function StaffLoginForm({
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next");
-  const { session, ready } = useStaffSession();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(() => searchParams.get("error") ?? "");
   const [info] = useState(() => searchParams.get("expired") === "1" ? "You were signed out after 10 minutes of inactivity." : "");
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (!ready || !session) return;
-    if (session.role === role) {
-      const dest =
-        role === "admin" ? ADMIN_EMAIL_PATH : role === "lecturer"
-          ? getLecturerEntryPath(session)
-          : next && next.startsWith("/") && !next.startsWith("//")
-            ? next
-            : APP_HOME[role];
-      router.replace(dest);
-    }
-  }, [next, ready, role, router, searchParams, session]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();

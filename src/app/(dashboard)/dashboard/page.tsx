@@ -11,7 +11,7 @@ import { StudyChart } from "@/components/dashboard/study-chart";
 import { modules } from "@/data/mock";
 import { getNextClass } from "@/lib/academic";
 import { getGreeting } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/server";
+import { getStudentWorkspace } from "@/lib/auth/student-workspace";
 import { DEFAULT_CLASS_STREAM } from "@/data/mock";
 import type { TimetableEntry } from "@/types";
 
@@ -23,22 +23,12 @@ export default async function DashboardPage() {
       process.env.NEXT_PUBLIC_SUPABASE_URL &&
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     ) {
-      const supabase = await createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase
-          .from("profiles")
-          .select("class_name")
-          .eq("id", user.id)
-          .single();
-        studentStream = (data?.class_name ??
-          DEFAULT_CLASS_STREAM) as typeof DEFAULT_CLASS_STREAM;
-      }
+      const { client: supabase, profile } = await getStudentWorkspace();
+      studentStream = (profile?.class_name ?? DEFAULT_CLASS_STREAM) as typeof DEFAULT_CLASS_STREAM;
       const timetableRes = await supabase
         .from("timetable_entries")
         .select("*")
+        .eq("stream_id", studentStream)
         .order("day")
         .order("start_time");
       if (timetableRes.data && timetableRes.data.length > 0) {
@@ -57,8 +47,9 @@ export default async function DashboardPage() {
   } catch {
     // Fall back to bundled timetable and a generic greeting
   }
-  const initialNow = Date.now();
-  const next = getNextClass(new Date(), studentStream, liveTimetable);
+  const now = new Date();
+  const initialNow = now.getTime();
+  const next = getNextClass(now, studentStream, liveTimetable);
 
   return (
     <div className="space-y-6 sm:space-y-7">

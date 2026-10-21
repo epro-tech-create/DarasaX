@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { createContext, createElement, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { NotificationItem, NotificationType } from "@/types";
 
@@ -9,25 +9,27 @@ type Inbox = { userId: string | null; items: NotificationItem[]; unreadCount: nu
 const emptyInbox: Inbox = { userId: null, items: [], unreadCount: 0, ready: false, error: "" };
 
 /** An authenticated inbox; no shared browser reads or historical-content reconstruction. */
-export function useNotifications() {
+function useNotificationInbox(initialUserId: string | null) {
   const [inbox, setInbox] = useState<Inbox>(emptyInbox);
   useEffect(() => {
     const supabase = createClient();
     let disposed = false;
     let generation = 0;
+    // Comes from the authenticated server layout. RLS remains the authority for
+    // every read/write; no extra Auth round trip is needed for each poll.
+    let userId = initialUserId;
     const refresh = async () => {
       const request = ++generation;
       try {
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        if (authError) throw authError;
-        if (!user) { if (!disposed && request === generation) setInbox({ ...emptyInbox, ready: true }); return; }
+        if (!userId) { if (!disposed && request === generation) setInbox({ ...emptyInbox, ready: true }); return; }
+        const recipient = userId;
         const [list, unread] = await Promise.all([
-          supabase.from("notifications").select("*").eq("recipient_id", user.id).order("created_at", { ascending: false }).limit(100),
-          supabase.from("notifications").select("id", { count: "exact", head: true }).eq("recipient_id", user.id).is("read_at", null),
+          supabase.from("notifications").select("*").eq("recipient_id", recipient).order("created_at", { ascending: false }).limit(100),
+          supabase.from("notifications").select("id", { count: "exact", head: true }).eq("recipient_id", recipient).is("read_at", null),
         ]);
         if (list.error || unread.error) throw list.error || unread.error;
         if (!disposed && request === generation) setInbox({
-          userId: user.id, ready: true, error: "", unreadCount: unread.count ?? 0,
+          userId: recipient, ready: true, error: "", unreadCount: unread.count ?? 0,
           items: (list.data ?? []).map((row) => ({ id: row.id, title: row.title, body: row.body,
             type: row.type as NotificationType, createdAt: row.created_at, read: row.read_at !== null, href: row.href })),
         });
@@ -39,8 +41,10 @@ export function useNotifications() {
     const initial = setTimeout(schedule, 0);
     const poll = setInterval(() => { if (document.visibilityState === "visible") schedule(); }, 30000);
     let authTimer: ReturnType<typeof setTimeout>;
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_OUT" || event === "SIGNED_IN") {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      const nextUserId = session?.user.id ?? null;
+      if (event === "SIGNED_OUT" || (event === "SIGNED_IN" && nextUserId !== userId)) {
+        userId = event === "SIGNED_OUT" ? null : nextUserId;
         generation++;
         setInbox(emptyInbox);
         clearTimeout(authTimer);
@@ -54,7 +58,7 @@ export function useNotifications() {
       clearTimeout(initial); clearTimeout(authTimer); clearInterval(poll); subscription.unsubscribe();
       window.removeEventListener(UPDATE_EVENT, schedule); window.removeEventListener("focus", schedule);
     };
-  }, []);
+  }, [initialUserId]);
 
   const refresh = useCallback(() => window.dispatchEvent(new Event(UPDATE_EVENT)), []);
   const markRead = useCallback(async (id: string) => {
@@ -73,4 +77,18 @@ export function useNotifications() {
     refresh();
   }, [inbox.userId, refresh]);
   return { ...inbox, markRead, markAllRead, refresh };
+}
+
+const NotificationsContext = createContext<ReturnType<typeof useNotificationInbox> | null>(null);
+
+/** One inbox/poller per workspace, shared by desktop/mobile badges and panels. */
+export function NotificationsProvider({ userId, children }: { userId: string | null; children: ReactNode }) {
+  const inbox = useNotificationInbox(userId);
+  return createElement(NotificationsContext.Provider, { value: inbox }, children);
+}
+
+export function useNotifications() {
+  const inbox = useContext(NotificationsContext);
+  if (!inbox) throw new Error("NotificationsProvider is required");
+  return inbox;
 }

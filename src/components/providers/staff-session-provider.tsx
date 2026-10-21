@@ -4,6 +4,7 @@ import { StaffSessionContext } from "@/lib/staff-session-context";
 import { fetchStaffSession, toSession, type StaffSession } from "@/lib/staff-auth";
 import { createClient } from "@/lib/supabase/client";
 import type { StaffProfile } from "@/types/database";
+import { NotificationsProvider } from "@/lib/notifications-store";
 
 export function StaffSessionProvider({ initialProfile, children }: { initialProfile: StaffProfile; children: ReactNode }) {
   // The server has already verified this profile; do not fetch it again on mount.
@@ -24,5 +25,5 @@ export function StaffSessionProvider({ initialProfile, children }: { initialProf
     return () => { window.removeEventListener("focus", update); window.removeEventListener("darasax:staff-session", update); data.subscription.unsubscribe(); };
   }, [refresh]);
   const value = useMemo(() => ({ session, ready: true, refresh }), [session, refresh]);
-  return <StaffSessionContext.Provider value={value}>{children}</StaffSessionContext.Provider>;
+  return <StaffSessionContext.Provider value={value}><NotificationsProvider key={initialProfile.id} userId={session?.id ?? null}>{children}</NotificationsProvider></StaffSessionContext.Provider>;
 }

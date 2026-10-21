@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/types/database";
+import { NotificationsProvider } from "@/lib/notifications-store";
 
 type Context = { profile: Profile | null; avatarUrl: string | null; updateProfile: (profile: Profile) => void };
 const StudentProfileContext = createContext<Context | null>(null);
@@ -44,7 +45,7 @@ export function StudentProfileProvider({ initialProfile, children }: { initialPr
     const timer = setInterval(() => void resolve(), 45 * 60 * 1000);
     return () => { cancelled = true; clearInterval(timer); };
   }, [profile?.avatar_url, profile?.id]);
-  return <StudentProfileContext.Provider value={{ profile, avatarUrl, updateProfile }}>{children}</StudentProfileContext.Provider>;
+  return <StudentProfileContext.Provider value={{ profile, avatarUrl, updateProfile }}><NotificationsProvider key={initialProfile?.id} userId={initialProfile?.id ?? null}>{children}</NotificationsProvider></StudentProfileContext.Provider>;
 }
 
 export function useStudentProfile() {

@@ -95,8 +95,17 @@ export async function proxy(request: NextRequest) {
 
   // A query failure must not turn staff into a student or grant access.
   let staff;
+  let studentContext: Awaited<ReturnType<typeof getProfile>> | null = null;
+  let studentAdmission: Awaited<ReturnType<typeof getStudentAdmission>> | null = null;
+  const checkStudent = user && portal === "student" && (isStudentProtected(pathname) || pathname === "/login" || pathname === "/signup");
   try {
-    staff = user ? await getStaffProfile(supabase, user.id) : null;
+    if (user) {
+      [staff, studentContext, studentAdmission] = await Promise.all([
+        getStaffProfile(supabase, user.id),
+        checkStudent ? getProfile(supabase, user.id) : null,
+        checkStudent ? getStudentAdmission(supabase, user.id) : null,
+      ]);
+    } else staff = null;
   } catch {
     return new NextResponse(
       "Account access could not be verified. Please try again.",
@@ -180,7 +189,8 @@ export async function proxy(request: NextRequest) {
       pathname === "/login" ||
       pathname === "/signup")
   ) {
-    const [profile, admission] = await Promise.all([getProfile(supabase, user.id), getStudentAdmission(supabase, user.id)]);
+    const profile = studentContext;
+    const admission = studentAdmission;
     const restriction = studentEnrollmentError(profile);
     if (restriction) return new NextResponse(restriction, { status: 403 });
     const { data: registeredClass } = profile?.class_name

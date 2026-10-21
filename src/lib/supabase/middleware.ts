@@ -26,9 +26,11 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Verify the JWT with Supabase's cached signing keys. Never trust a decoded
+  // cookie/getSession user for authorization. Current membership is checked by
+  // the proxy below; sensitive handlers still use getUser independently.
+  const { data, error } = await supabase.auth.getClaims();
+  const user = !error && data?.claims?.sub ? { id: data.claims.sub } : null;
 
   return { supabase, user, supabaseResponse };
 }
