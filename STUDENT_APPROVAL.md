@@ -15,3 +15,5 @@ Apply `supabase/migrations/20261021053428_student_registration_approval_and_priv
 ## Verification
 
 `tests/student-admission.cjs`, `tests/private-sharing.cjs`, `tests/auth-redirect.cjs`, `tests/portal-access.cjs`, and `tests/student-provisioning.cjs` exercise input, redirects, authorization and provisioning. Run `tests/student-admission.sql` in a transaction after the migration and roll it back: it checks real database privileges, unique-number claims, CR class boundaries, pending/approved/suspended file visibility, sharing and welcome acknowledgement with synthetic users. Fixture class BENG24COE-4 must have capacity for a temporary CR.
+
+CR invitation exception: reusable invitations expire after seven days and automatically approve the invited class after the same verified-email and unique-number checks. Existing class assignments, rejections and suspensions cannot be bypassed. See CLASS_INVITATIONS_AND_SIGNOUT.md.

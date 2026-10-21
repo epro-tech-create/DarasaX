@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslate } from "@/components/providers/language-provider";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import { ChangePasswordForm } from "@/components/auth/change-password-form";
 import { RegistrationNumber } from "@/components/profile/registration-number";
 import { LanguageSettings } from "@/components/profile/language-settings";
@@ -299,6 +300,7 @@ export default function ProfilePage() {
       <RegistrationNumber userId={profile.id} className={profile.class_name} />
       <LanguageSettings />
       <ChangePasswordForm />
+      <SignOutButton />
     </div>
   );
 }

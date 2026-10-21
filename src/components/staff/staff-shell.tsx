@@ -11,7 +11,6 @@ import {
   ClipboardList,
   GraduationCap,
   Home,
-  LogOut,
   Megaphone,
   PanelLeft,
   PanelLeftClose,
@@ -29,7 +28,7 @@ import { StaffPageMotion } from "@/components/staff/staff-page-motion";
 import { APP_PORTS } from "@/lib/app-role";
 import { clearActiveLecturerStream } from "@/lib/lecturer-context";
 import { useNotifications } from "@/lib/notifications-store";
-import { logoutStaff } from "@/lib/staff-auth";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import { cn } from "@/lib/utils";
 import type { ClassStreamId, StaffRole } from "@/types";
 
@@ -142,12 +141,6 @@ export function StaffShell({
   const canSwitchClass =
     role === "lecturer" && (streamIds?.length ?? 0) > 1;
 
-  async function onSignOut() {
-    await logoutStaff();
-    router.replace("/login");
-    router.refresh();
-  }
-
   function onSwitchClass() {
     clearActiveLecturerStream();
     router.replace("/lecturer/select-class");
@@ -243,7 +236,7 @@ export function StaffShell({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-border bg-background/90 px-4 backdrop-blur sm:px-5">
+        <header className="sticky top-0 z-30 flex min-h-14 flex-wrap items-center justify-between gap-2 border-b border-border bg-background/90 px-4 backdrop-blur sm:px-5">
           <div className="min-w-0 lg:hidden">
             <Logo href={home} size="sm" />
           </div>
@@ -276,16 +269,7 @@ export function StaffShell({
                 </span>
               ) : null}
             </button>
-            <button
-              type="button"
-              onClick={() => void onSignOut()}
-              className="focus-ring inline-flex h-9 items-center gap-1.5 rounded-xl border border-border px-2.5 text-[13px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
-              aria-label={translateUI("Sign out")}
-              title={translateUI("Sign out")}
-            >
-              <LogOut className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{translateUI("Sign out")}</span>
-            </button>
+            <SignOutButton />
           </div>
         </header>
 

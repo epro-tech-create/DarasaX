@@ -7,6 +7,9 @@ export function getAuthErrorMessage(error: unknown): string {
         : "";
 
   const lower = message.toLowerCase();
+  if (lower.includes("invitation is invalid")) return "This invitation is invalid, expired or revoked.";
+  if (lower.includes("administrator to change your class")) return "You already belong to another class. Contact your administrator to change it.";
+  if (lower.includes("administrator to change a registered number")) return "Contact your administrator to change your registration number.";
   if (lower.includes("registration number is already registered")) return "This registration number is already registered. Sign in to your existing account or contact your administrator.";
   if (lower.includes("registration number must contain numbers only")) return "Registration number must contain numbers only.";
   if (lower.includes("contact your class representative or administrator")) return "Contact your Class Representative or Administrator about your access.";

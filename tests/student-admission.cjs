@@ -10,4 +10,9 @@ for(const status of ['pending','rejected','suspended']) assert.equal(studentPost
 assert.equal(studentPostAuthPath(true,next,{status:'approved',welcome_seen_at:null}),'/welcome?next='+encodeURIComponent(next));
 assert.equal(studentPostAuthPath(true,next,{status:'approved',welcome_seen_at:'now'}),next);
 assert.equal(studentPostAuthPath(true,null,null),'/pending-approval');
+const invite='/join?code=0123456789abcdef0123456789abcdef';
+assert.equal(safeStudentReturnPath(invite),invite);
+assert.equal(studentPostAuthPath(false,invite,null),invite);
+assert.equal(studentPostAuthPath(true,invite,{status:'pending',welcome_seen_at:null}),invite);
+assert.equal(safeStudentReturnPath('/join/other'),null);
 console.log('Passed digit-prefix, registration format and approval/welcome return-path checks.');

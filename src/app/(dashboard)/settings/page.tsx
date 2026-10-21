@@ -2,7 +2,7 @@
 
 import { useTranslate } from "@/components/providers/language-provider";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { signOutAndForget } from "@/lib/auth/sign-out";
 import { useTheme } from "@/components/providers/theme-provider";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
@@ -42,7 +42,6 @@ const sections = [
 
 export default function SettingsPage() {
   const translateUI = useTranslate();
-  const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [emailNotifs, setEmailNotifs] = useState(true);
@@ -64,11 +63,7 @@ export default function SettingsPage() {
     setSigningOut(true);
     setError("");
     try {
-      const supabase = createClient();
-      const { error: signOutError } = await supabase.auth.signOut();
-      if (signOutError) throw signOutError;
-      router.replace("/login");
-      router.refresh();
+      await signOutAndForget();
     } catch (err) {
       setError(getAuthErrorMessage(err));
       setSigningOut(false);

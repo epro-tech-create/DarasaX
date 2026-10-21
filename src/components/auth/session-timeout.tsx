@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { signOutAndForget } from "@/lib/auth/sign-out";
 import { createClient } from "@/lib/supabase/client";
 
 /** Idle limit. Any click, key, or scroll starts another 10 minutes. */
@@ -15,16 +16,7 @@ function isFreshLogin(lastSignInAt: string | undefined) {
 }
 
 async function endSession() {
-  try {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-  } catch {
-    // Still leave the page so a stale cookie cannot keep the desk open.
-  }
-  localStorage.removeItem(KEY);
-  if (!window.location.pathname.startsWith("/login")) {
-    window.location.assign("/login?expired=1");
-  }
+  try { await signOutAndForget("/login?expired=1"); } catch { /* Retry on the next idle check. */ }
 }
 
 export function SessionTimeout() {
@@ -67,6 +59,8 @@ export function SessionTimeout() {
     const onVisible = () => {
       if (document.visibilityState === "visible") void check();
     };
+    const onPageShow = (event: PageTransitionEvent) => { if (event.persisted) window.location.reload(); };
+    window.addEventListener("pageshow", onPageShow);
     void check();
     const timer = window.setInterval(() => void check(), 15_000);
     const events = ["pointerdown", "keydown", "scroll"] as const;
@@ -77,6 +71,7 @@ export function SessionTimeout() {
 
     return () => {
       window.clearInterval(timer);
+      window.removeEventListener("pageshow",onPageShow);
       events.forEach((event) => window.removeEventListener(event, onActivity));
       document.removeEventListener("visibilitychange", onVisible);
     };

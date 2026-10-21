@@ -2,6 +2,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Clock3 } from "lucide-react";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/brand/logo";
 import { LanguageSettings } from "@/components/profile/language-settings";
@@ -16,16 +17,10 @@ export function AdmissionStatus({ status, registrationNumber, className }: {
   const translateUI = useTranslate();
   const router = useRouter();
   const [refreshing, startRefresh] = useTransition();
-  const [error, setError] = useState("");
   useEffect(() => {
     const timer = setInterval(() => { if (document.visibilityState === "visible") router.refresh(); }, 15000);
     return () => clearInterval(timer);
   }, [router]);
-  async function signOut() {
-    const { error } = await createClient().auth.signOut();
-    if (error) { setError("Could not sign out. Please try again."); return; }
-    router.replace("/login"); router.refresh();
-  }
   return <main className="gradient-mesh min-h-screen px-4 py-8">
     <div className="mx-auto max-w-xl space-y-5"><Logo href="/" />
       <section className="surface rounded-3xl p-6 sm:p-8">
@@ -38,10 +33,10 @@ export function AdmissionStatus({ status, registrationNumber, className }: {
           <div><dt className="text-muted-foreground">{translateUI("Registration number")}</dt><dd className="break-all font-medium">{registrationNumber ?? "—"}</dd></div>
           <div><dt className="text-muted-foreground">{translateUI("Class")}</dt><dd className="font-medium">{className ?? "—"}</dd></div>
         </dl>
-        {error && <p role="alert" className="mt-3 text-sm text-danger">{translateUI(error)}</p>}
         <div className="mt-5 flex flex-wrap gap-3">
           <Button disabled={refreshing} onClick={() => startRefresh(() => router.refresh())}>{translateUI(refreshing ? "Checking…" : "Check approval status")}</Button>
-          <Button variant="outline" onClick={() => void signOut()}>{translateUI("Sign out")}</Button>
+          <Button variant="outline" href="/join">{translateUI("Enter invitation code")}</Button>
+          <SignOutButton />
         </div>
       </section>
       <LanguageSettings />

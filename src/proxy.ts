@@ -37,6 +37,7 @@ function isStudentProtected(pathname: string) {
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  if (pathname === "/auth/signout") return NextResponse.next();
   // Share pages and file handlers enforce authentication, approval and class scope themselves.
   if (pathname.startsWith("/share/")) return NextResponse.next();
   // This endpoint verifies the session and database permissions itself.

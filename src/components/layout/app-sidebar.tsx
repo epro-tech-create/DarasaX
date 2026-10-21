@@ -13,10 +13,12 @@ import {
   Megaphone,
   User,
   Settings,
+  Search,
   PanelLeftClose,
   PanelLeft,
   History,
 } from "lucide-react";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import { Logo } from "@/components/brand/logo";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -165,7 +167,7 @@ export function TopBar({
 }) {
   const translateUI = useTranslate();
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-border bg-background/85 px-4 backdrop-blur-md sm:px-5">
+    <header className="sticky top-0 z-30 flex min-h-14 flex-wrap items-center justify-between gap-2 border-b border-border bg-background/85 px-4 backdrop-blur-md sm:px-5">
       <div className="lg:hidden">
         <Logo href="/dashboard" size="sm" />
       </div>
@@ -178,16 +180,17 @@ export function TopBar({
         <kbd className="ml-auto rounded-md border border-border bg-muted px-1.5 py-0.5 text-[11px] font-medium">
           {translateUI("Ctrl K")}</kbd>
       </button>
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ml-auto flex items-center gap-1.5 py-1 sm:gap-2">
         <ThemeToggle />
         <button
           type="button"
           onClick={onOpenSearch}
-          className="focus-ring inline-flex h-8 items-center justify-center rounded-lg border border-border bg-card px-2.5 text-xs font-medium text-muted-foreground hover:text-foreground md:hidden"
+          className="focus-ring inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground md:hidden"
           aria-label={translateUI("Search")}
         >
-          {translateUI("Search")}</button>
+          <Search className="h-4 w-4" aria-hidden /></button>
         <NotificationBellButton onOpen={onOpenNotifications} />
+        <SignOutButton />
       </div>
     </header>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useContext, useEffect, useState } from "react";
+import { signOutAndForget } from "@/lib/auth/sign-out";
 import { StaffSessionContext } from "@/lib/staff-session-context";
 import { cachedQuery, invalidateQueries } from "@/lib/supabase/query-cache";
 import { createClient } from "@/lib/supabase/client";
@@ -169,13 +170,7 @@ export async function completeLecturerOnboarding(input: {
   return session;
 }
 
-export async function logoutStaff() {
-  clearActiveLecturerStream();
-  const supabase = createClient();
-  await supabase.auth.signOut();
-  invalidateQueries("staff");
-  window.dispatchEvent(new Event(SESSION_EVENT));
-}
+export async function logoutStaff() { await signOutAndForget(); }
 
 async function loadStaffSession(): Promise<StaffSession | null> {
   try {

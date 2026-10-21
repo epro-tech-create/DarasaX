@@ -1,5 +1,6 @@
 "use client";
 
+import { ClassInvitation } from "@/components/staff/class-invitation";
 import { StudentApprovals } from "@/components/staff/student-approvals";
 import { useTranslate } from "@/components/providers/language-provider";
 import { useMemo, useState } from "react";
@@ -132,6 +133,7 @@ export default function ClassRepMembersPage() {
         }
       />
 
+      <ClassInvitation />
       <StudentApprovals />
 
       <div className="grid gap-2.5">
