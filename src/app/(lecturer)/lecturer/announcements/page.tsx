@@ -5,16 +5,12 @@ import { useCallback } from "react";
 import { PageHeader } from "@/components/layout/page-header";
 import { UploadWorkspace } from "@/components/staff/upload-workspace";
 import { MaterialsLibrary } from "@/components/staff/materials-library";
-import { getActiveLecturerStream } from "@/lib/lecturer-context";
 import { useStaffSession } from "@/lib/staff-auth";
 import type { MaterialUpload } from "@/types";
 
 export default function LecturerAnnouncementsPage() {
   const translateUI = useTranslate();
   const { session } = useStaffSession();
-  const active = getActiveLecturerStream();
-  const locked =
-    active && session?.streamIds.includes(active) ? active : undefined;
 
   const filterItems = useCallback(
     (items: MaterialUpload[]) =>
@@ -38,12 +34,9 @@ export default function LecturerAnnouncementsPage() {
       />
       <UploadWorkspace
         title={translateUI("Post an announcement")}
-        description={translateUI("Title + optional file for one of your modules / the active class.")}
+        description={translateUI("Choose your module, attach files, and select all streams or a specific class.")}
         defaultKind="announcement"
-        showStream={!locked}
-        lockedStream={locked}
         allowedModuleIds={session?.moduleIds}
-        allowedStreamIds={session?.streamIds}
         uploadedBy={session?.name ?? "Lecturer"}
         role="lecturer"
       />

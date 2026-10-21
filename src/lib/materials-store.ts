@@ -40,6 +40,7 @@ function toUpload(row: MaterialRow): MaterialUpload {
     streamId: (row.stream_id as ClassStreamId | null) ?? undefined,
     status: row.status as MaterialUpload["status"],
     uploadedBy: row.uploaded_by,
+    uploadedById: row.uploaded_by_id ?? undefined,
     role: (row.role as StaffRole | null) ?? "admin",
     size:
       row.size_label ??
@@ -246,15 +247,14 @@ export function useMaterialsStore() {
     };
   }, [refresh]);
 
-  const publish = useCallback(async (input: PublishMaterialInput) => {
+  const publish = useCallback(async (input: PublishMaterialInput, options?: { deferRefresh?: boolean }) => {
     const supabase = createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
     const id = `up-${crypto.randomUUID()}`;
     const streamId = input.streamId === "all" ? null : (input.streamId ?? null);
-    if (!streamId)
-      throw new Error("Choose the particular class receiving this file.");
+    if (!user) throw new Error("Sign in to upload files.");
     const path = await uploadFile(input.file, streamId, id, input.moduleId);
 
     const { data, error } = await supabase
@@ -281,7 +281,7 @@ export function useMaterialsStore() {
       .single();
 
     if (error) throw error;
-    window.dispatchEvent(new Event("darasax:materials"));
+    if (!options?.deferRefresh) window.dispatchEvent(new Event("darasax:materials"));
     const entry = toUpload(data);
     invalidateQueries("materials");
     setItems((prev) => [entry, ...prev]);

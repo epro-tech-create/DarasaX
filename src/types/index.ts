@@ -250,6 +250,7 @@ export interface MaterialUpload {
   streamId?: ClassStreamId;
   status: UploadStatus;
   uploadedBy: string;
+  uploadedById?: string;
   role: StaffRole;
   size: string;
   createdAt: string;

@@ -5,15 +5,11 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { PastPapersBrowser } from "@/components/staff/past-papers-browser";
 import { UploadWorkspace } from "@/components/staff/upload-workspace";
-import { getActiveLecturerStream } from "@/lib/lecturer-context";
 import { useStaffSession } from "@/lib/staff-auth";
 
 export default function LecturerPastPapersPage() {
   const translateUI = useTranslate();
   const { session } = useStaffSession();
-  const active = getActiveLecturerStream();
-  const locked =
-    active && session?.streamIds.includes(active) ? active : undefined;
 
   return (
     <div className="space-y-6">
@@ -31,10 +27,7 @@ export default function LecturerPastPapersPage() {
         title={translateUI("Publish a past paper")}
         description={translateUI("Limited to modules you teach. Students see it as soon as you publish.")}
         defaultKind="past_paper"
-        showStream={!locked}
-        lockedStream={locked}
         allowedModuleIds={session?.moduleIds}
-        allowedStreamIds={session?.streamIds}
         uploadedBy={session?.name ?? "Lecturer"}
         role="lecturer"
       />

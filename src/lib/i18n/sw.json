@@ -2341,5 +2341,21 @@
   "Create administrator account": "Fungua akaunti ya msimamizi",
   "Use your invited email address and choose your own password.": "Tumia barua pepe uliyoalikwa nayo na uchague nenosiri lako.",
   "Choose your password and verify your email. Administrator access is limited to invited email addresses.": "Chagua nenosiri lako na uthibitishe barua pepe yako. Wasimamizi wanaweza kutumia barua pepe zilizoalikwa pekee.",
-  "Loading page...": "Ukurasa unapakia..."
+  "Loading page...": "Ukurasa unapakia...",
+  "Ready to upload": "Tayari kupakia",
+  "Upload failed": "Upakiaji umeshindikana",
+  "Retry failed uploads": "Jaribu tena faili zilizoshindikana",
+  "Drop files here or click to browse": "Dondosha faili hapa au bofya kuchagua",
+  "Select multiple files. Maximum 500 MB per file.": "Chagua faili nyingi. Kila faili isizidi MB 500.",
+  "Selected files": "Faili zilizochaguliwa",
+  "Each file must be non-empty and no larger than 500 MB.": "Kila faili iwe na maudhui na isizidi MB 500.",
+  "Enter a title for every file.": "Weka kichwa kwa kila faili.",
+  "These files will be available to approved students in every stream.": "Faili hizi zitapatikana kwa wanafunzi walioidhinishwa katika mikondo yote.",
+  "These files will be available only to the selected class.": "Faili hizi zitapatikana kwa darasa lililochaguliwa pekee.",
+  "Loading classes...": "Madarasa yanapakia...",
+  "Could not upload this file. Please try again.": "Imeshindikana kupakia faili hii. Tafadhali jaribu tena.",
+  "Sign in to upload files.": "Ingia ili kupakia faili.",
+  "Upload multiple files to all streams or choose a specific class. Maximum 500 MB per file.": "Pakia faili nyingi kwa mikondo yote au chagua darasa maalum. Kila faili isizidi MB 500.",
+  "Choose one of your modules, attach the brief, then choose all streams or a specific class.": "Chagua moja ya moduli zako, ambatisha kazi, kisha chagua mikondo yote au darasa maalum.",
+  "Choose your module, attach files, and select all streams or a specific class.": "Chagua moduli yako, ambatisha faili, na uchague mikondo yote au darasa maalum."
 }

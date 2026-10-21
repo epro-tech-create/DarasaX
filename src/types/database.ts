@@ -464,6 +464,8 @@ export type Database = {
       record_sign_in: { Args: Record<string, never>; Returns: undefined };
       site_visitor_summary: { Args: Record<string, never>; Returns: Json };
       staff_material_scope: { Args: { target_stream: string; target_module: string | null }; Returns: boolean };
+      can_publish_material: { Args: { target_stream: string | null; target_module: string | null }; Returns: boolean };
+      can_manage_material: { Args: { owner_id: string | null; target_stream: string | null; target_module: string | null }; Returns: boolean };
       create_material_share: { Args: {mid: string}; Returns: string };
       get_shared_material: { Args: {share_token: string}; Returns: Json };
 

@@ -31,6 +31,7 @@ import {
 } from "@/lib/materials-store";
 import { cn } from "@/lib/utils";
 import type { ClassStreamId, MaterialUpload, UploadKind } from "@/types";
+import { useStaffSession } from "@/lib/staff-auth";
 
 const VIEW_KEY = "darasax-library-view";
 
@@ -68,6 +69,7 @@ function FileActions({
   onEdit,
   onDelete,
   className,
+  canManage,
 }: {
   item: MaterialUpload;
   busy: boolean;
@@ -76,6 +78,7 @@ function FileActions({
   onEdit: () => void;
   onDelete: () => void;
   className?: string;
+  canManage: boolean;
 }) {
   const translateUI = useTranslate();
   return (
@@ -101,7 +104,7 @@ function FileActions({
         <Download className="h-3.5 w-3.5" />
       </button>
       {item.status === "published" && ["notes","slides","assignment","past_paper"].includes(item.kind) && <MaterialShareButton materialId={item.id} title={item.title} compact />}
-      <button
+      {canManage && <><button
         type="button"
         disabled={busy}
         aria-label={translateUI("Edit")}
@@ -120,7 +123,7 @@ function FileActions({
         className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-danger/10 hover:text-danger disabled:opacity-40"
       >
         <Trash2 className="h-3.5 w-3.5" />
-      </button>
+      </button></>}
     </div>
   );
 }
@@ -133,6 +136,14 @@ export function MaterialsLibrary({
   filterItems?: (items: MaterialUpload[]) => MaterialUpload[];
 }) {
   const translateUI = useTranslate();
+  const { session } = useStaffSession();
+  const canManage = (item: MaterialUpload) => {
+    if (!session) return false;
+    if (session.role === "admin") return true;
+    const moduleAllowed = session.role !== "lecturer" || !item.moduleId || session.moduleIds.includes(item.moduleId);
+    const classAllowed = Boolean(item.streamId && (session.role === "class_rep" ? session.streamId === item.streamId : session.streamIds.includes(item.streamId)));
+    return moduleAllowed && (item.uploadedById === session.id || classAllowed);
+  };
   const { streams: classStreams } = useClassRegistry();
   const { items, ready, updateItem, deleteItem, bumpDownloads } =
     useMaterialsStore();
@@ -375,6 +386,7 @@ export function MaterialsLibrary({
                   </div>
                 </div>
                 <FileActions
+                  canManage={canManage(item)}
                   item={item}
                   busy={busy}
                   className="mt-5 border-t border-border/50 pt-3 opacity-70 transition group-hover:opacity-100"
@@ -411,6 +423,7 @@ export function MaterialsLibrary({
                     </p>
                   </div>
                   <FileActions
+                    canManage={canManage(item)}
                   item={item}
                     busy={busy}
                     className="shrink-0"
@@ -505,7 +518,7 @@ export function MaterialsLibrary({
                 }
                 className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px]"
               >
-                <option value="all" disabled>{translateUI("Select a particular class")}</option>
+                <option value="all">{translateUI("All streams")}</option>
                 {classStreams.map((s) => (
                   <option key={s.id} value={s.id}>
                     {translateUI(s.label)}

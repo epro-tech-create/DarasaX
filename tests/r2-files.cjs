@@ -15,9 +15,10 @@ for (const path of ['r2:other/id/user/file', 'r2:class/other/user/file', 'r2:cla
   assert.throws(() => r2.materialKey(path, 'class', 'id'));
 }
 let user = { id: 'u1' }, allowed = true, item = null, removed = [], signed = [], deleted = false;
+const checks = [];
 const supabase = {
   auth: { getUser: async () => ({ data: { user } }) },
-  rpc: async () => ({ data: allowed }),
+  rpc: async (name, input) => { checks.push({ name, input }); return { data: allowed }; },
   from: () => ({ select() { return this; }, eq() { return this; }, delete() { deleted = true; return this; }, maybeSingle: async () => ({ data: item }) })
 };
 const { POST } = load('src/app/api/material-files/route.ts', {
@@ -45,6 +46,18 @@ const call = (body, origin = 'https://darasax.com') => POST({ url: 'https://dara
   const result = await call(upload);
   assert.equal(result.status, 200);
   assert.match(result.body.path, /^r2:class\/id\/u1\//);
+  const global = await call({ ...upload, streamId: null });
+  assert.equal(global.status, 200);
+  assert.match(global.body.path, /^r2:__all__\/id\/u1\//);
+  assert.equal(checks.at(-1).name, 'can_publish_material');
+  assert.equal(checks.at(-1).input.target_stream, null);
+  item = { id: 'id', stream_id: null, uploaded_by_id: 'u1', module_id: null, file_path: global.body.path, file_name: 'notes.pdf' };
+  assert.equal((await call({ action: 'read', materialId: 'id' })).status, 200);
+  allowed = false;
+  assert.equal((await call({ action: 'delete', materialId: 'id' })).status, 403);
+  assert.equal(checks.at(-1).name, 'can_manage_material');
+  assert.equal(checks.at(-1).input.owner_id, 'u1');
+  allowed = true; item = null;
   assert.equal((await call({ action: 'read', materialId: 'hidden' })).status, 404);
   item = { id: 'id', stream_id: 'class', module_id: null, file_path: result.body.path, file_name: 'notes.pdf' };
   assert.equal((await call({ action: 'read', materialId: 'id' })).status, 200);

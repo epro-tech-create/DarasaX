@@ -1,289 +1,128 @@
 "use client";
 
 import { useTranslate } from "@/components/providers/language-provider";
-import { useState, type ReactNode } from "react";
-import { CheckCircle2, FileUp, UploadCloud } from "lucide-react";
+import { useRef, useState, type ReactNode } from "react";
+import { CheckCircle2, FileUp, UploadCloud, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import type { ClassStreamId, StaffRole, UploadKind } from "@/types";
 import { modules } from "@/data/mock";
 import { useClassRegistry } from "@/lib/class-registry";
 import { useMaterialsStore } from "@/lib/materials-store";
+import { MAX_UPLOAD_BYTES, publishBatch, type UploadState } from "@/lib/upload-batch";
+import { invalidateQueries } from "@/lib/supabase/query-cache";
 
 const kinds: { id: UploadKind; label: string }[] = [
-  { id: "notes", label: "Notes" },
-  { id: "slides", label: "Slides" },
-  { id: "past_paper", label: "Past paper" },
-  { id: "assignment", label: "Assignment" },
+  { id: "notes", label: "Notes" }, { id: "slides", label: "Slides" },
+  { id: "past_paper", label: "Past paper" }, { id: "assignment", label: "Assignment" },
   { id: "announcement", label: "Announcement" },
 ];
+const control = "focus-ring h-10 w-full rounded-xl border border-border bg-background px-3 text-sm disabled:opacity-60";
+type QueuedFile = { id: string; file: File; title: string; state: UploadState; error?: string };
+const stateLabels: Record<UploadState, string> = { queued: "Ready to upload", uploading: "Uploading…", published: "Published", failed: "Upload failed" };
 
-export function UploadWorkspace({
-  title,
-  description,
-  defaultKind = "notes",
-  showStream = true,
-  lockedStream,
-  uploadedBy,
-  role,
-  footerNote,
-  allowedModuleIds,
-  allowedStreamIds,
-  onBusyChange,
-}: {
-  title: string;
-  description: string;
-  defaultKind?: UploadKind;
-  showStream?: boolean;
-  lockedStream?: ClassStreamId;
-  uploadedBy: string;
-  role: StaffRole;
-  footerNote?: ReactNode;
-  allowedModuleIds?: string[];
-  allowedStreamIds?: ClassStreamId[];
-  onBusyChange?: (busy: boolean) => void;
+export function UploadWorkspace({ title, description, defaultKind = "notes", uploadedBy, role, footerNote, allowedModuleIds, onBusyChange }: {
+  title: string; description: string; defaultKind?: UploadKind; uploadedBy: string; role: StaffRole;
+  footerNote?: ReactNode; allowedModuleIds?: string[]; onBusyChange?: (busy: boolean) => void;
 }) {
-  const translateUI = useTranslate();
-  const { streams: classStreams } = useClassRegistry();
+  const t = useTranslate();
+  const { streams, ready: classesReady, error: classesError } = useClassRegistry();
   const { publish } = useMaterialsStore();
-  const catalog = (() => {
-    if (!allowedModuleIds || allowedModuleIds.length === 0) return modules;
-    const allowed = new Set(allowedModuleIds);
-    return modules.filter((m) => allowed.has(m.id));
-  })();
-  const streamOptions = (() => {
-    if (!allowedStreamIds || allowedStreamIds.length === 0) return classStreams;
-    const allowed = new Set(allowedStreamIds);
-    return classStreams.filter((s) => allowed.has(s.id));
-  })();
-  const [dueAt, setDueAt] = useState("");
+  const catalog = allowedModuleIds === undefined ? modules : modules.filter(module => allowedModuleIds.includes(module.id));
   const [kind, setKind] = useState<UploadKind>(defaultKind);
   const [moduleId, setModuleId] = useState(catalog[0]?.id ?? "");
-  const [streamId, setStreamId] = useState<ClassStreamId | "all">(
-    lockedStream ??
-      (streamOptions.length === 1
-        ? streamOptions[0].id
-        : allowedStreamIds && allowedStreamIds.length > 0
-          ? allowedStreamIds[0]
-          : classStreams[0]?.id ?? "all"),
-  );
-  const [titleValue, setTitleValue] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [streamId, setStreamId] = useState<ClassStreamId | "all">("all");
+  const [dueAt, setDueAt] = useState("");
+  const [files, setFiles] = useState<QueuedFile[]>([]);
   const [publishing, setPublishing] = useState(false);
-  const [published, setPublished] = useState(false);
   const [error, setError] = useState("");
+  const busy = useRef(false);
+  const pending = files.filter(item => item.state !== "published");
+  const done = files.filter(item => item.state === "published").length;
 
-  function onFileChange(next?: File | null) {
-    if (!next) return;
-    setFile(next);
-    if (!titleValue) setTitleValue(next.name.replace(/\.[^.]+$/, ""));
-    setPublished(false);
+  function addFiles(selected: FileList | File[]) {
+    if (busy.current) return;
+    const incoming = Array.from(selected);
+    if (incoming.some(file => file.size < 1 || file.size > MAX_UPLOAD_BYTES)) {
+      setError("Each file must be non-empty and no larger than 500 MB."); return;
+    }
     setError("");
+    setFiles(previous => [...previous, ...incoming.filter(file => !previous.some(item => item.file.name === file.name && item.file.size === file.size && item.file.lastModified === file.lastModified))
+      .map(file => ({ id: crypto.randomUUID(), file, title: file.name.replace(/\.[^.]+$/, ""), state: "queued" as const }))]);
   }
 
   async function handlePublish() {
-    if (!titleValue.trim() || !file) return;
-    if (!moduleId) {
-      setError("Select a module you teach.");
-      return;
-    }
-    setPublishing(true);
-    onBusyChange?.(true);
-    setError("");
+    if (busy.current || !pending.length) return;
+    if (!moduleId || !catalog.some(module => module.id === moduleId)) { setError("Select a module you teach."); return; }
+    if (pending.some(item => !item.title.trim())) { setError("Enter a title for every file."); return; }
+    busy.current = true; setPublishing(true); onBusyChange?.(true); setError("");
     try {
-      await publish({
-        title: titleValue.trim(),
+      await publishBatch(pending, item => publish({
+        title: item.title.trim(), file: item.file, kind, moduleId, streamId, uploadedBy, role,
         dueAt: kind === "assignment" && dueAt ? new Date(dueAt).toISOString() : undefined,
-        kind,
-        moduleId,
-        streamId: lockedStream ?? streamId,
-        uploadedBy,
-        role,
-        file,
+      }, { deferRefresh: true }), (index, state, message) => {
+        const id = pending[index].id;
+        setFiles(previous => previous.map(item => item.id === id ? { ...item, state, error: message } : item));
       });
-      setPublished(true);
-      setFile(null);
-      setTitleValue("");
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "Could not save the file. Check your connection and try again.");
     } finally {
-      setPublishing(false);
-      onBusyChange?.(false);
+      invalidateQueries("materials"); window.dispatchEvent(new Event("darasax:materials"));
+      busy.current = false; setPublishing(false); onBusyChange?.(false);
     }
   }
 
-  return (
-    <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)]">
-      <div className="surface min-w-0 rounded-[20px] p-4 sm:p-5">
-        <div className="mb-4">
-          <h2 className="font-heading text-[15px] font-semibold tracking-tight">{translateUI(title)}</h2>
-          <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-muted-foreground">{translateUI(description)}</p>
-        </div>
-
-        <label
-          className={cn(
-            "focus-ring flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-muted/30 px-4 py-8 text-center transition hover:border-primary/50 hover:bg-primary/[0.04] sm:py-10",
-            file && "border-primary/40 bg-primary/[0.05]",
-          )}
-        >
-          <input
-            type="file"
-            className="sr-only"
-            accept=".pdf,.ppt,.pptx,.doc,.docx,.png,.jpg,.jpeg,.zip,.txt,.md"
-            onChange={(e) => onFileChange(e.target.files?.[0])}
-          />
-          <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/12 text-primary">
-            <UploadCloud className="h-5 w-5" />
-          </span>
-          <p className="mt-3 max-w-full truncate text-[13px] font-semibold">
-            {file ? file.name : translateUI("Drop a file here or click to browse")}
-          </p>
-          <p className="mt-1 max-w-sm text-[11px] leading-snug text-muted-foreground">
-            {translateUI(file
-              ? `${(file.size / 1024).toFixed(1)} KB · stored so students (and you) can view or download it.`
-              : "PDF, slides, docs, images, or ZIP. Maximum 500 MB per file.")}
-          </p>
-        </label>
-
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <label className="block space-y-1.5 sm:col-span-2">
-            <span className="text-[11px] font-medium text-muted-foreground">{translateUI("Title")}</span>
-            <input
-              value={titleValue}
-              onChange={(e) => setTitleValue(e.target.value)}
-              placeholder={translateUI("e.g. Topic 04 — Fourier notes")}
-              className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-            />
-          </label>
-
-          <label className="block space-y-1.5">
-            <span className="text-[11px] font-medium text-muted-foreground">{translateUI("Type")}</span>
-            <select
-              value={kind}
-              onChange={(e) => setKind(e.target.value as UploadKind)}
-              className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-            >
-              {kinds.map((k) => (
-                <option key={k.id} value={k.id}>
-                  {translateUI(k.label)}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="block space-y-1.5">
-            <span className="text-[11px] font-medium text-muted-foreground">{translateUI("Module")}</span>
-            <select
-              value={moduleId}
-              onChange={(e) => setModuleId(e.target.value)}
-              className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-              disabled={catalog.length === 0}
-            >
-              {catalog.length === 0 ? (
-                <option value="">{translateUI("No modules assigned")}</option>
-              ) : null}
-              {catalog.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {translateUI(m.code)} · {m.name}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          {showStream && !lockedStream ? (
-            <label className="block space-y-1.5 sm:col-span-2">
-              <span className="text-[11px] font-medium text-muted-foreground">
-                {translateUI("Target stream")}</span>
-              <select
-                value={streamId}
-                onChange={(e) =>
-                  setStreamId(e.target.value as ClassStreamId | "all")
-                }
-                className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-              >
-                {streamOptions.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {translateUI(s.label)}
-                    {translateUI(s.isEvening ? " (Evening)" : "")}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ) : null}
-        </div>
-
-        {kind === "assignment" && <label className="mt-4 block text-sm font-medium">{translateUI("Assignment deadline (optional)")}<input type="datetime-local" value={dueAt} onChange={(event) => setDueAt(event.target.value)} className="focus-ring mt-2 h-11 w-full rounded-xl border border-border bg-background px-3" />
-        </label>}
-        {error ? (
-          <p className="mt-3 rounded-xl border border-danger/30 bg-danger/10 px-3 py-2 text-[12px] font-medium text-danger">
-            {translateUI(error)}
-          </p>
-        ) : null}
-
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <Button
-            type="button"
-            onClick={handlePublish}
-            disabled={!file || !titleValue.trim() || publishing || !moduleId}
-          >
-            <FileUp className="h-3.5 w-3.5" />
-            {translateUI(publishing ? "Publishing…" : "Publish to students")}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              setFile(null);
-              setTitleValue("");
-              setPublished(false);
-              setError("");
-            }}
-          >
-            {translateUI("Clear")}</Button>
-          {published ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-[12px] font-medium text-success">
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              {translateUI("Live on student Modules / Past Papers")}</span>
-          ) : null}
-        </div>
-        {footerNote ? <div className="mt-3">{translateUI(footerNote)}</div> : null}
-      </div>
-
-      <aside className="flex min-w-0 flex-col gap-3">
-        <div className="relative overflow-hidden rounded-[20px] bg-[#1565C0] p-4 text-white shadow-lg shadow-primary/20 sm:p-5">
-          <div
-            className="pointer-events-none absolute inset-0 opacity-[0.12]"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
-              backgroundSize: "22px 22px",
-            }}
-            aria-hidden
-          />
-          <p className="relative text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70">
-            {translateUI("Student delivery")}</p>
-          <p className="relative mt-2 font-heading text-[16px] font-semibold leading-snug tracking-tight">
-            {translateUI("One publish → student accounts")}</p>
-          <p className="relative mt-2 text-[12px] leading-relaxed text-white/85">
-            {translateUI("Pick the module carefully. Notes and slides appear on that module’s Notes tab; past papers appear under Past Papers for the whole class.")}</p>
-        </div>
-        <div className="surface rounded-[20px] p-4 sm:p-5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-            {translateUI("Before you publish")}</p>
-          <ul className="mt-3 space-y-2.5 text-[12px] text-muted-foreground">
-            {[
-              "Clear title students recognise",
-              "Correct module selected",
-              "Readable file (not blurry scans)",
-            ].map((item) => (
-              <li key={item} className="flex items-start gap-2">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                <span className="leading-snug">{translateUI(item)}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </aside>
+  return <div className="space-y-4">
+    <div><h2 className="font-heading text-base font-semibold">{t(title)}</h2><p className="mt-1 text-sm text-muted-foreground">{t(description)}</p></div>
+    <div className="grid gap-3 sm:grid-cols-2">
+      <label className="space-y-1.5 sm:col-span-2"><span className="text-xs font-medium">{t("Target stream")}</span>
+        <select value={streamId} disabled={publishing} onChange={event => setStreamId(event.target.value as ClassStreamId | "all")} className={control}>
+          <option value="all">{t("All streams")}</option>
+          {streams.map(stream => <option key={stream.id} value={stream.id}>{stream.label}</option>)}
+        </select>
+        <p className="text-xs text-muted-foreground">{t(streamId === "all" ? "These files will be available to approved students in every stream." : "These files will be available only to the selected class.")}</p>
+        {!classesReady && <p className="text-xs text-muted-foreground">{t("Loading classes...")}</p>}
+        {classesError && <p role="alert" className="text-xs text-danger">{t(classesError)}</p>}
+      </label>
+      <label className="space-y-1.5"><span className="text-xs font-medium">{t("Type")}</span>
+        <select value={kind} disabled={publishing} onChange={event => setKind(event.target.value as UploadKind)} className={control}>
+          {kinds.map(item => <option key={item.id} value={item.id}>{t(item.label)}</option>)}
+        </select>
+      </label>
+      <label className="space-y-1.5"><span className="text-xs font-medium">{t("Module")}</span>
+        <select value={moduleId} disabled={publishing || !catalog.length} onChange={event => setModuleId(event.target.value)} className={control}>
+          {!catalog.length && <option value="">{t("No modules assigned")}</option>}
+          {catalog.map(module => <option key={module.id} value={module.id}>{module.code} · {module.name}</option>)}
+        </select>
+      </label>
     </div>
-  );
+    {kind === "assignment" && <label className="block space-y-1.5"><span className="text-xs font-medium">{t("Assignment deadline (optional)")}</span>
+      <input type="datetime-local" value={dueAt} disabled={publishing} onChange={event => setDueAt(event.target.value)} className={control} />
+    </label>}
+    <label onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); addFiles(event.dataTransfer.files); }}
+      className="focus-ring flex cursor-pointer flex-col items-center rounded-2xl border border-dashed border-border bg-muted/30 px-4 py-7 text-center hover:border-primary/50">
+      <input type="file" multiple disabled={publishing} className="sr-only" accept=".pdf,.ppt,.pptx,.doc,.docx,.png,.jpg,.jpeg,.zip,.txt,.md"
+        onChange={event => { if (event.target.files) addFiles(event.target.files); event.target.value = ""; }} />
+      <UploadCloud className="h-7 w-7 text-primary" aria-hidden />
+      <span className="mt-3 text-sm font-semibold">{t("Drop files here or click to browse")}</span>
+      <span className="mt-1 text-xs text-muted-foreground">{t("Select multiple files. Maximum 500 MB per file.")}</span>
+    </label>
+    {files.length > 0 && <ul className="max-h-80 space-y-2 overflow-y-auto" aria-label={t("Selected files")}>
+      {files.map(item => <li key={item.id} className="rounded-xl border border-border p-3">
+        <div className="flex items-start gap-2"><div className="min-w-0 flex-1">
+          <p className="truncate text-xs text-muted-foreground" title={item.file.name}>{item.file.name} · {(item.file.size / 1024 / 1024).toFixed(1)} MB</p>
+          <label className="mt-2 block"><span className="sr-only">{t("Title")} — {item.file.name}</span><input value={item.title}
+            disabled={publishing || item.state === "published"} onChange={event => setFiles(previous => previous.map(file => file.id === item.id ? { ...file, title: event.target.value } : file))} className={control} /></label>
+        </div><button type="button" aria-label={`${t("Remove")} ${item.file.name}`} disabled={publishing} onClick={() => setFiles(previous => previous.filter(file => file.id !== item.id))} className="focus-ring rounded-lg p-2 text-muted-foreground disabled:opacity-40"><X className="h-4 w-4" /></button></div>
+        <p className={`mt-2 text-xs ${item.state === "failed" ? "text-danger" : item.state === "published" ? "text-success" : "text-muted-foreground"}`} role="status">{t(stateLabels[item.state])}</p>
+        {item.error && <p className="mt-1 break-words text-xs text-danger">{t(item.error)}</p>}
+      </li>)}
+    </ul>}
+    {error && <p role="alert" className="rounded-xl bg-danger/10 p-3 text-sm text-danger">{t(error)}</p>}
+    <div className="flex flex-wrap items-center gap-2">
+      <Button type="button" onClick={() => void handlePublish()} disabled={publishing || !pending.length || pending.some(item => !item.title.trim()) || !catalog.length}>
+        <FileUp className="h-4 w-4" />{t(publishing ? "Publishing…" : files.some(item => item.state === "failed") ? "Retry failed uploads" : "Publish to students")}
+      </Button>
+      <Button type="button" variant="outline" disabled={publishing || !files.length} onClick={() => { setFiles([]); setError(""); }}>{t("Clear")}</Button>
+      {done > 0 && <span className="inline-flex items-center gap-1 text-xs text-success"><CheckCircle2 className="h-4 w-4" />{done} / {files.length} {t("Published")}</span>}
+    </div>
+    {footerNote && <div className="text-xs text-muted-foreground">{t(footerNote)}</div>}
+  </div>;
 }
