@@ -1,3 +1,5 @@
+import { getStudentAdmission } from "@/lib/auth/admission";
+import { studentPostAuthPath, safeStudentReturnPath } from "@/lib/auth/redirect";
 import { studentEnrollmentError } from "@/lib/auth/enrollment";
 import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
@@ -25,6 +27,8 @@ function isStudentProtected(pathname: string) {
     "/profile",
     "/settings",
     "/onboarding",
+    "/pending-approval",
+    "/welcome",
   ];
   return roots.some(
     (root) => pathname === root || pathname.startsWith(`${root}/`),
@@ -33,7 +37,7 @@ function isStudentProtected(pathname: string) {
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  // Capability links expose only the explicitly shared published file.
+  // Share pages and file handlers enforce authentication, approval and class scope themselves.
   if (pathname.startsWith("/share/")) return NextResponse.next();
   // This endpoint verifies the session and database permissions itself.
   if (pathname === "/api/material-files") return NextResponse.next();
@@ -152,7 +156,7 @@ export async function proxy(request: NextRequest) {
       pathname === "/login" ||
       pathname === "/signup")
   ) {
-    const profile = await getProfile(supabase, user.id);
+    const [profile, admission] = await Promise.all([getProfile(supabase, user.id), getStudentAdmission(supabase, user.id)]);
     const restriction = studentEnrollmentError(profile);
     if (restriction) return new NextResponse(restriction, { status: 403 });
     const { data: registeredClass } = profile?.class_name
@@ -174,14 +178,14 @@ export async function proxy(request: NextRequest) {
       registeredClass.programme === profile.programme &&
       registeredClass.year === profile.year_of_study &&
       registeredClass.semester === profile.semester;
-    const home = eligible ? "/dashboard" : "/onboarding";
-    if (
-      pathname === "/login" ||
-      pathname === "/signup" ||
-      (home === "/onboarding" && pathname !== home) ||
-      (pathname === "/onboarding" && home !== pathname)
-    )
-      return redirect(home);
+    const home = studentPostAuthPath(Boolean(eligible), null, admission);
+    const entry = ["/login", "/signup", "/onboarding", "/pending-approval", "/welcome"].includes(pathname);
+    if (entry && pathname !== home) {
+      return redirect(studentPostAuthPath(Boolean(eligible), request.nextUrl.searchParams.get("next"), admission));
+    }
+    if (!entry && home !== "/dashboard") {
+      return redirect(studentPostAuthPath(Boolean(eligible), safeStudentReturnPath(pathname + request.nextUrl.search), admission));
+    }
   }
   supabaseResponse.headers.set("Cache-Control", "private, no-store");
   return supabaseResponse;

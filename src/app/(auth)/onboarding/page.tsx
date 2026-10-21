@@ -1,8 +1,8 @@
 "use client";
 
 import { useTranslate } from "@/components/providers/language-provider";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,8 @@ import {
   SemesterIllustration,
   YearIllustration,
 } from "@/components/auth/onboarding-illustrations";
-import { WelcomeCelebration } from "@/components/auth/welcome-celebration";
+import { validRegistrationNumber } from "@/lib/auth/admission";
+import { safeStudentReturnPath } from "@/lib/auth/redirect";
 import { getAuthErrorMessage } from "@/lib/auth/errors";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -28,7 +29,7 @@ const STEPS = [
   "Select Institution",
   "Academic Year",
   "Select Semester",
-  "Congratulations",
+  "Pending approval",
 ];
 
 const YEARS = [3].map((value) => ({
@@ -42,9 +43,11 @@ const SEMESTERS = [1].map((value) => ({
   hint: "Select your current semester",
 }));
 
-export default function OnboardingPage() {
+function OnboardingForm() {
   const translateUI = useTranslate();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [registrationNumber, setRegistrationNumber] = useState("");
   const {
     classes,
     ready: classesReady,
@@ -80,6 +83,7 @@ export default function OnboardingPage() {
       );
       return;
     }
+    if (!validRegistrationNumber(registrationNumber)) { setError("Registration number must contain numbers only."); return; }
     setLoading(true);
     setError("");
     try {
@@ -92,22 +96,13 @@ export default function OnboardingPage() {
         return;
       }
 
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .update({
-          institution,
-          programme: chosenClass.programme,
-          class_name: streamId,
-          year_of_study: year,
-          semester,
-          onboarding_completed: true,
-        })
-        .eq("id", user.id)
-        .select("id")
-        .single();
-
+      const { error: updateError } = await supabase.rpc("submit_student_registration", {
+        reg_number: registrationNumber, target_class: streamId,
+      });
       if (updateError) throw updateError;
-      setStep(3);
+      const next = safeStudentReturnPath(searchParams.get("next"));
+      router.replace(`/pending-approval${next ? `?next=${encodeURIComponent(next)}` : ""}`);
+      router.refresh();
     } catch (err) {
       setError(getAuthErrorMessage(err));
     } finally {
@@ -116,8 +111,8 @@ export default function OnboardingPage() {
   }
 
   async function next() {
-    if (step === 0 && !institution) {
-      setError("Please select your institution.");
+    if (step === 0 && (!institution || !validRegistrationNumber(registrationNumber))) {
+      setError(!institution ? "Please select your institution." : "Registration number must contain numbers only.");
       return;
     }
     if (step === 1 && (!year || !streamId)) {
@@ -170,23 +165,7 @@ export default function OnboardingPage() {
           ) : null}
 
           <AnimatePresence mode="wait">
-            {step === 3 ? (
-              <motion.div
-                key="done"
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-              >
-                <WelcomeCelebration
-                  title={translateUI("Congratulations!")}
-                  subtitle="Your academic profile is ready. Welcome to DarasaX."
-                  ctaLabel="Enter dashboard"
-                  onContinue={() => {
-                    router.push("/dashboard");
-                    router.refresh();
-                  }}
-                />
-              </motion.div>
-            ) : (
+            {step === 3 ? null : (
               <motion.div
                 key={step}
                 initial={{ opacity: 0, y: 10 }}
@@ -208,6 +187,14 @@ export default function OnboardingPage() {
                           <option value="">{translateUI("Select your institution")}</option>
                           <option value={ACTIVE_INSTITUTION}>DIT</option>
                         </select>
+                      </label>
+                      <label className="mt-4 block text-sm font-medium">
+                        {translateUI("Registration number")}
+                        <input required inputMode="numeric" pattern="[0-9]+" maxLength={64}
+                          placeholder="240242400506" value={registrationNumber}
+                          onChange={event => setRegistrationNumber(event.target.value)}
+                          className="focus-ring mt-2 h-11 w-full rounded-xl border border-border bg-background px-3" />
+                        <span className="mt-1 block text-xs text-muted-foreground">{translateUI("Numbers only. Example: 240242400506")}</span>
                       </label>
                     </div>
                     <InstitutionIllustration className="mx-auto h-40 w-full max-w-[260px] md:h-44" />
@@ -367,3 +354,5 @@ export default function OnboardingPage() {
     </div>
   );
 }
+
+export default function OnboardingPage() { return <Suspense><OnboardingForm /></Suspense>; }

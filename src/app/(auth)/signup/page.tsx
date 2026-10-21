@@ -2,8 +2,8 @@
 
 import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { FormEvent, Suspense, useState } from "react";
 import { AuthAlert } from "@/components/auth/auth-alert";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { AuthSteps } from "@/components/auth/auth-steps";
@@ -11,14 +11,17 @@ import { AuthSubmitButton } from "@/components/auth/auth-submit-button";
 import { GoogleButton } from "@/components/auth/google-button";
 import { PasswordField } from "@/components/auth/password-field";
 import { getAuthErrorMessage } from "@/lib/auth/errors";
+import { safeStudentReturnPath } from "@/lib/auth/redirect";
 import { isValidEmail, normalizeEmail } from "@/lib/auth/email";
 import { signInWithGoogle } from "@/lib/auth/oauth";
 import { isPasswordStrongEnough } from "@/lib/auth/password";
 import { createClient } from "@/lib/supabase/client";
 
-export default function SignupPage() {
+function SignupForm() {
   const translateUI = useTranslate();
   const router = useRouter();
+  const next = safeStudentReturnPath(useSearchParams().get("next"));
+  const nextQuery = next ? `?next=${encodeURIComponent(next)}` : "";
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -60,7 +63,7 @@ export default function SignupPage() {
         password,
         options: {
           data: { full_name: name },
-          emailRedirectTo: `${origin}/auth/callback`,
+          emailRedirectTo: `${origin}/auth/callback${nextQuery}`,
         },
       });
       if (signUpError) throw signUpError;
@@ -71,14 +74,14 @@ export default function SignupPage() {
       }
 
       if (data.session) {
-        router.replace("/onboarding");
+        router.replace(`/onboarding${nextQuery}`);
         router.refresh();
         return;
       }
 
       sessionStorage.setItem("darasax_verify_email", normalized);
       sessionStorage.setItem("darasax_verify_name", name);
-      router.push("/verify-email");
+      router.push(`/verify-email${nextQuery}`);
     } catch (err) {
       setError(getAuthErrorMessage(err));
     } finally {
@@ -93,7 +96,7 @@ export default function SignupPage() {
       const supabase = createClient();
       await signInWithGoogle(
         supabase,
-        `${window.location.origin}/auth/callback`,
+        `${window.location.origin}/auth/callback${nextQuery}`,
       );
     } catch (err) {
       setError(getAuthErrorMessage(err));
@@ -174,9 +177,11 @@ export default function SignupPage() {
 
       <p className="mt-5 text-center text-sm text-muted-foreground sm:mt-3 sm:text-[11px]">
         {translateUI("Already have an account?")}{" "}
-        <Link href="/login" className="font-medium text-primary">
+        <Link href={`/login${nextQuery}`} className="font-medium text-primary">
           {translateUI("Sign in")}</Link>
       </p>
     </AuthShell>
   );
 }
+
+export default function SignupPage() { return <Suspense><SignupForm /></Suspense>; }

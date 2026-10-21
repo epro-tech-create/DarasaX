@@ -12,14 +12,20 @@ export function safeStudentReturnPath(next: string | null): string | null {
     if (url.origin !== base) return null;
     const path = decodeURIComponent(url.pathname);
     if (/[\\]/.test(path) || /%2f|%5c/i.test(url.pathname)) return null;
-    if (!STUDENT_ROUTES.some((root) => path === root || path.startsWith(`${root}/`))) return null;
+    const shared = /^\/share\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?:\/file)?$/i.test(path);
+    if (!shared && !STUDENT_ROUTES.some((root) => path === root || path.startsWith(`${root}/`))) return null;
     return url.pathname + url.search + url.hash;
   } catch {
     return null;
   }
 }
 
-export function studentPostAuthPath(onboardingCompleted: boolean, next: string | null): string {
-  if (!onboardingCompleted) return "/onboarding";
-  return safeStudentReturnPath(next) ?? "/dashboard";
+export function studentPostAuthPath(onboardingCompleted: boolean, next: string | null,
+  admission?: { status: string; welcome_seen_at: string | null } | null): string {
+  const safe = safeStudentReturnPath(next);
+  const query = safe ? `?next=${encodeURIComponent(safe)}` : "";
+  if (!onboardingCompleted) return `/onboarding${query}`;
+  if (admission?.status !== "approved") return `/pending-approval${query}`;
+  if (!admission.welcome_seen_at) return `/welcome${query}`;
+  return safe ?? "/dashboard";
 }

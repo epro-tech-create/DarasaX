@@ -1,3 +1,4 @@
+import { getStudentAdmission } from "@/lib/auth/admission";
 import { studentEnrollmentError } from "@/lib/auth/enrollment";
 import { studentPostAuthPath } from "@/lib/auth/redirect";
 import { getStaffProfile } from "@/lib/auth/staff-profile";
@@ -52,7 +53,7 @@ export async function GET(request: Request) {
         }
         await supabase.rpc("record_sign_in");
         const dest =
-          studentPostAuthPath(profile.onboarding_completed, next);
+          studentPostAuthPath(profile.onboarding_completed, next, await getStudentAdmission(supabase, user.id));
         return NextResponse.redirect(new URL(dest, origin));
       }
     }

@@ -5,7 +5,7 @@ const ts = require('typescript');
 function load(file, dependencies) {
   const exports = {};
   vm.runInNewContext(ts.transpileModule(fs.readFileSync(file, 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS }
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 }
   }).outputText, { exports, require: name => dependencies[name], process, URL });
   return exports;
 }
@@ -22,7 +22,11 @@ class Response {
   static next() { return new Response(); }
   static redirect(url) { const r = new Response('', { status: 307 }); r.location = url.href; return r; }
 }
+const redirects = load('src/lib/auth/redirect.ts', {});
+let admission = {status:'approved',welcome_seen_at:'2026-10-21'};
 const { proxy } = load('src/proxy.ts', {
+  '@/lib/auth/redirect': redirects,
+  '@/lib/auth/admission': {getStudentAdmission: async () => admission},
   'next/server': { NextResponse: Response },
   '@/lib/app-role': roles,
   '@/lib/auth/enrollment': { studentEnrollmentError: () => null },
@@ -53,6 +57,13 @@ async function check(host, path, member, expected, destination) {
   await check(host, '/cr', { ...cr, status: 'inactive' }, 403);
   await check(host, '/cr', { role: 'lecturer', status: 'active' }, 403);
   await check(host, '/dashboard', null, 200);
+  admission = {status:'pending',welcome_seen_at:null};
+  await check(host, '/dashboard', null, 307, '/pending-approval');
+  await check(host, '/pending-approval', null, 200);
+  admission.status = 'approved';
+  await check(host, '/dashboard', null, 307, '/welcome');
+  admission.welcome_seen_at = '2026-10-21';
+  await check(host, '/welcome', null, 307, '/dashboard');
   for (const [domain, path, role] of [
     ['admin.darasax.com', '/admin', 'admin'],
     ['lecturer.darasax.com', '/lecturer', 'lecturer'],

@@ -1,5 +1,6 @@
 "use client";
 
+import { StudentApprovals } from "@/components/staff/student-approvals";
 import { useTranslate } from "@/components/providers/language-provider";
 import { useMemo, useState } from "react";
 import { GraduationCap, Pencil, Plus, Trash2, Users } from "lucide-react";
@@ -13,6 +14,7 @@ import type { ClassStreamId, StudentMonitor } from "@/types";
 
 const emptyForm = {
   temporaryPassword: "",
+  registrationNumber: "",
   name: "",
   email: "",
   streamId: "BENG24COE-1" as ClassStreamId,
@@ -60,6 +62,7 @@ export default function AdminStudentsPage() {
     setEditing(s);
     setForm({
       temporaryPassword: "",
+      registrationNumber: "",
       name: s.name,
       email: s.email,
       streamId: s.streamId,
@@ -92,6 +95,7 @@ export default function AdminStudentsPage() {
         await addStudent({
           name: form.name,
           temporaryPassword: form.temporaryPassword,
+          registrationNumber: form.registrationNumber,
           email: form.email,
           streamId: form.streamId,
           year: form.year,
@@ -124,6 +128,8 @@ export default function AdminStudentsPage() {
           </Button>
         }
       />
+
+      <StudentApprovals />
 
       <div className="grid gap-2.5 sm:grid-cols-2">
         <StaffStatCard label={translateUI("Students")} value={String(students.length)} icon={Users} />
@@ -226,6 +232,8 @@ export default function AdminStudentsPage() {
       >
         <form onSubmit={onSubmit} className="space-y-3">
           {message && <p role="status" className="text-sm">{translateUI(message)}</p>}
+          {!editing && <label className="block space-y-1 text-sm">{translateUI("Registration number")}<input required inputMode="numeric" pattern="[0-9]+" maxLength={64} placeholder="240242400506" value={form.registrationNumber}
+            onChange={e => setForm(f => ({ ...f, registrationNumber: e.target.value }))} className="h-11 w-full rounded-xl border border-border bg-background px-3" /></label>}
           {!editing && <label className="block space-y-1 text-sm">{translateUI("Temporary password")}<input required type="password" minLength={8} autoComplete="new-password" value={form.temporaryPassword}
               onChange={e => setForm(f => ({ ...f, temporaryPassword: e.target.value }))}
               className="h-11 w-full rounded-xl border border-border bg-background px-3" />

@@ -7,6 +7,9 @@ export function getAuthErrorMessage(error: unknown): string {
         : "";
 
   const lower = message.toLowerCase();
+  if (lower.includes("registration number is already registered")) return "This registration number is already registered. Sign in to your existing account or contact your administrator.";
+  if (lower.includes("registration number must contain numbers only")) return "Registration number must contain numbers only.";
+  if (lower.includes("contact your class representative or administrator")) return "Contact your Class Representative or Administrator about your access.";
 
   if (
     lower.includes("invalid login") ||

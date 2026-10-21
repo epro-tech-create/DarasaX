@@ -22,6 +22,12 @@ export type AuditLogRow = Database["public"]["Tables"]["audit_log"]["Row"];
 export type Database = {
   public: {
     Tables: {
+      student_admissions: {
+        Row: import("@/lib/auth/admission").StudentAdmission;
+        Insert: { user_id: string; registration_number?: string | null; status?: string; submitted_at?: string | null; reviewed_by?: string | null; reviewed_at?: string | null; welcome_seen_at?: string | null; legacy_approved?: boolean };
+        Update: { registration_number?: string | null; status?: string; submitted_at?: string | null; reviewed_by?: string | null; reviewed_at?: string | null; welcome_seen_at?: string | null };
+        Relationships: [{ foreignKeyName: "student_admissions_user_id_fkey"; columns: ["user_id"]; isOneToOne: true; referencedRelation: "profiles"; referencedColumns: ["id"] }];
+      };
       academic_classes: {
         Row: { id: string; label: string; institution: string; programme: string; year: number; semester: number; is_evening: boolean; archived: boolean; created_by: string | null; created_at: string };
         Insert: { id: string; label: string; institution: string; programme: string; year: number; semester: number; is_evening?: boolean; archived?: boolean; created_by?: string | null; created_at?: string };
@@ -437,6 +443,10 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      submit_student_registration: { Args: { reg_number: string; target_class: string }; Returns: undefined };
+      list_student_registrations: { Args: Record<string, never>; Returns: Json };
+      review_student_registration: { Args: { student_id: string; decision: string }; Returns: undefined };
+      acknowledge_student_welcome: { Args: Record<string, never>; Returns: undefined };
       record_sign_in: { Args: Record<string, never>; Returns: undefined };
       site_visitor_summary: { Args: Record<string, never>; Returns: Json };
       staff_material_scope: { Args: { target_stream: string; target_module: string | null }; Returns: boolean };

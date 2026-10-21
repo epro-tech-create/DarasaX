@@ -2,6 +2,7 @@
 
 import { useTranslate } from "@/components/providers/language-provider";
 import { ChangePasswordForm } from "@/components/auth/change-password-form";
+import { RegistrationNumber } from "@/components/profile/registration-number";
 import { LanguageSettings } from "@/components/profile/language-settings";
 
 import { FormEvent, useEffect, useState } from "react";
@@ -295,6 +296,7 @@ export default function ProfilePage() {
           </div>
         </fieldset>
       </form>
+      <RegistrationNumber userId={profile.id} className={profile.class_name} />
       <LanguageSettings />
       <ChangePasswordForm />
     </div>

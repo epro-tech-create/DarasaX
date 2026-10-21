@@ -1,9 +1,10 @@
 "use client";
+import { getStudentAdmission } from "@/lib/auth/admission";
 
 import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { FormEvent, Suspense, useEffect, useState } from "react";
 import { AuthAlert } from "@/components/auth/auth-alert";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { AuthSteps } from "@/components/auth/auth-steps";
@@ -15,16 +16,17 @@ import { getAuthErrorMessage } from "@/lib/auth/errors";
 import { maskEmail, normalizeEmail } from "@/lib/auth/email";
 import {
   ensureProfile,
-  getPostAuthRedirect,
 } from "@/lib/auth/profile";
+import { safeStudentReturnPath, studentPostAuthPath } from "@/lib/auth/redirect";
 import { ensureStaffProfile } from "@/lib/auth/staff-profile";
 import { APP_HOME, getAppRole } from "@/lib/app-role";
 import { AUTH_OTP_LENGTH } from "@/lib/auth/constants";
 import { createClient } from "@/lib/supabase/client";
 
-export default function VerifyEmailPage() {
+function VerifyEmailForm() {
   const translateUI = useTranslate();
   const router = useRouter();
+  const next = safeStudentReturnPath(useSearchParams().get("next"));
   const appRole = getAppRole();
   const staffRole =
     appRole === "admin" || appRole === "class_rep" || appRole === "lecturer"
@@ -105,7 +107,7 @@ export default function VerifyEmailPage() {
       }
       const profile = await ensureProfile(supabase, user);
       setSuccess(true);
-      setContinueTo(getPostAuthRedirect(profile));
+      setContinueTo(studentPostAuthPath(profile.onboarding_completed, next, await getStudentAdmission(supabase, user.id)));
     } catch (err) {
       setError(getAuthErrorMessage(err));
       setOtp("");
@@ -228,3 +230,5 @@ export default function VerifyEmailPage() {
     </AuthShell>
   );
 }
+
+export default function VerifyEmailPage() { return <Suspense><VerifyEmailForm /></Suspense>; }

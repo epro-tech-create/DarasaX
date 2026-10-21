@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FileText, Download, Eye, ArrowRight } from "lucide-react";
-import { getSharedMaterial } from "@/lib/material-sharing";
+import { getSharedMaterial, requireSharedViewer } from "@/lib/material-sharing";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -34,6 +34,7 @@ export default async function SharedPage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
+  await requireSharedViewer(`/share/${token}`);
   const item = await getSharedMaterial(token);
   if (!item) notFound();
   return (

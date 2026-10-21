@@ -9,18 +9,20 @@ function load(file, deps = {}) {
   return exports;
 }
 const redirects = load('src/lib/auth/redirect.ts');
+const approved = {status:'approved',welcome_seen_at:'2026-10-21'};
 for (const next of ['/planner','/cr','/cr/materials','/admin','/lecturer','//evil.invalid','/\\evil.invalid','https://evil.invalid','/%63r','/modules/../cr','/modules/%2e%2e/cr','/%','/login','/auth/callback','/modules%2f../cr']) {
   assert.equal(redirects.safeStudentReturnPath(next), null, next);
-  assert.equal(redirects.studentPostAuthPath(true, next), '/dashboard');
+  assert.equal(redirects.studentPostAuthPath(true, next, approved), '/dashboard');
   assert.equal(redirects.studentPostAuthPath(false, next), '/onboarding');
 }
-assert.equal(redirects.studentPostAuthPath(true, '/modules/topic-1?tab=notes'), '/modules/topic-1?tab=notes');
-assert.equal(redirects.studentPostAuthPath(false, '/modules/topic-1'), '/onboarding');
+assert.equal(redirects.studentPostAuthPath(true, '/modules/topic-1?tab=notes', approved), '/modules/topic-1?tab=notes');
+assert.equal(redirects.studentPostAuthPath(false, '/modules/topic-1'), '/onboarding?next=%2Fmodules%2Ftopic-1');
 let staff = null;
 let complete = false;
 const signIns = [];
 const callback = load('src/app/auth/callback/route.ts', {
   '@/lib/auth/redirect': redirects,
+  '@/lib/auth/admission': {getStudentAdmission: async () => approved},
   '@/lib/auth/staff-profile': {getStaffProfile: async () => staff},
   '@/lib/app-role': {roleFromHost: () => 'student', getAppRole: () => 'student', APP_HOME: {class_rep:'/cr'}},
   'next/server': {NextResponse: {redirect: url => ({location:url.href})}},

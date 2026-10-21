@@ -66,6 +66,7 @@ function toAudit(row: AuditLogRow): AuditLogEntry {
 }
 
 export type StudentInput = {
+  registrationNumber: string;
   temporaryPassword: string;
   name: string;
   email: string;
@@ -205,7 +206,7 @@ export function useAdminPeopleStore({ rosterOnly = false }: { rosterOnly?: boole
       const supabase = createClient();
       const { data, error } = await supabase.functions.invoke("create-student", {
         body: { name: input.name.trim(), email: input.email.trim().toLowerCase(),
-          streamId: input.streamId, temporaryPassword: input.temporaryPassword },
+          streamId: input.streamId, registrationNumber: input.registrationNumber, temporaryPassword: input.temporaryPassword },
       });
       if (error) {
         const detail = await error.context?.json?.().catch(() => null);

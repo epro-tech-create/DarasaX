@@ -1,5 +1,7 @@
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 import type { Database, Profile } from "@/types/database";
+import { studentPostAuthPath } from "@/lib/auth/redirect";
+import type { StudentAdmission } from "@/lib/auth/admission";
 
 type Client = SupabaseClient<Database>;
 
@@ -74,7 +76,6 @@ export async function ensureProfile(
   return data;
 }
 
-export function getPostAuthRedirect(profile: Profile | null): string {
-  if (!profile || !profile.onboarding_completed) return "/onboarding";
-  return "/dashboard";
+export function getPostAuthRedirect(profile: Profile | null, admission?: StudentAdmission | null): string {
+  return studentPostAuthPath(Boolean(profile?.onboarding_completed), null, admission);
 }

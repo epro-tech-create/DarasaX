@@ -1,7 +1,11 @@
 import "server-only";
 import { cache } from "react";
-import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/types/database";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import { getStaffProfile } from "@/lib/auth/staff-profile";
+import { getProfile } from "@/lib/auth/profile";
+import { getStudentAdmission } from "@/lib/auth/admission";
+import { studentPostAuthPath } from "@/lib/auth/redirect";
 export type SharedMaterial = {
   id: string;
   title: string;
@@ -14,15 +18,17 @@ export type SharedMaterial = {
   module_id: string | null;
   created_at: string;
 };
-export function shareClient(token: string) {
-  return createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      auth: { persistSession: false, autoRefreshToken: false },
-      global: { headers: { "x-material-share": token } },
-    },
-  );
+export async function shareClient() { return createClient(); }
+export async function requireSharedViewer(destination: string) {
+  const client = await createClient();
+  const { data: { user } } = await client.auth.getUser();
+  if (!user) redirect(`/login?next=${encodeURIComponent(destination)}`);
+  const staff = await getStaffProfile(client, user.id);
+  if (staff?.status === "active") return;
+  if (staff) redirect("/login");
+  const [profile, admission] = await Promise.all([getProfile(client, user.id), getStudentAdmission(client, user.id)]);
+  const target = studentPostAuthPath(Boolean(profile?.onboarding_completed), destination, admission);
+  if (target !== destination) redirect(target);
 }
 export const getSharedMaterial = cache(
   async (token: string): Promise<SharedMaterial | null> => {
@@ -32,7 +38,7 @@ export const getSharedMaterial = cache(
       )
     )
       return null;
-    const { data, error } = await shareClient(token).rpc(
+    const { data, error } = await (await shareClient()).rpc(
       "get_shared_material",
       { share_token: token },
     );

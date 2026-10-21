@@ -1,4 +1,5 @@
 "use client";
+import { getStudentAdmission } from "@/lib/auth/admission";
 
 import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
@@ -85,7 +86,7 @@ function StudentLoginForm() {
         action: "login",
         summary: "Signed in",
       });
-      const dest = studentPostAuthPath(profile.onboarding_completed, next);
+      const dest = studentPostAuthPath(profile.onboarding_completed, next, await getStudentAdmission(supabase, data.user.id));
       router.replace(dest);
       router.refresh();
     } catch (err) {
@@ -93,7 +94,7 @@ function StudentLoginForm() {
       if (msg.includes("verify your email")) {
         sessionStorage.setItem("darasax_verify_email", normalizeEmail(email));
         setInfo(msg);
-        router.push("/verify-email");
+        router.push(`/verify-email${safeStudentReturnPath(next) ? `?next=${encodeURIComponent(safeStudentReturnPath(next)!)}` : ""}`);
         return;
       }
       setError(msg);
@@ -169,7 +170,7 @@ function StudentLoginForm() {
 
       <p className="mt-5 text-center text-sm text-muted-foreground sm:mt-4 sm:text-xs">
         {translateUI("Don't have an account?")}{" "}
-        <Link href="/signup" className="font-medium text-primary">
+        <Link href={`/signup${safeStudentReturnPath(next) ? `?next=${encodeURIComponent(safeStudentReturnPath(next)!)}` : ""}`} className="font-medium text-primary">
           {translateUI("Create account")}</Link>
       </p>
     </>

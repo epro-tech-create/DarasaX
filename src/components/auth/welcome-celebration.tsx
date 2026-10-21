@@ -118,12 +118,14 @@ export function WelcomeCelebration({
   subtitle = "Welcome to DarasaX — your academic home is ready.",
   ctaLabel = "Go to dashboard",
   onContinue,
+  disabled = false,
   tone = "default",
 }: {
   title?: string;
   subtitle?: string;
   ctaLabel?: string;
   onContinue: () => void;
+  disabled?: boolean;
   tone?: "default" | "dark";
 }) {
   const translateUI = useTranslate();
@@ -191,7 +193,7 @@ export function WelcomeCelebration({
         transition={{ delay: 0.42, duration: 0.3 }}
         className="relative z-10 mt-5 w-full max-w-xs"
       >
-        <Button className="h-9 w-full text-[13px]" onClick={onContinue}>
+        <Button className="h-9 w-full text-[13px]" disabled={disabled} onClick={onContinue}>
           {translateUI(ctaLabel)}
         </Button>
       </motion.div>

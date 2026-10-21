@@ -110,7 +110,7 @@ export function MaterialShareButton({
         open={open}
         onClose={() => setOpen(false)}
         title={translateUI("Share material")}
-        description={translateUI("Anyone with this link or QR code can view and download this file without signing in.")}
+        description={translateUI("Sign in with an approved account in this class to view or download this file.")}
       >
         <p className="mb-4 text-sm font-medium">{title}</p>
         {busy ? (

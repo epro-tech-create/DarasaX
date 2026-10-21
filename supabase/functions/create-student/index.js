@@ -32,7 +32,8 @@ export async function handler(request) {
   if (!input || typeof input.name !== "string" || input.name.trim().length < 2 || input.name.length > 200 ||
     typeof input.email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email) || input.email.length > 254 ||
     typeof input.temporaryPassword !== "string" || input.temporaryPassword.length < 8 || input.temporaryPassword.length > 128 ||
-    typeof input.streamId !== "string") return respond({ error: "Enter a name, valid email, class, and password of 8–128 characters." }, 400);
+    typeof input.registrationNumber !== "string" || !/^[0-9]{1,64}$(?![\s\S])/.test(input.registrationNumber) ||
+    typeof input.streamId !== "string") return respond({ error: "Enter a name, valid email, numbers-only registration number, class, and password of 8–128 characters." }, 400);
   if (staff.role === "class_rep" && input.streamId !== staff.stream_id)
     return respond({ error: "You may add students only to your assigned class." }, 403);
   const { data: academicClass, error: classError } = await caller.from("academic_classes").select("*").eq("id", input.streamId).eq("archived", false).maybeSingle();
@@ -48,6 +49,14 @@ export async function handler(request) {
   });
   if (createError || !created.user) return respond({ error: "Account could not be created. The email may already be registered, or the password may not meet the account policy. Existing passwords are never replaced." }, 409);
   const id = created.user.id;
+  const { error: admissionError } = await admin.from("student_admissions").update({
+    registration_number: input.registrationNumber, status: "approved", submitted_at: new Date().toISOString(),
+    reviewed_by: user.id, reviewed_at: new Date().toISOString(),
+  }).eq("user_id", id);
+  if (admissionError) {
+    await admin.auth.admin.deleteUser(id);
+    return respond({ error: admissionError.code === "23505" ? "This registration number is already registered. Use the existing account." : "Student admission could not be created. Please try again." }, admissionError.code === "23505" ? 409 : 500);
+  }
   const { error: profileError } = await admin.from("profiles").update({
     full_name: input.name.trim(), institution: academicClass.institution, programme: academicClass.programme,
     year_of_study: academicClass.year, semester: academicClass.semester,

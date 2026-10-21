@@ -1,5 +1,6 @@
 "use client";
 
+import { StudentApprovals } from "@/components/staff/student-approvals";
 import { useTranslate } from "@/components/providers/language-provider";
 import { useMemo, useState } from "react";
 import { Pencil, Plus, Trash2, Users } from "lucide-react";
@@ -13,6 +14,7 @@ import type { StudentMonitor } from "@/types";
 
 const emptyForm = {
   temporaryPassword: "",
+  registrationNumber: "",
   name: "",
   email: "",
   year: 3,
@@ -57,6 +59,7 @@ export default function ClassRepMembersPage() {
     setEditing(s);
     setForm({
       temporaryPassword: "",
+      registrationNumber: "",
       name: s.name,
       email: s.email,
       year: s.year,
@@ -93,6 +96,7 @@ export default function ClassRepMembersPage() {
           {
             name: form.name,
             temporaryPassword: form.temporaryPassword,
+            registrationNumber: form.registrationNumber,
             email: form.email,
             streamId,
             year: form.year,
@@ -127,6 +131,8 @@ export default function ClassRepMembersPage() {
           </Button>
         }
       />
+
+      <StudentApprovals />
 
       <div className="grid gap-2.5">
         <StaffStatCard
@@ -216,6 +222,8 @@ export default function ClassRepMembersPage() {
       >
         <form onSubmit={onSubmit} className="space-y-3">
           {message && <p role="status" className="text-sm">{translateUI(message)}</p>}
+          {!editing && <label className="block space-y-1 text-sm">{translateUI("Registration number")}<input required inputMode="numeric" pattern="[0-9]+" maxLength={64} placeholder="240242400506" value={form.registrationNumber}
+            onChange={e => setForm(f => ({ ...f, registrationNumber: e.target.value }))} className="h-11 w-full rounded-xl border border-border bg-background px-3" /></label>}
           {!editing && <label className="block space-y-1 text-sm">{translateUI("Temporary password")}<input required type="password" minLength={8} autoComplete="new-password" value={form.temporaryPassword}
               onChange={e => setForm(f => ({ ...f, temporaryPassword: e.target.value }))}
               className="h-11 w-full rounded-xl border border-border bg-background px-3" />

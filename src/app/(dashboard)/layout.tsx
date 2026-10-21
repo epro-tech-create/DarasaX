@@ -1,3 +1,6 @@
+import { redirect } from "next/navigation";
+import { getStudentAdmission } from "@/lib/auth/admission";
+import { studentPostAuthPath } from "@/lib/auth/redirect";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/auth/profile";
 import { StudentProfileProvider } from "@/components/providers/student-profile-provider";
@@ -13,7 +16,10 @@ export default async function DashboardLayout({
 }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const profile = user ? await getProfile(supabase, user.id) : null;
+  if (!user) redirect("/login");
+  const [profile, admission] = await Promise.all([getProfile(supabase, user.id), getStudentAdmission(supabase, user.id)]);
+  const gate = studentPostAuthPath(Boolean(profile?.onboarding_completed), null, admission);
+  if (gate !== "/dashboard") redirect(gate);
   return (
     <RoleGuard allow="student">
       <StudentProfileProvider initialProfile={profile}>
