@@ -8,7 +8,6 @@ import { FormEvent, Suspense, useEffect, useState } from "react";
 import { AuthAlert } from "@/components/auth/auth-alert";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { AuthSubmitButton } from "@/components/auth/auth-submit-button";
-import { GitHubButton } from "@/components/auth/github-button";
 import { GoogleButton } from "@/components/auth/google-button";
 import { PasswordField } from "@/components/auth/password-field";
 import { recordAudit } from "@/lib/audit-log";
@@ -167,10 +166,7 @@ function StudentLoginForm() {
         <span className="h-px flex-1 bg-border" />
       </div>
 
-      <div className="space-y-2">
-        <GoogleButton onClick={onGoogle} loading={googleLoading} />
-        <GitHubButton next={next} disabled={loading || googleLoading} onError={setError} />
-      </div>
+      <GoogleButton onClick={onGoogle} loading={googleLoading} />
 
       <p className="mt-5 text-center text-sm text-muted-foreground sm:mt-4 sm:text-xs">
         {translateUI("Don't have an account?")}{" "}
@@ -301,8 +297,6 @@ function StaffLoginForm({
         <AuthSubmitButton loading={loading} loadingText={translateUI("Signing in...")}>
           {translateUI("Sign In")}</AuthSubmitButton>
       </form>
-
-      <div className="mt-4"><GitHubButton disabled={loading} onError={setError} /></div>
 
       <p className="mt-5 text-center text-sm text-muted-foreground">
         {translateUI("Staff access is assigned by an administrator. Contact them for access.")}</p>

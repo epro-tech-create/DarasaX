@@ -1,3 +1,5 @@
+GitHub buttons are intentionally hidden from every frontend entry screen at the user's request until they confirm the provider is enabled. The helper and unused component are retained for later activation.
+
 # GitHub sign-in
 
 The login, signup and assigned staff login screens use Supabase GitHub OAuth with PKCE. The existing `/auth/callback` exchanges the code, creates/synchronizes the profile, records sign-in and enforces role, cohort, registration and approval gates. Shared-file return paths are preserved for students. GitHub sign-in never grants staff membership or student approval.
