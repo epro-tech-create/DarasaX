@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
@@ -14,6 +15,7 @@ import { AUTH_OTP_LENGTH } from "@/lib/auth/constants";
 import { createClient } from "@/lib/supabase/client";
 
 export default function ForgotPasswordVerifyPage() {
+  const translateUI = useTranslate();
   const router = useRouter();
   const cooldown = useResendCooldown(60);
   const [email, setEmail] = useState("");
@@ -89,22 +91,21 @@ export default function ForgotPasswordVerifyPage() {
 
   return (
     <AuthShell
-      title="Check your email"
+      title={translateUI("Check your email")}
       subtitle="Enter the recovery code to continue resetting your password."
     >
       <h1 className="font-heading text-xl font-semibold tracking-tight">
-        Check your email
-      </h1>
+        {translateUI("Check your email")}</h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        We&apos;ve sent a verification code to{" "}
+        {translateUI("We've sent a verification code to")}{" "}
         <span className="font-medium text-foreground">
-          {email ? maskEmail(email) : "your email"}
+          {translateUI(email ? maskEmail(email) : "your email")}
         </span>
       </p>
 
       <form className="mt-6 space-y-4" onSubmit={onSubmit}>
-        {error ? <AuthAlert message={error} /> : null}
-        {info ? <AuthAlert message={info} tone="info" /> : null}
+        {error ? <AuthAlert message={translateUI(error)} /> : null}
+        {info ? <AuthAlert message={translateUI(info)} tone="info" /> : null}
 
         <OtpInput
           value={otp}
@@ -118,9 +119,8 @@ export default function ForgotPasswordVerifyPage() {
           autoFocus
         />
 
-        <AuthSubmitButton loading={loading} loadingText="Verifying...">
-          Verify Code
-        </AuthSubmitButton>
+        <AuthSubmitButton loading={loading} loadingText={translateUI("Verifying...")}>
+          {translateUI("Verify Code")}</AuthSubmitButton>
 
         <div className="text-center">
           <button
@@ -129,14 +129,13 @@ export default function ForgotPasswordVerifyPage() {
             disabled={!cooldown.canResend || resending}
             className="text-sm font-medium text-primary disabled:text-muted-foreground"
           >
-            {resending ? "Sending code..." : cooldown.label}
+            {translateUI(resending ? "Sending code..." : cooldown.label)}
           </button>
         </div>
 
         <p className="text-center text-xs text-muted-foreground">
           <Link href="/forgot-password" className="font-medium text-primary">
-            Use a different email
-          </Link>
+            {translateUI("Use a different email")}</Link>
         </p>
       </form>
     </AuthShell>

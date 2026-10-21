@@ -1,4 +1,6 @@
 "use client";
+
+import { useTranslate } from "@/components/providers/language-provider";
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,6 +24,7 @@ const empty = {
   evening: false,
 };
 export function ClassManager() {
+  const translateUI = useTranslate();
   const { classes, ready, error, refresh } = useClassRegistry();
   const { session } = useStaffSession();
   const [open, setOpen] = useState(false);
@@ -92,10 +95,9 @@ export function ClassManager() {
     <section className="surface rounded-2xl p-4 sm:p-5">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-base font-semibold">Available classes</h2>
+          <h2 className="text-base font-semibold">{translateUI("Available classes")}</h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            Manage registration and timetable choices.
-          </p>
+            {translateUI("Manage registration and timetable choices.")}</p>
         </div>
         <Button
           size="sm"
@@ -106,21 +108,19 @@ export function ClassManager() {
           }}
         >
           <Plus className="h-4 w-4" />
-          Add class
-        </Button>
+          {translateUI("Add class")}</Button>
       </div>
       {(message || error) && (
         <p role="status" className="mb-3 text-sm">
-          {message || error}
+          {translateUI(message || error)}
           {error && (
             <button className="ml-2 underline" onClick={() => void refresh()}>
-              Retry
-            </button>
+              {translateUI("Retry")}</button>
           )}
         </p>
       )}
       {!ready ? (
-        <p className="text-sm text-muted-foreground">Loading classes…</p>
+        <p className="text-sm text-muted-foreground">{translateUI("Loading classes…")}</p>
       ) : (
         <ul className="divide-y divide-border">
           {classes.map((item) => (
@@ -129,15 +129,15 @@ export function ClassManager() {
               className="flex items-center justify-between gap-3 py-3"
             >
               <div className="min-w-0">
-                <p className="text-sm font-semibold">{item.label}</p>
+                <p className="text-sm font-semibold">{translateUI(item.label)}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {item.programme} · Year {item.year} · Semester {item.semester}
+                  {translateUI(item.programme)} {translateUI(" · Year ")}{translateUI(item.year)} {translateUI(" · Semester ")}{translateUI(item.semester)}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {item.institution} ·{" "}
-                  {activeCohort(item)
+                  {translateUI(item.institution)} ·{" "}
+                  {translateUI(activeCohort(item)
                     ? "Registration open"
-                    : "Not open for registration"}
+                    : "Not open for registration")}
                 </p>
               </div>
               {session?.role === "admin" && (
@@ -145,7 +145,7 @@ export function ClassManager() {
                   size="icon"
                   variant="ghost"
                   disabled={busy}
-                  aria-label={`Remove ${item.label}`}
+                  aria-label={translateUI(`Remove ${item.label}`)}
                   onClick={() => void remove(item)}
                 >
                   <Trash2 className="h-4 w-4 text-danger" />
@@ -160,16 +160,15 @@ export function ClassManager() {
         onClose={() => {
           if (!busy) setOpen(false);
         }}
-        title="Add class"
-        description="Only the active cohort can enter the student workspace."
+        title={translateUI("Add class")}
+        description={translateUI("Only the active cohort can enter the student workspace.")}
       >
         <form onSubmit={save} className="space-y-3">
           <label className="block text-sm">
-            Class code
-            <input
+            {translateUI("Class code")}<input
               required
               pattern="[A-Za-z0-9][A-Za-z0-9-]{2,39}"
-              placeholder="BENG24COE-5"
+              placeholder={translateUI("BENG24COE-5")}
               value={form.id}
               onChange={(e) =>
                 setForm({ ...form, id: e.target.value.toUpperCase() })
@@ -178,17 +177,15 @@ export function ClassManager() {
             />
           </label>
           <label className="block text-sm">
-            Class name
-            <input
+            {translateUI("Class name")}<input
               value={form.label}
-              placeholder="Same as class code"
+              placeholder={translateUI("Same as class code")}
               onChange={(e) => setForm({ ...form, label: e.target.value })}
               className={input}
             />
           </label>
           <label className="block text-sm">
-            Institution
-            <select
+            {translateUI("Institution")}<select
               value={form.institution}
               onChange={(e) =>
                 setForm({ ...form, institution: e.target.value })
@@ -201,8 +198,7 @@ export function ClassManager() {
             </select>
           </label>
           <label className="block text-sm">
-            Programme
-            <input
+            {translateUI("Programme")}<input
               required
               value={form.programme}
               onChange={(e) =>
@@ -213,8 +209,7 @@ export function ClassManager() {
           </label>
           <div className="grid grid-cols-2 gap-3">
             <label className="text-sm">
-              Year
-              <select
+              {translateUI("Year")}<select
                 value={form.year}
                 onChange={(e) =>
                   setForm({ ...form, year: Number(e.target.value) })
@@ -223,14 +218,13 @@ export function ClassManager() {
               >
                 {[1, 2, 3, 4].map((n) => (
                   <option key={n} value={n}>
-                    Year {n}
+                    {translateUI("Year ")}{translateUI(n)}
                   </option>
                 ))}
               </select>
             </label>
             <label className="text-sm">
-              Semester
-              <select
+              {translateUI("Semester")}<select
                 value={form.semester}
                 onChange={(e) =>
                   setForm({ ...form, semester: Number(e.target.value) })
@@ -239,7 +233,7 @@ export function ClassManager() {
               >
                 {[1, 2].map((n) => (
                   <option key={n} value={n}>
-                    Semester {n}
+                    {translateUI("Semester ")}{translateUI(n)}
                   </option>
                 ))}
               </select>
@@ -251,10 +245,9 @@ export function ClassManager() {
               checked={form.evening}
               onChange={(e) => setForm({ ...form, evening: e.target.checked })}
             />
-            Evening class
-          </label>
+            {translateUI("Evening class")}</label>
           <Button type="submit" disabled={busy}>
-            {busy ? "Saving…" : "Add class"}
+            {translateUI(busy ? "Saving…" : "Add class")}
           </Button>
         </form>
       </StaffModal>

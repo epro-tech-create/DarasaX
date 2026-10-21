@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -29,6 +30,7 @@ export function PasswordField({
   error?: string;
   disabled?: boolean;
 }) {
+  const translateUI = useTranslate();
   const [visible, setVisible] = useState(false);
   const strength = getPasswordStrength(value);
   const checks = getPasswordChecks(value);
@@ -43,7 +45,7 @@ export function PasswordField({
   return (
     <div>
       <label htmlFor={id} className="block text-[13px] font-medium sm:text-[11px]">
-        {label}
+        {translateUI(label)}
       </label>
       <div className="relative mt-1">
         <input
@@ -52,7 +54,7 @@ export function PasswordField({
           value={value}
           disabled={disabled}
           autoComplete={autoComplete}
-          placeholder={placeholder}
+          placeholder={translateUI(placeholder)}
           onChange={(e) => onChange(e.target.value)}
           aria-invalid={!!error}
           aria-describedby={error ? `${id}-error` : undefined}
@@ -65,7 +67,7 @@ export function PasswordField({
           type="button"
           onClick={() => setVisible((v) => !v)}
           className="focus-ring absolute right-1.5 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:text-foreground sm:right-1 sm:h-6 sm:w-6"
-          aria-label={visible ? "Hide password" : "Show password"}
+          aria-label={translateUI(visible ? "Hide password" : "Show password")}
         >
           {visible ? <EyeOff className="h-4 w-4 sm:h-3.5 sm:w-3.5" /> : <Eye className="h-4 w-4 sm:h-3.5 sm:w-3.5" />}
         </button>
@@ -86,24 +88,20 @@ export function PasswordField({
           </div>
           <ul className="grid grid-cols-2 gap-0.5 text-[11px] text-muted-foreground sm:text-[9px]">
             <li className={checks.minLength ? "text-success" : undefined}>
-              8+ characters
-            </li>
+              {translateUI("8+ characters")}</li>
             <li className={checks.hasUpper ? "text-success" : undefined}>
-              Uppercase
-            </li>
+              {translateUI("Uppercase")}</li>
             <li className={checks.hasLower ? "text-success" : undefined}>
-              Lowercase
-            </li>
+              {translateUI("Lowercase")}</li>
             <li className={checks.hasNumber ? "text-success" : undefined}>
-              Number
-            </li>
+              {translateUI("Number")}</li>
           </ul>
         </div>
       ) : null}
 
       {error ? (
         <p id={`${id}-error`} className="mt-1 text-sm text-danger sm:text-[11px]" role="alert">
-          {error}
+          {translateUI(error)}
         </p>
       ) : null}
     </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useMemo } from "react";
 import { notFound, useParams } from "next/navigation";
 import { MaterialUploadCard } from "@/components/modules/material-upload-card";
@@ -13,6 +14,7 @@ import { downloadFile, downloadResource } from "@/lib/download";
 import { CheckCircle2, Download, FileText, RotateCcw } from "lucide-react";
 
 export default function AssignmentDetailPage() {
+  const translateUI = useTranslate();
   const params = useParams<{ id: string }>();
   const { items, ready, markCompleted, setStatus } = useAssignments();
   const assignment = useMemo(
@@ -20,7 +22,7 @@ export default function AssignmentDetailPage() {
     [items, params.id],
   );
 
-  if (!ready) return <p role="status" className="surface rounded-2xl p-6 text-sm">Loading assignment...</p>;
+  if (!ready) return <p role="status" className="surface rounded-2xl p-6 text-sm">{translateUI("Loading assignment...")}</p>;
   if (!assignment) notFound();
 
   const completed = assignment.status === "completed";
@@ -33,7 +35,7 @@ export default function AssignmentDetailPage() {
     <div className="mx-auto max-w-3xl">
       <PageHeader
         title={assignment.title}
-        description={`${courseModule?.name || "Module"} · ${assignment.lecturer}`}
+        description={`${courseModule?.name || translateUI("Module")} · ${assignment.lecturer}`}
         actions={<DeadlineBadge deadline={assignment.deadline} />}
       />
 
@@ -48,13 +50,12 @@ export default function AssignmentDetailPage() {
                   : "default"
             }
           >
-            {assignment.priority} priority
-          </Badge>
-          {completed ? <Badge tone="success">Completed</Badge> : null}
+            {assignment.priority} {translateUI(" priority")}</Badge>
+          {completed ? <Badge tone="success">{translateUI("Completed")}</Badge> : null}
         </div>
 
         <section>
-          <h2 className="font-heading text-[14px] font-semibold">Description</h2>
+          <h2 className="font-heading text-[14px] font-semibold">{translateUI("Description")}</h2>
           <p className="mt-2 text-[12px] leading-relaxed text-muted-foreground">
             {assignment.description}
           </p>
@@ -62,8 +63,7 @@ export default function AssignmentDetailPage() {
 
         <section>
           <h2 className="font-heading text-[14px] font-semibold">
-            Submission instructions
-          </h2>
+            {translateUI("Submission instructions")}</h2>
           <p className="mt-2 text-[12px] leading-relaxed text-muted-foreground">
             {assignment.instructions}
           </p>
@@ -74,8 +74,7 @@ export default function AssignmentDetailPage() {
         {assignment.attachedFiles.length > 0 ? (
           <section>
             <h2 className="font-heading text-[14px] font-semibold">
-              Attached files
-            </h2>
+              {translateUI("Attached files")}</h2>
             <ul className="mt-3 space-y-2">
               {assignment.attachedFiles.map((file) => (
                 <li
@@ -85,7 +84,7 @@ export default function AssignmentDetailPage() {
                   <FileText className="h-4 w-4 shrink-0 text-primary" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[12px] font-medium">{file.name}</p>
-                    <p className="text-[10px] text-muted-foreground">{file.size}</p>
+                    <p className="text-[10px] text-muted-foreground">{translateUI(file.size)}</p>
                   </div>
                   <Button
                     size="sm"
@@ -95,8 +94,7 @@ export default function AssignmentDetailPage() {
                     onClick={() => downloadFile(file.url, file.name)}
                   >
                     <Download className="h-3.5 w-3.5" />
-                    Download
-                  </Button>
+                    {translateUI("Download")}</Button>
                 </li>
               ))}
             </ul>
@@ -106,8 +104,7 @@ export default function AssignmentDetailPage() {
         {related.length > 0 ? (
           <section>
             <h2 className="font-heading text-[14px] font-semibold">
-              Related module resources
-            </h2>
+              {translateUI("Related module resources")}</h2>
             <ul className="mt-3 space-y-2">
               {related.map((r) => (
                 <li
@@ -116,7 +113,7 @@ export default function AssignmentDetailPage() {
                 >
                   <div className="min-w-0 flex-1">
                     <p className="text-[12px] font-medium">{r.title}</p>
-                    <p className="text-[10px] text-muted-foreground">{r.size}</p>
+                    <p className="text-[10px] text-muted-foreground">{translateUI(r.size)}</p>
                   </div>
                   <Button
                     size="sm"
@@ -125,8 +122,7 @@ export default function AssignmentDetailPage() {
                     onClick={() => downloadResource(r)}
                   >
                     <Download className="h-3.5 w-3.5" />
-                    Download
-                  </Button>
+                    {translateUI("Download")}</Button>
                 </li>
               ))}
             </ul>
@@ -141,7 +137,7 @@ export default function AssignmentDetailPage() {
             type="button"
           >
             <CheckCircle2 className="h-4 w-4" />
-            {completed ? "Marked as completed" : "Mark as Completed"}
+            {translateUI(completed ? "Marked as completed" : "Mark as Completed")}
           </Button>
           {completed ? (
             <Button
@@ -151,8 +147,7 @@ export default function AssignmentDetailPage() {
               onClick={() => setStatus(assignment.id, "upcoming")}
             >
               <RotateCcw className="h-4 w-4" />
-              Move back to Upcoming
-            </Button>
+              {translateUI("Move back to Upcoming")}</Button>
           ) : null}
         </div>
       </div>

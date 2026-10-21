@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
 import { OverviewHeader, OverviewShortcut } from "@/components/dashboard/overview-ui";
 import {
@@ -26,6 +27,7 @@ import { useTopicsStore } from "@/lib/topics-store";
 import { formatRelativeTime, getGreeting } from "@/lib/utils";
 
 export default function LecturerOverviewPage() {
+  const translateUI = useTranslate();
   const { session } = useStaffSession();
   const displayName = session?.name?.trim().split(" ")[0] || "Lecturer";
   const active = getActiveLecturerStream();
@@ -96,47 +98,47 @@ export default function LecturerOverviewPage() {
 
   return (
     <div className="space-y-6 sm:space-y-7">
-      <OverviewHeader label="Lecturer workspace" title={`${getGreeting()}, ${displayName}`}
-        description={`${activeLabel || "Your teaching workspace"} / ${moduleCount} modules / ${streamCount} classes. Bring your next lesson to life.`}
+      <OverviewHeader label={translateUI("Lecturer workspace")} title={translateUI(`${getGreeting()}, ${displayName}`)}
+        description={translateUI(`${activeLabel || "Your teaching workspace"} / ${moduleCount} modules / ${streamCount} classes. Bring your next lesson to life.`)}
         actions={<><Button href="/lecturer/materials" size="sm"><FileUp className="h-4 w-4" />Upload material</Button><Button href="/lecturer/topics" size="sm" variant="outline">Manage topics</Button></>}
       />
 
       <StaffStagger className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StaffFadeItem>
           <StaffStatCard
-            label="Your uploads"
+            label={translateUI("Your uploads")}
             value={String(mine.length)}
-            hint={activeLabel ? `To ${activeLabel}` : "Published files"}
+            hint={translateUI(activeLabel ? `To ${activeLabel}` : "Published files")}
             icon={FileUp}
             tone="primary"
           />
         </StaffFadeItem>
         <StaffFadeItem>
           <StaffStatCard
-            label="Notes & slides"
+            label={translateUI("Notes & slides")}
             value={String(notes.length)}
-            hint={`${myTopics.length} topic${myTopics.length === 1 ? "" : "s"} outlined`}
+            hint={translateUI(`${myTopics.length} topic${myTopics.length === 1 ? "" : "s"} outlined`)}
             icon={BookOpen}
             tone="success"
           />
         </StaffFadeItem>
         <StaffFadeItem>
           <StaffStatCard
-            label="Assignment files"
+            label={translateUI("Assignment files")}
             value={String(assignments.length)}
-            hint="Live on student Modules"
+            hint={translateUI("Live on student Modules")}
             icon={ClipboardList}
             tone="warning"
           />
         </StaffFadeItem>
         <StaffFadeItem>
           <StaffStatCard
-            label="Modules taught"
+            label={translateUI("Modules taught")}
             value={String(myModules.length || moduleCount)}
             hint={
-              streamCount > 1
+              translateUI(streamCount > 1
                 ? `${streamCount} classes selected`
-                : "Across your streams"
+                : "Across your streams")
             }
             icon={GraduationCap}
             tone="primary"
@@ -157,8 +159,8 @@ export default function LecturerOverviewPage() {
 
       <div className="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
         <StaffSection
-          title="Recent uploads"
-          description="Latest files published to your classes and modules."
+          title={translateUI("Recent uploads")}
+          description={translateUI("Latest files published to your classes and modules.")}
           action={
             <Link
               href="/lecturer/materials"
@@ -183,11 +185,11 @@ export default function LecturerOverviewPage() {
                       {item.title}
                     </p>
                     <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
-                      {courseModule ? `${courseModule.code} · ` : ""}
-                      {formatRelativeTime(item.createdAt)} · {item.size}
+                      {translateUI(courseModule ? `${courseModule.code} · ` : "")}
+                      {translateUI(formatRelativeTime(item.createdAt))} · {translateUI(item.size)}
                     </p>
                   </div>
-                  <Badge tone="primary">{item.kind.replace("_", " ")}</Badge>
+                  <Badge tone="primary">{translateUI(item.kind.replace("_", " "))}</Badge>
                 </div>
               );
             })}
@@ -197,33 +199,29 @@ export default function LecturerOverviewPage() {
                   <FileUp className="h-4 w-4" />
                 </span>
                 <p className="max-w-xs text-[12px] text-muted-foreground">
-                  No uploads yet. Publish notes or an assignment to reach
-                  students instantly.
-                </p>
+                  {translateUI("No uploads yet. Publish notes or an assignment to reach students instantly.")}</p>
                 <Button href="/lecturer/materials" size="sm" className="mt-1">
-                  Upload your first file
-                </Button>
+                  {translateUI("Upload your first file")}</Button>
               </div>
             ) : null}
           </div>
         </StaffSection>
 
         <StaffSection
-          title="Teaching context"
-          description="Your current class and teaching modules."
+          title={translateUI("Teaching context")}
+          description={translateUI("Your current class and teaching modules.")}
         >
           <div className="space-y-3">
             <div className="rounded-xl bg-muted/50 px-3 py-2.5">
               <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-                Active class
-              </p>
+                {translateUI("Active class")}</p>
               <p className="mt-1 text-[13px] font-semibold">
-                {activeLabel ?? "No class selected"}
+                {translateUI(activeLabel ?? "No class selected")}
               </p>
             </div>
             <div>
               <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-                Modules ({myModules.length || moduleCount})
+                {translateUI("Modules (")}{translateUI(myModules.length || moduleCount)})
               </p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {(myModules.length > 0
@@ -233,25 +231,20 @@ export default function LecturerOverviewPage() {
                   .slice(0, 6)
                   .map((m) => (
                     <Badge key={m.id} tone="primary">
-                      {m.code}
+                      {translateUI(m.code)}
                     </Badge>
                   ))}
               </div>
               <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
-                {myTopics.length} topic{myTopics.length === 1 ? "" : "s"} you
-                created · students see published items in Modules and
-                notifications.
-              </p>
+                {translateUI(`${myTopics.length} topic${myTopics.length === 1 ? "" : "s"}`)} {translateUI(" you created · students see published items in Modules and notifications.")}</p>
             </div>
             <div className="flex flex-wrap gap-2 pt-1">
               <Button href="/lecturer/topics" size="sm" variant="outline">
                 <ListOrdered className="h-3.5 w-3.5" />
-                Manage topics
-              </Button>
+                {translateUI("Manage topics")}</Button>
               <Button href="/lecturer/timetable" size="sm" variant="outline">
                 <CalendarDays className="h-3.5 w-3.5" />
-                View timetable
-              </Button>
+                {translateUI("View timetable")}</Button>
             </div>
           </div>
         </StaffSection>

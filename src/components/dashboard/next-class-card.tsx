@@ -1,3 +1,5 @@
+"use client";
+import { useTranslate } from "@/components/providers/language-provider";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -28,6 +30,7 @@ export function NextClassCard({
   timetableHref?: string;
   moduleLabel?: string;
 }) {
+  const translateUI = useTranslate();
   const mins = minutesUntil(entry.startTime, dayOffset);
   const days = Math.floor(mins / (60 * 24));
   const hours = Math.floor((mins % (60 * 24)) / 60);
@@ -47,7 +50,7 @@ export function NextClassCard({
     <section className="relative overflow-hidden rounded-[22px] bg-[#1565C0] text-white">
       <Image
         src="/next-class-students.jpg"
-        alt=""
+        alt={""}
         fill
         priority
         sizes="(max-width: 1280px) 100vw, 1152px"
@@ -66,10 +69,9 @@ export function NextClassCard({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 sm:justify-start">
             <p className="text-[10px] font-semibold uppercase tracking-[0.12em] sm:text-[11px] text-white/70">
-              Next class
-            </p>
+              {translateUI("Next class")}</p>
             <span className="hidden h-1 w-1 rounded-full bg-white/40 sm:block" aria-hidden />
-            <p className="text-[10px] font-medium text-white/80 sm:text-[12px]">{startsLabel}</p>
+            <p className="text-[10px] font-medium text-white/80 sm:text-[12px]">{translateUI(startsLabel)}</p>
           </div>
 
           <h2 className="mt-3 font-heading text-xl font-semibold leading-snug tracking-tight sm:text-[2rem] sm:leading-[1.15]">
@@ -80,7 +82,7 @@ export function NextClassCard({
             <li className="inline-flex min-w-0 items-center gap-2">
               <Clock className="h-3.5 w-3.5 shrink-0 text-white/65" aria-hidden />
               <span className="truncate font-medium">
-                {formatTime(entry.startTime)} — {formatTime(entry.endTime)}
+                {translateUI(formatTime(entry.startTime))} — {translateUI(formatTime(entry.endTime))}
               </span>
             </li>
             <li className="hidden h-3 w-px bg-white/25 sm:block" aria-hidden />
@@ -102,15 +104,14 @@ export function NextClassCard({
             className="h-11 min-w-0 bg-white px-3 text-xs font-semibold sm:h-10 sm:px-4 sm:text-sm text-[#0a3d8f] shadow-none hover:bg-white/90"
             href={moduleHref ?? `/modules/${module.id}`}
           >
-            {moduleLabel}
+            {translateUI(moduleLabel)}
           </Button>
           <Button
             variant="outline"
             className="h-11 min-w-0 border-white/25 bg-transparent px-3 text-xs text-white sm:h-10 sm:bg-white/10 sm:px-4 sm:text-sm backdrop-blur-sm hover:bg-white/20"
             href={timetableHref}
           >
-            View Timetable
-          </Button>
+            {translateUI("View Timetable")}</Button>
         </div>
       </div>
     </section>
@@ -135,6 +136,7 @@ export function StatCard({
   hint?: string;
   href?: string;
 }) {
+  const translateUI = useTranslate();
   const Icon = statIcons[label as keyof typeof statIcons] || BookOpen;
 
   const body = (
@@ -143,19 +145,19 @@ export function StatCard({
         <Icon className="h-4 w-4" />
       </span>
       <div className="min-w-0">
-        <p className="text-xs font-medium text-muted-foreground">{label}</p>
+        <p className="text-xs font-medium text-muted-foreground">{translateUI(label)}</p>
         <p className="mt-1 font-heading text-xl font-semibold tracking-tight">
-          {value}
+          {translateUI(value)}
         </p>
         {hint ? (
-          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{hint}</p>
+          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{translateUI(hint)}</p>
         ) : null}
       </div>
     </div>
   );
 
   if (!href) {
-    return <div className="surface rounded-[16px] p-3.5 sm:p-4">{body}</div>;
+    return <div className="surface rounded-[16px] p-3.5 sm:p-4">{translateUI(body)}</div>;
   }
 
   return (
@@ -163,7 +165,7 @@ export function StatCard({
       href={href}
       className="surface block rounded-[16px] p-3.5 transition duration-200 focus-ring motion-safe:hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 sm:p-4"
     >
-      {body}
+      {translateUI(body)}
     </Link>
   );
 }

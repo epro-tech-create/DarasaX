@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -33,8 +34,8 @@ function pad(n: number) {
   return String(n).padStart(2, "0");
 }
 
-function formatSessionDate(date: string) {
-  return new Date(`${date}T12:00:00`).toLocaleDateString("en-GB", {
+function formatSessionDate(date: string, locale: string) {
+  return new Date(`${date}T12:00:00`).toLocaleDateString(locale, {
     weekday: "short",
     day: "numeric",
     month: "short",
@@ -49,6 +50,7 @@ function localISODate(date = new Date()) {
 }
 
 export default function PlannerPage() {
+  const translateUI = useTranslate();
   const { topics } = useTopicProgress();
   const today = localISODate();
   const weekEnd = (() => {
@@ -94,7 +96,7 @@ export default function PlannerPage() {
   );
 
   const { days, hours, minutes, seconds } = formatCountdownParts(msLeft);
-  const openLabel = getSchoolOpenDate().toLocaleDateString("en-GB", {
+  const openLabel = getSchoolOpenDate().toLocaleDateString(translateUI.locale, {
     day: "numeric",
     month: "short",
   });
@@ -108,8 +110,8 @@ export default function PlannerPage() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Study Planner"
-        description="Plan focused sessions around your modules and exams."
+        title={translateUI("Study Planner")}
+        description={translateUI("Plan focused sessions around your modules and exams.")}
         actions={
           <Button size="sm" onClick={() => setShowForm((v) => !v)}>
             <Plus className="h-3.5 w-3.5" />
@@ -122,46 +124,39 @@ export default function PlannerPage() {
         <div className="surface rounded-[14px] p-3">
           <p className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
             <Target className="h-3 w-3 text-primary" />
-            Today
-          </p>
+            {translateUI("Today")}</p>
           <p className="mt-0.5 font-heading text-[15px] font-semibold">
-            {todaysPlan.length}
+            {translateUI(todaysPlan.length)}
             <span className="ml-1 text-[11px] font-medium text-muted-foreground">
-              sessions
-            </span>
+              {translateUI("sessions")}</span>
           </p>
         </div>
         <div className="surface rounded-[14px] p-3">
           <p className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
             <Timer className="h-3 w-3 text-cyan" />
-            Focus time
-          </p>
+            {translateUI("Focus time")}</p>
           <p className="mt-0.5 font-heading text-[15px] font-semibold">
-            {todayMinutes}
+            {translateUI(todayMinutes)}
             <span className="ml-1 text-[11px] font-medium text-muted-foreground">
-              min
-            </span>
+              {translateUI("min")}</span>
           </p>
         </div>
         <div className="surface rounded-[14px] p-3">
           <p className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
             <Flame className="h-3 w-3 text-warning" />
-            This week
-          </p>
+            {translateUI("This week")}</p>
           <p className="mt-0.5 font-heading text-[15px] font-semibold">
-            {Math.round(weekMinutes / 60)}
+            {translateUI(Math.round(weekMinutes / 60))}
             <span className="ml-1 text-[11px] font-medium text-muted-foreground">
-              hrs
-            </span>
+              {translateUI("hrs")}</span>
           </p>
         </div>
         <div className="surface rounded-[14px] p-3">
           <p className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
             <CheckCircle2 className="h-3 w-3 text-success" />
-            Done today
-          </p>
+            {translateUI("Done today")}</p>
           <p className="mt-0.5 font-heading text-[15px] font-semibold text-success">
-            {todayDone}/{todaysPlan.length || 0}
+            {translateUI(todayDone)}/{translateUI(todaysPlan.length || 0)}
           </p>
         </div>
       </div>
@@ -196,24 +191,22 @@ export default function PlannerPage() {
         >
           <div className="mb-3 flex items-center justify-between gap-2">
             <div>
-              <p className="text-[13px] font-semibold">New study session</p>
+              <p className="text-[13px] font-semibold">{translateUI("New study session")}</p>
               <p className="text-[11px] text-muted-foreground">
-                Block time for a module and set a clear goal.
-              </p>
+                {translateUI("Block time for a module and set a clear goal.")}</p>
             </div>
             <button
               type="button"
               onClick={() => setShowForm(false)}
               className="focus-ring inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted"
-              aria-label="Close form"
+              aria-label={translateUI("Close form")}
             >
               <X className="h-4 w-4" />
             </button>
           </div>
           <div className="grid gap-2.5 sm:grid-cols-2">
             <label className="block space-y-1 text-[11px] font-medium text-muted-foreground">
-              Module
-              <select
+              {translateUI("Module")}<select
                 className="focus-ring h-9 w-full rounded-[10px] border border-border bg-card px-2.5 text-[12px] text-foreground"
                 value={form.moduleId}
                 onChange={(e) =>
@@ -232,36 +225,33 @@ export default function PlannerPage() {
               </select>
             </label>
             <label className="block space-y-1 text-[11px] font-medium text-muted-foreground">
-              Topic
-              <select
+              {translateUI("Topic")}<select
                 className="focus-ring h-9 w-full rounded-[10px] border border-border bg-card px-2.5 text-[12px] text-foreground"
                 value={form.topicId}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, topicId: e.target.value }))
                 }
               >
-                <option value="">Optional</option>
+                <option value="">{translateUI("Optional")}</option>
                 {moduleTopics.map((t) => (
                   <option key={t.id} value={t.id}>
-                    Topic {t.number}: {t.title}
+                    {translateUI("Topic ")}{translateUI(t.number)}: {t.title}
                   </option>
                 ))}
               </select>
             </label>
             <label className="block space-y-1 text-[11px] font-medium text-muted-foreground sm:col-span-2">
-              Title
-              <input
+              {translateUI("Title")}<input
                 className="focus-ring h-9 w-full rounded-[10px] border border-border bg-card px-2.5 text-[12px] text-foreground"
                 value={form.title}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, title: e.target.value }))
                 }
-                placeholder="Routing Protocols deep dive"
+                placeholder={translateUI("Routing Protocols deep dive")}
               />
             </label>
             <label className="block space-y-1 text-[11px] font-medium text-muted-foreground">
-              Date
-              <input
+              {translateUI("Date")}<input
                 type="date"
                 className="focus-ring h-9 w-full rounded-[10px] border border-border bg-card px-2.5 text-[12px] text-foreground"
                 value={form.date}
@@ -271,8 +261,7 @@ export default function PlannerPage() {
               />
             </label>
             <label className="block space-y-1 text-[11px] font-medium text-muted-foreground">
-              Duration (min)
-              <input
+              {translateUI("Duration (min)")}<input
                 type="number"
                 min={15}
                 className="focus-ring h-9 w-full rounded-[10px] border border-border bg-card px-2.5 text-[12px] text-foreground"
@@ -286,29 +275,26 @@ export default function PlannerPage() {
               />
             </label>
             <label className="block space-y-1 text-[11px] font-medium text-muted-foreground sm:col-span-2">
-              Goal
-              <input
+              {translateUI("Goal")}<input
                 className="focus-ring h-9 w-full rounded-[10px] border border-border bg-card px-2.5 text-[12px] text-foreground"
                 value={form.goal}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, goal: e.target.value }))
                 }
-                placeholder="Finish Topic 06 notes"
+                placeholder={translateUI("Finish Topic 06 notes")}
               />
             </label>
           </div>
           <div className="mt-3 flex gap-2">
             <Button type="submit" size="sm">
-              Create session
-            </Button>
+              {translateUI("Create session")}</Button>
             <Button
               type="button"
               size="sm"
               variant="ghost"
               onClick={() => setShowForm(false)}
             >
-              Cancel
-            </Button>
+              {translateUI("Cancel")}</Button>
           </div>
         </form>
       ) : null}
@@ -317,27 +303,24 @@ export default function PlannerPage() {
         <section className="space-y-2.5">
           <div className="flex items-center justify-between gap-2">
             <h2 className="font-heading text-[13px] font-semibold">
-              Today&apos;s plan
-            </h2>
+              {translateUI("Today's plan")}</h2>
             <p className="text-[11px] text-muted-foreground">
-              {formatSessionDate(today)}
+              {translateUI(formatSessionDate(today, translateUI.locale))}
             </p>
           </div>
 
           {todaysPlan.length === 0 ? (
             <div className="surface rounded-[16px] px-4 py-8 text-center">
-              <p className="text-[13px] font-medium">No sessions today</p>
+              <p className="text-[13px] font-medium">{translateUI("No sessions today")}</p>
               <p className="mt-1 text-[11px] text-muted-foreground">
-                Add a focused block to protect your study streak.
-              </p>
+                {translateUI("Add a focused block to protect your study streak.")}</p>
               <Button
                 size="sm"
                 className="mt-3"
                 onClick={() => setShowForm(true)}
               >
                 <Plus className="h-3.5 w-3.5" />
-                Add session
-              </Button>
+                {translateUI("Add session")}</Button>
             </div>
           ) : (
             todaysPlan.map((session) => {
@@ -365,8 +348,8 @@ export default function PlannerPage() {
                       className="mt-0.5 text-muted-foreground transition hover:text-primary"
                       aria-label={
                         session.completed
-                          ? "Mark incomplete"
-                          : "Mark complete"
+                          ? translateUI("Mark incomplete")
+                          : translateUI("Mark complete")
                       }
                     >
                       {session.completed ? (
@@ -387,20 +370,19 @@ export default function PlannerPage() {
                           {session.title}
                         </p>
                         {session.completed ? (
-                          <Badge tone="success">Done</Badge>
+                          <Badge tone="success">{translateUI("Done")}</Badge>
                         ) : null}
                       </div>
                       <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">
                         <span>{module?.name}</span>
                         <span className="inline-flex items-center gap-1">
                           <Clock3 className="h-3 w-3" />
-                          {session.durationMinutes} min
-                        </span>
+                          {session.durationMinutes} {translateUI(" min")}</span>
                       </p>
                       {session.goal ? (
                         <p className="mt-2 rounded-xl bg-muted/70 px-2.5 py-1.5 text-[11px] text-muted-foreground">
                           <span className="font-medium text-foreground/80">
-                            Goal:{" "}
+                            {translateUI("Goal:")}{" "}
                           </span>
                           {session.goal}
                         </p>
@@ -411,7 +393,7 @@ export default function PlannerPage() {
                       variant={session.completed ? "secondary" : "outline"}
                       onClick={() => toggleComplete(session.id)}
                     >
-                      {session.completed ? "Undo" : "Complete"}
+                      {session.completed ? translateUI("Undo") : translateUI("Complete")}
                     </Button>
                   </div>
                 </div>
@@ -426,14 +408,12 @@ export default function PlannerPage() {
             <div className="relative flex items-center gap-2 text-white/80">
               <CalendarDays className="h-3.5 w-3.5" />
               <p className="text-[11px] font-medium uppercase tracking-[0.12em]">
-                School opens
-              </p>
+                {translateUI("School opens")}</p>
             </div>
             <p className="relative mt-2 font-heading text-2xl font-semibold tabular-nums">
-              {days}
+              {translateUI(days)}
               <span className="ml-1 text-[12px] font-medium text-white/75">
-                days
-              </span>
+                {translateUI("days")}</span>
             </p>
             <div className="relative mt-3 grid grid-cols-3 gap-1.5">
               {[
@@ -446,17 +426,16 @@ export default function PlannerPage() {
                   className="rounded-xl bg-white/15 px-2 py-1.5 text-center backdrop-blur-sm"
                 >
                   <p className="font-heading text-[13px] font-semibold tabular-nums">
-                    {pad(Number(value))}
+                    {translateUI(pad(Number(value)))}
                   </p>
                   <p className="text-[9px] uppercase tracking-wide text-white/70">
-                    {label}
+                    {translateUI(label)}
                   </p>
                 </div>
               ))}
             </div>
             <p className="relative mt-3 text-[11px] text-white/80">
-              Target date {openLabel} — protect your study blocks.
-            </p>
+              {translateUI("Target date ")}{translateUI(openLabel)} {translateUI(" — protect your study blocks.")}</p>
           </section>
         </aside>
       </div>
@@ -464,8 +443,7 @@ export default function PlannerPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <section>
           <h2 className="mb-2.5 font-heading text-[13px] font-semibold">
-            Module progress
-          </h2>
+            {translateUI("Module progress")}</h2>
           <div className="space-y-2">
             {modulesWithProgress.slice(0, 5).map((module) => (
               <div
@@ -480,7 +458,7 @@ export default function PlannerPage() {
                     className="text-[11px] font-semibold tabular-nums"
                     style={{ color: module.accent }}
                   >
-                    {module.progress}%
+                    {translateUI(module.progress)}%
                   </span>
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full bg-muted">
@@ -499,12 +477,10 @@ export default function PlannerPage() {
 
         <section>
           <h2 className="mb-2.5 font-heading text-[13px] font-semibold">
-            Completed sessions
-          </h2>
+            {translateUI("Completed sessions")}</h2>
           {completed.length === 0 ? (
             <div className="surface rounded-[14px] px-4 py-6 text-center text-[11px] text-muted-foreground">
-              Finish a session to build your streak.
-            </div>
+              {translateUI("Finish a session to build your streak.")}</div>
           ) : (
             <div className="space-y-2">
               {completed.map((session) => {
@@ -519,10 +495,10 @@ export default function PlannerPage() {
                         {session.title}
                       </p>
                       <p className="text-[10px] text-muted-foreground">
-                        {module?.name} · {formatSessionDate(session.date)}
+                        {module?.name} · {formatSessionDate(session.date, translateUI.locale)}
                       </p>
                     </div>
-                    <Badge tone="success">Done</Badge>
+                    <Badge tone="success">{translateUI("Done")}</Badge>
                   </div>
                 );
               })}

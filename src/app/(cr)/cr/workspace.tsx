@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { RoleGuard } from "@/components/staff/role-guard";
 import { StaffAuthGuard } from "@/components/staff/staff-auth-guard";
 import { StaffShell } from "@/components/staff/staff-shell";
@@ -10,6 +11,7 @@ export default function ClassRepLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const translateUI = useTranslate();
   const { session } = useStaffSession();
 
   return (
@@ -20,7 +22,7 @@ export default function ClassRepLayout({
           userName={session?.name || "Class Rep"}
           userMeta={session?.email || "Class desk"}
         >
-          {children}
+          {translateUI(children)}
         </StaffShell>
       </StaffAuthGuard>
     </RoleGuard>

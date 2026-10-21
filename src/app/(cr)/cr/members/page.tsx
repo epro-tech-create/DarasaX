@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useMemo, useState } from "react";
 import { Pencil, Plus, Trash2, Users } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
@@ -18,6 +19,7 @@ const emptyForm = {
 };
 
 export default function ClassRepMembersPage() {
+  const translateUI = useTranslate();
   const { session } = useStaffSession();
   const streamId = session?.streamId ?? "BENG24COE-1";
   const { studentsForStream, addStudent, updateStudent, deleteStudent } =
@@ -106,7 +108,7 @@ export default function ClassRepMembersPage() {
   }
 
   function onDelete(s: StudentMonitor) {
-    if (!window.confirm(`Remove ${s.name} from ${streamId}?`)) return;
+    if (!window.confirm(translateUI(`Remove ${s.name} from ${streamId}?`))) return;
     deleteStudent(s.id, meta).then(
       () => setMessage(`Removed ${s.name}.`),
       () => setMessage("Could not remove. Try again."),
@@ -116,8 +118,8 @@ export default function ClassRepMembersPage() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Class members"
-        description={`Add, edit, or remove students in ${streamId}.`}
+        title={translateUI("Class members")}
+        description={translateUI(`Add, edit, or remove students in ${streamId}.`)}
         actions={
           <Button size="sm" type="button" onClick={openAdd}>
             <Plus className="h-3.5 w-3.5" />
@@ -128,23 +130,23 @@ export default function ClassRepMembersPage() {
 
       <div className="grid gap-2.5">
         <StaffStatCard
-          label="Members"
+          label={translateUI("Members")}
           value={String(members.length)}
           icon={Users}
         />
       </div>
 
       {message ? (
-        <p className="text-[12px] font-medium text-success">{message}</p>
+        <p className="text-[12px] font-medium text-success">{translateUI(message)}</p>
       ) : null}
 
-      <StaffSection title="Roster" description={`${members.length} students`}>
+      <StaffSection title={translateUI("Roster")} description={translateUI(`${members.length} students`)}>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[420px] text-left text-[12px]">
             <thead>
               <tr className="border-b border-border text-[10px] uppercase tracking-wide text-muted-foreground">
-                <th className="pb-2 pr-3 font-medium">Student</th>
-                <th className="pb-2 pr-3 font-medium">Year</th>
+                <th className="pb-2 pr-3 font-medium">{translateUI("Student")}</th>
+                <th className="pb-2 pr-3 font-medium">{translateUI("Year")}</th>
                 <th className="pb-2 text-right font-medium"> </th>
               </tr>
             </thead>
@@ -155,8 +157,7 @@ export default function ClassRepMembersPage() {
                     colSpan={3}
                     className="py-10 text-center text-muted-foreground"
                   >
-                    No members yet. Add a student to get started.
-                  </td>
+                    {translateUI("No members yet. Add a student to get started.")}</td>
                 </tr>
               ) : null}
               {members.map((s) => (
@@ -174,7 +175,7 @@ export default function ClassRepMembersPage() {
                       </div>
                     </div>
                   </td>
-                  <td className="py-3 pr-3 tabular-nums">{s.year}</td>
+                  <td className="py-3 pr-3 tabular-nums">{translateUI(s.year)}</td>
                   <td className="py-3">
                     <div className="flex justify-end gap-0.5">
                       <Button
@@ -182,7 +183,7 @@ export default function ClassRepMembersPage() {
                         type="button"
                         variant="ghost"
                         aria-label={`Edit ${s.name}`}
-                        title="Edit"
+                        title={translateUI("Edit")}
                         onClick={() => openEdit(s)}
                       >
                         <Pencil className="h-3.5 w-3.5" />
@@ -193,7 +194,7 @@ export default function ClassRepMembersPage() {
                         variant="ghost"
                         className="text-muted-foreground hover:bg-danger/10 hover:text-danger"
                         aria-label={`Delete ${s.name}`}
-                        title="Delete"
+                        title={translateUI("Delete")}
                         onClick={() => onDelete(s)}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -210,19 +211,18 @@ export default function ClassRepMembersPage() {
       <StaffModal
         open={modalOpen}
         onClose={closeModal}
-        title={editing ? "Edit student" : "Add student"}
-        description={`Details for ${streamId}. Also visible on the Admin students list.`}
+        title={translateUI(editing ? "Edit student" : "Add student")}
+        description={translateUI(`Details for ${streamId}. Also visible on the Admin students list.`)}
       >
         <form onSubmit={onSubmit} className="space-y-3">
-          {message && <p role="status" className="text-sm">{message}</p>}
-          {!editing && <label className="block space-y-1 text-sm">Temporary password
-            <input required type="password" minLength={8} autoComplete="new-password" value={form.temporaryPassword}
+          {message && <p role="status" className="text-sm">{translateUI(message)}</p>}
+          {!editing && <label className="block space-y-1 text-sm">{translateUI("Temporary password")}<input required type="password" minLength={8} autoComplete="new-password" value={form.temporaryPassword}
               onChange={e => setForm(f => ({ ...f, temporaryPassword: e.target.value }))}
               className="h-11 w-full rounded-xl border border-border bg-background px-3" />
-            <span className="block text-xs text-muted-foreground">At least 8 characters. Share it privately; the student can change it in Profile.</span>
+            <span className="block text-xs text-muted-foreground">{translateUI("At least 8 characters. Share it privately; the student can change it in Profile.")}</span>
           </label>}
           <label className="block space-y-1">
-            <span className="text-[11px] text-muted-foreground">Full name</span>
+            <span className="text-[11px] text-muted-foreground">{translateUI("Full name")}</span>
             <input
               required
               value={form.name}
@@ -231,7 +231,7 @@ export default function ClassRepMembersPage() {
             />
           </label>
           <label className="block space-y-1">
-            <span className="text-[11px] text-muted-foreground">Email</span>
+            <span className="text-[11px] text-muted-foreground">{translateUI("Email")}</span>
             <input
               required
               type="email"
@@ -242,7 +242,7 @@ export default function ClassRepMembersPage() {
           </label>
           <div className="grid gap-3">
             <label className="block space-y-1">
-              <span className="text-[11px] text-muted-foreground">Year</span>
+              <span className="text-[11px] text-muted-foreground">{translateUI("Year")}</span>
               <select
                 value={form.year}
                 onChange={(e) =>
@@ -252,7 +252,7 @@ export default function ClassRepMembersPage() {
               >
                 {[1, 2, 3, 4].map((y) => (
                   <option key={y} value={y}>
-                    Year {y}
+                    {translateUI("Year ")}{translateUI(y)}
                   </option>
                 ))}
               </select>
@@ -260,9 +260,8 @@ export default function ClassRepMembersPage() {
           </div>
           <div className="flex justify-end gap-2 pt-1">
             <Button type="button" variant="outline" onClick={closeModal}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={saving}>{saving ? "Saving…" : editing ? "Save changes" : "Add student"}</Button>
+              {translateUI("Cancel")}</Button>
+            <Button type="submit" disabled={saving}>{translateUI(saving ? "Saving…" : editing ? "Save changes" : "Add student")}</Button>
           </div>
         </form>
       </StaffModal>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useMemo, useState } from "react";
 import { BookOpen, CalendarDays, Clock, FileText, MapPin } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
@@ -28,6 +29,7 @@ function todayIso() {
 }
 
 export default function MissedPage() {
+  const translateUI = useTranslate();
   const { profile } = useStudentProfile();
   const streamId = profile?.class_name ?? DEFAULT_CLASS_STREAM;
   const [date, setDate] = useState(todayIso);
@@ -56,14 +58,13 @@ export default function MissedPage() {
   return (
     <div>
       <PageHeader
-        title="What Did I Miss?"
-        description="See which classes ran that day, new uploads, and deadlines to catch up on."
+        title={translateUI("What Did I Miss?")}
+        description={translateUI("See which classes ran that day, new uploads, and deadlines to catch up on.")}
       />
 
       <div className="surface mb-6 flex flex-col gap-4 rounded-[20px] p-4 sm:flex-row sm:items-end sm:justify-between sm:p-5">
         <label className="block text-[12px] font-medium">
-          Select a date
-          <div className="relative mt-2">
+          {translateUI("Select a date")}<div className="relative mt-2">
             <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               type="date"
@@ -75,14 +76,14 @@ export default function MissedPage() {
         </label>
         <div className="sm:text-right">
           <p className="text-[11px] text-muted-foreground">
-            {formatDate(date)} · stream {streamId}
+            {translateUI(formatDate(date))} {translateUI(" · stream ")}{translateUI(streamId)}
           </p>
           <p className="mt-1 font-heading text-lg font-semibold">
-            {loading
+            {translateUI(loading
               ? "Loading schedule…"
               : summary.classesMissed === 0
                 ? "No classes scheduled"
-                : `You had ${summary.classesMissed} class${summary.classesMissed === 1 ? "" : "es"}`}
+                : `You had ${summary.classesMissed} class${summary.classesMissed === 1 ? "" : "es"}`)}
           </p>
         </div>
       </div>
@@ -90,8 +91,8 @@ export default function MissedPage() {
       {summary.classesMissed === 0 && !loading ? (
         <EmptyState
           icon={CalendarDays}
-          title="No sessions that day"
-          description="Pick a weekday with timetable entries, or ask your CR to publish the schedule."
+          title={translateUI("No sessions that day")}
+          description={translateUI("Pick a weekday with timetable entries, or ask your CR to publish the schedule.")}
         />
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
@@ -105,17 +106,17 @@ export default function MissedPage() {
                 <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border bg-primary/5 px-5 py-4">
                   <div className="min-w-0">
                     <h2 className="font-heading text-[15px] font-semibold leading-snug">
-                      {courseModule?.name ?? "Module"}
+                      {courseModule?.name ?? translateUI("Module")}
                     </h2>
                     <p className="mt-1 text-[11px] text-muted-foreground">
-                      {courseModule?.code}
-                      {item.room ? ` · ${item.room}` : ""}
+                      {translateUI(courseModule?.code)}
+                      {translateUI(item.room ? ` · ${item.room}` : "")}
                     </p>
                   </div>
                   {item.startTime && item.endTime ? (
                     <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary/10 text-primary px-2.5 py-1 text-[11px] font-medium">
                       <Clock className="h-3 w-3" />
-                      {item.startTime}–{item.endTime}
+                      {translateUI(item.startTime)}–{translateUI(item.endTime)}
                     </span>
                   ) : null}
                 </div>
@@ -126,10 +127,9 @@ export default function MissedPage() {
                       <BookOpen className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                       <div>
                         <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                          Focus topic
-                        </p>
+                          {translateUI("Focus topic")}</p>
                         <p className="mt-0.5 text-[13px] font-medium">
-                          {item.topic}
+                          {translateUI(item.topic)}
                         </p>
                       </div>
                     </div>
@@ -139,32 +139,28 @@ export default function MissedPage() {
                     {item.newNotes > 0 ? (
                       <>
                         <Badge tone="cyan">
-                          {item.newNotes} new upload
-                          {item.newNotes === 1 ? "" : "s"}
+                          {translateUI(`${item.newNotes} new upload${item.newNotes === 1 ? "" : "s"}`)}
                         </Badge>
                         <span className="text-[12px] text-muted-foreground">
-                          Notes or slides around this date
-                        </span>
+                          {translateUI("Notes or slides around this date")}</span>
                       </>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground">
                         <FileText className="h-3.5 w-3.5" />
-                        No new notes yet for this module
-                      </span>
+                        {translateUI("No new notes yet for this module")}</span>
                     )}
                   </div>
 
                   {item.assignment ? (
                     <div>
                       <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                        Open assignment
-                      </p>
+                        {translateUI("Open assignment")}</p>
                       <p className="mt-0.5 text-[13px] font-medium">
-                        {item.assignment}
+                        {translateUI(item.assignment)}
                       </p>
                       {item.deadline ? (
                         <p className="mt-0.5 text-[11px] text-muted-foreground">
-                          Due {item.deadline}
+                          {translateUI("Due ")}{translateUI(item.deadline)}
                         </p>
                       ) : null}
                     </div>
@@ -173,10 +169,9 @@ export default function MissedPage() {
                   {item.announcement ? (
                     <div>
                       <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                        Announcement
-                      </p>
+                        {translateUI("Announcement")}</p>
                       <p className="mt-0.5 text-[13px] font-medium">
-                        {item.announcement}
+                        {translateUI(item.announcement)}
                       </p>
                     </div>
                   ) : null}
@@ -184,7 +179,7 @@ export default function MissedPage() {
                   {item.room ? (
                     <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <MapPin className="h-3.5 w-3.5" />
-                      {item.room}
+                      {translateUI(item.room)}
                     </p>
                   ) : null}
 
@@ -194,8 +189,7 @@ export default function MissedPage() {
                     href={`/modules/${item.moduleId}`}
                     className="mt-1 w-fit"
                   >
-                    Open module
-                  </Button>
+                    {translateUI("Open module")}</Button>
                 </div>
               </article>
             );
@@ -204,14 +198,11 @@ export default function MissedPage() {
       )}
 
       <div className="mt-8 surface rounded-[20px] p-5 sm:p-6">
-        <h2 className="font-heading text-lg font-semibold">Catch up</h2>
+        <h2 className="font-heading text-lg font-semibold">{translateUI("Catch up")}</h2>
         <p className="mt-2 max-w-xl text-[13px] text-muted-foreground">
-          Open each module’s Notes tab for staff uploads, then mark topics done
-          so your progress stays accurate.
-        </p>
+          {translateUI("Open each module’s Notes tab for staff uploads, then mark topics done so your progress stays accurate.")}</p>
         <Button href="/modules" className="mt-4">
-          Browse modules
-        </Button>
+          {translateUI("Browse modules")}</Button>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useEffect, type ReactNode } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { X } from "lucide-react";
@@ -21,6 +22,7 @@ export function StaffModal({
   children: ReactNode;
   className?: string;
 }) {
+  const translateUI = useTranslate();
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
@@ -43,7 +45,7 @@ export function StaffModal({
         <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-6">
           <motion.button
             type="button"
-            aria-label="Close dialog"
+            aria-label={translateUI("Close dialog")}
             className="absolute inset-0 bg-black/45 backdrop-blur-[2px]"
             initial={reduceMotion ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -84,11 +86,11 @@ export function StaffModal({
                   id="staff-modal-title"
                   className="font-heading text-[16px] font-semibold tracking-tight"
                 >
-                  {title}
+                  {translateUI(title)}
                 </h2>
                 {description ? (
                   <p className="mt-0.5 text-[12px] text-muted-foreground">
-                    {description}
+                    {translateUI(description)}
                   </p>
                 ) : null}
               </div>
@@ -97,12 +99,12 @@ export function StaffModal({
                 size="icon"
                 variant="ghost"
                 onClick={onClose}
-                aria-label="Close"
+                aria-label={translateUI("Close")}
               >
                 <X className="h-4 w-4" />
               </Button>
             </div>
-            {children}
+            {translateUI(children)}
           </motion.div>
         </div>
       ) : null}

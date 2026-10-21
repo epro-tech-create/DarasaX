@@ -1,4 +1,5 @@
 "use client";
+import { translateBrowserMessage } from "@/lib/i18n/translate";
 
 import { downloadFile } from "@/lib/download";
 
@@ -137,7 +138,7 @@ export async function viewMaterial(item: MaterialUpload) {
   const previewWindow = window.open("about:blank", "_blank");
   if (!previewWindow) {
     window.alert(
-      "The preview was blocked. Allow pop-ups for DarasaX and try again.",
+      translateBrowserMessage("The preview was blocked. Allow pop-ups for DarasaX and try again."),
     );
     return false;
   }
@@ -148,7 +149,7 @@ export async function viewMaterial(item: MaterialUpload) {
     if (!resolved) {
       previewWindow.close();
       window.alert(
-        "This file is unavailable. Ask the uploader to attach it again.",
+        translateBrowserMessage("This file is unavailable. Ask the uploader to attach it again."),
       );
       return false;
     }
@@ -158,7 +159,7 @@ export async function viewMaterial(item: MaterialUpload) {
   } catch {
     previewWindow.close();
     window.alert(
-      "The file could not be opened. Check your connection and try again.",
+      translateBrowserMessage("The file could not be opened. Check your connection and try again."),
     );
     return false;
   }
@@ -168,7 +169,7 @@ export async function downloadMaterial(item: MaterialUpload) {
   const resolved = await resolveMaterialObjectUrl(item, { download: true });
   if (!resolved) {
     window.alert(
-      "This file is unavailable. Ask the uploader to attach it again.",
+      translateBrowserMessage("This file is unavailable. Ask the uploader to attach it again."),
     );
     return false;
   }

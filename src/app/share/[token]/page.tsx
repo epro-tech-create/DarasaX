@@ -6,6 +6,7 @@ import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { MaterialShareButton } from "@/components/modules/material-share-button";
+import { LocalizedText } from "@/components/profile/localized-text";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
@@ -47,13 +48,13 @@ export default async function SharedPage({
             <FileText className="h-6 w-6" />
           </span>
           <p className="mb-2 text-xs font-medium uppercase tracking-wide text-primary">
-            Shared {item.kind.replace("_", " ")}
+            <LocalizedText>Shared</LocalizedText> <LocalizedText>{item.kind.replace("_", " ")}</LocalizedText>
           </p>
           <h1 className="font-heading text-2xl font-semibold sm:text-3xl">
             {item.title}
           </h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            {item.size || "Learning material"} · Shared through DarasaX
+            {item.size || <LocalizedText>Learning material</LocalizedText>} <LocalizedText>· Shared through DarasaX</LocalizedText>
           </p>
           {item.body && (
             <p className="mt-6 whitespace-pre-wrap text-sm leading-relaxed">
@@ -63,26 +64,24 @@ export default async function SharedPage({
           <div className="mt-7 flex flex-wrap gap-2">
             <Button href={`/share/${token}/file`}>
               <Eye className="h-4 w-4" />
-              View file
+              <LocalizedText>View file</LocalizedText>
             </Button>
             <Button variant="outline" href={`/share/${token}/file?download=1`}>
               <Download className="h-4 w-4" />
-              Download
+              <LocalizedText>Download</LocalizedText>
             </Button>
             <MaterialShareButton title={item.title} token={token} />
           </div>
         </section>
         <section className="mt-6 rounded-2xl border border-primary/15 bg-primary/5 p-6">
           <h2 className="font-heading text-xl font-semibold">
-            Keep your class in one place.
+            <LocalizedText>Keep your class in one place.</LocalizedText>
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Explore DarasaX for notes, timetables and coursework. Student
-            workspace registration is currently available for DIT BENG24COE,
-            Year 3, Semester 1.
+            <LocalizedText>Explore DarasaX for notes, timetables and coursework. Student workspace registration is currently available for DIT BENG24COE, Year 3, Semester 1.</LocalizedText>
           </p>
           <Button href="/signup" className="mt-5">
-            Join DarasaX
+            <LocalizedText>Join DarasaX</LocalizedText>
             <ArrowRight className="h-4 w-4" />
           </Button>
         </section>

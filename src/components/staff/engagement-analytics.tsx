@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Download, Eye, FileUp, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -23,13 +24,14 @@ function curve(values: number[], ceiling: number, W: number) {
     return `${path} C${mid},${y(values[i - 1])} ${mid},${y(n)} ${x(i)},${y(n)}`;
   }, "");
 }
-const dateLabel = (date: string) =>
-  new Date(`${date}T12:00:00`).toLocaleDateString("en-GB", {
+const dateLabel = (date: string, locale: string) =>
+  new Date(`${date}T12:00:00`).toLocaleDateString(locale, {
     day: "numeric",
     month: "short",
   });
 
 export function EngagementAnalytics() {
+  const translateUI = useTranslate();
   const { items: materials, ready: materialsReady } = useMaterialsStore();
   const [period, setPeriod] = useState<7 | 30>(7);
   const [summary, setSummary] = useState<Summary | null>(null);
@@ -91,18 +93,18 @@ export function EngagementAnalytics() {
     <div className="space-y-5">
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <StaffStatCard
-          label="Active students · 7 days"
+          label={translateUI("Active students · 7 days")}
           value={stat(summary?.activeStudents)}
           icon={Users}
         />
         <StaffStatCard
-          label="Material opens · 7 days"
+          label={translateUI("Material opens · 7 days")}
           value={stat(current.reduce((sum, d) => sum + d.opens, 0))}
-          hint={summary ? `${summary.uniqueViewers} unique viewers` : undefined}
+          hint={translateUI(summary ? `${summary.uniqueViewers} unique viewers` : undefined)}
           icon={Eye}
         />
         <StaffStatCard
-          label="Downloads · all time"
+          label={translateUI("Downloads · all time")}
           value={
             materialsReady
               ? String(materials.reduce((sum, m) => sum + m.downloads, 0))
@@ -111,21 +113,21 @@ export function EngagementAnalytics() {
           icon={Download}
         />
         <StaffStatCard
-          label="Uploads · all time"
+          label={translateUI("Uploads · all time")}
           value={materialsReady ? String(materials.length) : "—"}
           icon={FileUp}
         />
       </div>
       <StaffSection
-        title="Student engagement"
-        description="Last 7 days compared with the previous 7 · Tanzania time"
+        title={translateUI("Student engagement")}
+        description={translateUI("Last 7 days compared with the previous 7 · Tanzania time")}
       >
-        <label className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">Period<select aria-label="Engagement period" value={period} onChange={e => { requestId.current++; setPeriod(Number(e.target.value) as 7 | 30); setSummary(null); setSelected(null); }} className="focus-ring rounded-lg border border-border bg-card px-3 py-2 text-foreground"><option value={7}>Last 7 days</option><option value={30}>Last 30 days</option></select></label>
+        <label className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">{translateUI("Period")}<select aria-label={translateUI("Engagement period")} value={period} onChange={e => { requestId.current++; setPeriod(Number(e.target.value) as 7 | 30); setSummary(null); setSelected(null); }} className="focus-ring rounded-lg border border-border bg-card px-3 py-2 text-foreground"><option value={7}>{translateUI("Last 7 days")}</option><option value={30}>{translateUI("Last 30 days")}</option></select></label>
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div
             className="flex gap-1 rounded-xl bg-muted/50 p-1"
             role="group"
-            aria-label="Chart metric"
+            aria-label={translateUI("Chart metric")}
           >
             {(
               [
@@ -142,37 +144,32 @@ export function EngagementAnalytics() {
                 aria-pressed={metric === key}
                 className={`focus-ring rounded-lg px-3 py-2 text-xs font-medium transition ${metric === key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}
               >
-                {label}
+                {translateUI(label)}
               </button>
             ))}
           </div>
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-primary" />
-              This period
-            </span>
+              {translateUI("This period")}</span>
             <span className="flex items-center gap-2">
               <span className="w-4 border-t-2 border-dashed border-muted-foreground" />
-              Previous period
-            </span>
+              {translateUI("Previous period")}</span>
           </div>
         </div>
         {error ? (
           <div role="alert" className="py-10 text-center">
             <p className="mb-3 text-sm text-muted-foreground">
-              Could not load engagement data.
-            </p>
+              {translateUI("Could not load engagement data.")}</p>
             <Button size="sm" variant="outline" onClick={() => void refresh()}>
-              Try again
-            </Button>
+              {translateUI("Try again")}</Button>
           </div>
         ) : !summary ? (
           <p
             role="status"
             className="py-16 text-center text-sm text-muted-foreground"
           >
-            Loading activity…
-          </p>
+            {translateUI("Loading activity…")}</p>
         ) : (
           <>
             <div className="relative" ref={chartRef}>
@@ -181,7 +178,7 @@ export function EngagementAnalytics() {
                 className="h-[200px] w-full sm:h-[240px] lg:h-[260px]"
                 preserveAspectRatio="none"
                 role="img"
-                aria-label={`${metric === "active" ? "Daily active students" : "Daily material opens"} over the last ${period} days compared with the previous period`}
+                aria-label={translateUI(`${metric === "active" ? "Daily active students" : "Daily material opens"} over the last ${period} days compared with the previous period`)}
                 onPointerMove={(event) => {
                   const box = event.currentTarget.getBoundingClientRect();
                   const local = ((event.clientX - box.left) / box.width) * W;
@@ -227,7 +224,7 @@ export function EngagementAnalytics() {
                       fill="var(--muted-foreground)"
                       fontSize="11"
                     >
-                      {(ceiling * (4 - i)) / 4}
+                      {translateUI((ceiling * (4 - i)) / 4)}
                     </text>
                   </g>
                 ))}
@@ -263,7 +260,7 @@ export function EngagementAnalytics() {
                     textAnchor={i === 0 ? "start" : i === period - 1 ? "end" : "middle"}
                     fill="var(--muted-foreground)"
                   >
-                    {dateLabel(d.date)}
+                    {translateUI(dateLabel(d.date, translateUI.locale))}
                   </text>
                 ))}
                 {selected !== null && (
@@ -279,11 +276,11 @@ export function EngagementAnalytics() {
               </svg>
               {shown && selected !== null && (
                 <div className="pointer-events-none absolute left-10 top-3 rounded-xl border border-border bg-card px-3 py-2 text-xs shadow-lg">
-                  <p className="font-semibold">{dateLabel(shown.date)}</p>
-                  <p className="mt-1">This period: {shown[metric]}</p>
+                  <p className="font-semibold">{translateUI(dateLabel(shown.date, translateUI.locale))}</p>
+                  <p className="mt-1">{translateUI("This period: ")}{translateUI(shown[metric])}</p>
                   <p className="text-muted-foreground">
-                    Previous ({dateLabel(previous[selected].date)}):{" "}
-                    {previous[selected][metric]}
+                    {translateUI("Previous (")}{translateUI(dateLabel(previous[selected].date, translateUI.locale))}):{" "}
+                    {translateUI(previous[selected][metric])}
                   </p>
                 </div>
               )}
@@ -291,7 +288,7 @@ export function EngagementAnalytics() {
             <div
               className="mt-2 flex justify-between gap-1 overflow-x-auto"
               role="group"
-              aria-label="Inspect daily values"
+              aria-label={translateUI("Inspect daily values")}
             >
               {current.map((d, i) => (
                 <button
@@ -299,32 +296,27 @@ export function EngagementAnalytics() {
                   onFocus={() => setSelected(i)}
                   onBlur={() => setSelected(null)}
                   onClick={() => setSelected(i)}
-                  aria-label={`${dateLabel(d.date)}: ${d[metric]}, previous period ${previous[i][metric]}`}
+                  aria-label={translateUI(`${dateLabel(d.date, translateUI.locale)}: ${d[metric]}, previous period ${previous[i][metric]}`)}
                   className="focus-ring min-h-9 min-w-6 flex-1 rounded-lg text-[11px] text-muted-foreground hover:bg-muted/50"
                 >
-                  {d[metric]}
+                  {translateUI(d[metric])}
                 </button>
               ))}
             </div>
             {currentTotal === 0 && (
               <p className="mt-3 text-sm text-muted-foreground">
-                No activity recorded in this period. Tracking starts with this update; past activity is not estimated.
-              </p>
+                {translateUI("No activity recorded in this period. Tracking starts with this update; past activity is not estimated.")}</p>
             )}
           </>
         )}
         <p className="mt-4 border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground">
-          Active students counts each student once per day. Material opens
-          counts requests to preview available files, with repeat clicks within 30 seconds
-          ignored. Staff activity is excluded.
-        </p>
+          {translateUI("Active students counts each student once per day. Material opens counts requests to preview available files, with repeat clicks within 30 seconds ignored. Staff activity is excluded.")}</p>
       </StaffSection>
-      <StaffSection title="Top materials">
+      <StaffSection title={translateUI("Top materials")}>
         <div className="space-y-2">
           {materials.length === 0 && (
             <p className="py-4 text-sm text-muted-foreground">
-              No materials yet.
-            </p>
+              {translateUI("No materials yet.")}</p>
           )}
           {[...materials]
             .sort((a, b) => b.downloads - a.downloads)
@@ -336,8 +328,7 @@ export function EngagementAnalytics() {
               >
                 <p className="truncate text-sm font-medium">{m.title}</p>
                 <span className="shrink-0 text-xs text-muted-foreground">
-                  {m.downloads} downloads
-                </span>
+                  {translateUI(m.downloads)} {translateUI(" downloads")}</span>
               </div>
             ))}
         </div>

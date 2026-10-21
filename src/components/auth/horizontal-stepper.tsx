@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -10,6 +11,7 @@ export function HorizontalStepper({
   steps: string[];
   current: number;
 }) {
+  const translateUI = useTranslate();
   return (
     <div className="rounded-[18px] border border-border bg-card px-3 py-4 shadow-soft sm:px-5">
       <ol className="flex items-start justify-between gap-1">
@@ -58,7 +60,7 @@ export function HorizontalStepper({
                     active || done ? "text-foreground" : "text-muted-foreground",
                   )}
                 >
-                  {label}
+                  {translateUI(label)}
                 </span>
               </div>
             </li>

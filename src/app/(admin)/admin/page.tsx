@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import {
   FileUp,
   GraduationCap,
@@ -24,6 +25,7 @@ function greeting() {
 }
 
 export default function AdminOverviewPage() {
+  const translateUI = useTranslate();
   const { students, classReps, audit } = useAdminPeopleStore();
   const { published } = useMaterialsStore();
   const { session } = useStaffSession();
@@ -32,9 +34,9 @@ export default function AdminOverviewPage() {
   return (
     <div className="space-y-6 sm:space-y-7">
       <OverviewHeader
-        label="Administration"
-        title={`${greeting()}, ${session?.name ?? "Admin"}`}
-        description="Manage your community, keep classes running, and see what needs attention."
+        label={translateUI("Administration")}
+        title={`${greeting()}, ${session?.name ?? translateUI("Admin")}`}
+        description={translateUI("Manage your community, keep classes running, and see what needs attention.")}
         actions={
           <div className="flex flex-wrap gap-2">
             <Button href="/admin/students" size="sm" variant="outline">
@@ -54,7 +56,7 @@ export default function AdminOverviewPage() {
       <StaffStagger className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <StaffFadeItem>
           <StaffStatCard
-            label="Students"
+            label={translateUI("Students")}
             href="/admin/students"
             value={String(students.length)}
             icon={Users}
@@ -62,7 +64,7 @@ export default function AdminOverviewPage() {
         </StaffFadeItem>
         <StaffFadeItem>
           <StaffStatCard
-            label="Active CRs"
+            label={translateUI("Active CRs")}
             href="/admin/class-reps"
             value={String(activeCrs)}
             icon={GraduationCap}
@@ -71,7 +73,7 @@ export default function AdminOverviewPage() {
         </StaffFadeItem>
         <StaffFadeItem>
           <StaffStatCard
-            label="Published materials"
+            label={translateUI("Published materials")}
             href="/admin/materials"
             value={String(published.length)}
             icon={FileUp}
@@ -80,7 +82,7 @@ export default function AdminOverviewPage() {
         </StaffFadeItem>
         <StaffFadeItem>
           <StaffStatCard
-            label="Audit events"
+            label={translateUI("Audit events")}
             href="/admin/audit"
             value={String(audit.length)}
             icon={ScrollText}

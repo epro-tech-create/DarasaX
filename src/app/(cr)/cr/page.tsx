@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { NextClassCard } from "@/components/dashboard/next-class-card";
@@ -23,6 +24,7 @@ function greeting() {
 }
 
 export default function ClassRepOverviewPage() {
+  const translateUI = useTranslate();
   const { session } = useStaffSession();
   const streamId = session?.streamId ?? "BENG24COE-1";
   const { entries: timetable } = useTimetableStore();
@@ -38,9 +40,9 @@ export default function ClassRepOverviewPage() {
   return (
     <div className="space-y-6 sm:space-y-7">
       <OverviewHeader
-        label="Class representative"
-        title={`${greeting()}, ${displayName}`}
-        description={`Keep ${streamId} connected with useful materials, clear notices, and an up-to-date timetable.`}
+        label={translateUI("Class representative")}
+        title={translateUI(`${greeting()}, ${displayName}`)}
+        description={translateUI(`Keep ${streamId} connected with useful materials, clear notices, and an up-to-date timetable.`)}
         actions={
           <div className="flex flex-wrap gap-2">
             <Button href="/cr/materials" size="sm">
@@ -54,12 +56,12 @@ export default function ClassRepOverviewPage() {
         }
       />
 
-      {next && <NextClassCard entry={next.entry} module={next.module} dayOffset={next.dayOffset} moduleHref="/cr/topics" moduleLabel="Module topics" timetableHref="/cr/timetable" />}
+      {next && <NextClassCard entry={next.entry} module={next.module} dayOffset={next.dayOffset} moduleHref="/cr/topics" moduleLabel={translateUI("Module topics")} timetableHref="/cr/timetable" />}
 
       <StaffStagger className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StaffFadeItem>
           <StaffStatCard
-            label="Members"
+            label={translateUI("Members")}
             href="/cr/members"
             value={String(members.length)}
             icon={Users}
@@ -67,31 +69,31 @@ export default function ClassRepOverviewPage() {
         </StaffFadeItem>
         <StaffFadeItem>
           <StaffStatCard
-            label="Class materials"
+            label={translateUI("Class materials")}
             href="/cr/materials"
             value={String(classUploads.length)}
             icon={FileUp}
             tone="success"
           />
         </StaffFadeItem>
-        <StaffFadeItem><StaffStatCard label="Module topics" value="Manage outline" icon={ListOrdered} href="/cr/topics" /></StaffFadeItem>
-        <StaffFadeItem><StaffStatCard label="Announcements" value="Class updates" icon={Megaphone} href="/cr/announcements" /></StaffFadeItem>
+        <StaffFadeItem><StaffStatCard label={translateUI("Module topics")} value="Manage outline" icon={ListOrdered} href="/cr/topics" /></StaffFadeItem>
+        <StaffFadeItem><StaffStatCard label={translateUI("Announcements")} value="Class updates" icon={Megaphone} href="/cr/announcements" /></StaffFadeItem>
       </StaffStagger>
 
 
 
       <div className="grid items-start gap-5">
 
-        <StaffSection title="Recent class materials" description="Published files ready for your class."
+        <StaffSection title={translateUI("Recent class materials")} description={translateUI("Published files ready for your class.")}
           action={<Link href="/cr/materials" className="text-xs font-medium text-primary">View library</Link>}>
           <div className="space-y-2">
             {classUploads.slice(0, 4).map((item) => <button type="button" key={item.id} onClick={() => void viewMaterial(item)}
               className="focus-ring flex w-full items-center gap-3 rounded-xl border border-border/70 px-3 py-3 text-left transition hover:border-primary/40">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><BookOpen className="h-4 w-4" /></span>
-              <div className="min-w-0"><p className="truncate text-sm font-medium">{item.title}</p><p className="mt-1 text-xs text-muted-foreground">{item.size} / {formatRelativeTime(item.createdAt)}</p></div>
+              <div className="min-w-0"><p className="truncate text-sm font-medium">{item.title}</p><p className="mt-1 text-xs text-muted-foreground">{translateUI(item.size)} / {translateUI(formatRelativeTime(item.createdAt))}</p></div>
               <ArrowUpRight className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />
             </button>)}
-            {classUploads.length === 0 && <p className="rounded-xl bg-muted/40 px-4 py-10 text-center text-sm text-muted-foreground">Your next shared resource will appear here.</p>}
+            {classUploads.length === 0 && <p className="rounded-xl bg-muted/40 px-4 py-10 text-center text-sm text-muted-foreground">{translateUI("Your next shared resource will appear here.")}</p>}
           </div>
         </StaffSection>
       </div>

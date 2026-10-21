@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useMemo, useState } from "react";
 import { ScrollText, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
@@ -28,6 +29,7 @@ const actionTone: Record<AuditAction, "default" | "primary" | "success" | "warni
 };
 
 export default function AdminAuditPage() {
+  const translateUI = useTranslate();
   const { audit, deleteLog, clearLogs } = useAdminPeopleStore();
   const [action, setAction] = useState<"all" | AuditAction>("all");
   const [query, setQuery] = useState("");
@@ -53,24 +55,24 @@ export default function AdminAuditPage() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Audit logs"
-        description="Track who changed what across uploads, users, and timetable."
+        title={translateUI("Audit logs")}
+        description={translateUI("Track who changed what across uploads, users, and timetable.")}
       />
 
       <div className="grid gap-2.5 sm:grid-cols-3">
         <StaffStatCard
-          label="Events today"
+          label={translateUI("Events today")}
           value={String(todayCount)}
           icon={ScrollText}
         />
         <StaffStatCard
-          label="Total logged"
+          label={translateUI("Total logged")}
           value={String(audit.length)}
           icon={ScrollText}
           tone="success"
         />
         <StaffStatCard
-          label="Showing"
+          label={translateUI("Showing")}
           value={String(filtered.length)}
           icon={ScrollText}
         />
@@ -80,7 +82,7 @@ export default function AdminAuditPage() {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search actor or action…"
+          placeholder={translateUI("Search actor or action…")}
           className="h-10 min-w-0 flex-1 rounded-xl border border-border bg-background px-3 text-[13px] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
         />
         <select
@@ -88,15 +90,15 @@ export default function AdminAuditPage() {
           onChange={(e) => setAction(e.target.value as "all" | AuditAction)}
           className="h-10 rounded-xl border border-border bg-background px-3 text-[13px]"
         >
-          <option value="all">All actions</option>
-          <option value="upload">Uploads</option>
-          <option value="timetable_edit">Timetable</option>
-          <option value="student_add">Student add</option>
-          <option value="cr_add">CR add</option>
-          <option value="announcement">Announcements</option>
-          <option value="publish">Topics</option>
-          <option value="other">Deletes and student activity</option>
-          <option value="login">Sign in</option>
+          <option value="all">{translateUI("All actions")}</option>
+          <option value="upload">{translateUI("Uploads")}</option>
+          <option value="timetable_edit">{translateUI("Timetable")}</option>
+          <option value="student_add">{translateUI("Student add")}</option>
+          <option value="cr_add">{translateUI("CR add")}</option>
+          <option value="announcement">{translateUI("Announcements")}</option>
+          <option value="publish">{translateUI("Topics")}</option>
+          <option value="other">{translateUI("Deletes and student activity")}</option>
+          <option value="login">{translateUI("Sign in")}</option>
         </select>
         <Button
           type="button"
@@ -105,7 +107,7 @@ export default function AdminAuditPage() {
             if (filtered.length === 0) return;
             if (
               !window.confirm(
-                `Delete ${filtered.length} audit event${filtered.length === 1 ? "" : "s"}?`,
+                translateUI(`Delete ${filtered.length} audit event${filtered.length === 1 ? "" : "s"}?`),
               )
             ) {
               return;
@@ -119,14 +121,13 @@ export default function AdminAuditPage() {
           }}
         >
           <Trash2 className="h-3.5 w-3.5" />
-          Delete shown
-        </Button>
+          {translateUI("Delete shown")}</Button>
       </div>
       {error ? (
-        <p className="text-[12px] font-medium text-danger">{error}</p>
+        <p className="text-[12px] font-medium text-danger">{translateUI(error)}</p>
       ) : null}
 
-      <StaffSection title="Activity trail" description="Newest first">
+      <StaffSection title={translateUI("Activity trail")} description={translateUI("Newest first")}>
         <div className="relative space-y-0">
           <div className="absolute bottom-2 left-[11px] top-2 w-px bg-border" />
           {filtered.map((row) => (
@@ -146,23 +147,23 @@ export default function AdminAuditPage() {
               <div className="min-w-0 flex-1 rounded-xl border border-border/70 bg-muted/20 px-3 py-2.5">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge tone={actionTone[row.action]}>
-                    {row.action.replace("_", " ")}
+                    {translateUI(row.action.replace("_", " "))}
                   </Badge>
                   <span className="text-[10px] text-muted-foreground">
-                    {new Date(row.at).toLocaleString("en-GB", {
+                    {translateUI(new Date(row.at).toLocaleString(translateUI.locale, {
                       day: "numeric",
                       month: "short",
                       hour: "2-digit",
                       minute: "2-digit",
-                    })}
+                    }))}
                   </span>
                 </div>
-                <p className="mt-1.5 text-[12px] font-semibold">{row.summary}</p>
+                <p className="mt-1.5 text-[12px] font-semibold">{translateUI(row.summary)}</p>
                 <p className="mt-0.5 text-[11px] text-muted-foreground">
-                  {row.actor}
-                  {row.role ? ` · ${row.role.replace("_", " ")}` : ""}
-                  {row.streamId ? ` · ${row.streamId}` : ""}
-                  {row.detail ? ` · ${row.detail}` : ""}
+                  {translateUI(row.actor)}
+                  {translateUI(row.role ? ` · ${row.role.replace("_", " ")}` : "")}
+                  {translateUI(row.streamId ? ` · ${row.streamId}` : "")}
+                  {translateUI(row.detail ? ` · ${row.detail}` : "")}
                 </p>
                 <Button
                   type="button"
@@ -171,7 +172,7 @@ export default function AdminAuditPage() {
                   className="mt-2"
                   disabled={busyId === row.id}
                   onClick={() => {
-                    if (!window.confirm("Delete this audit event?")) return;
+                    if (!window.confirm(translateUI("Delete this audit event?"))) return;
                     setBusyId(row.id);
                     setError("");
                     void deleteLog(row.id)
@@ -184,15 +185,13 @@ export default function AdminAuditPage() {
                   }}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
-                  Delete
-                </Button>
+                  {translateUI("Delete")}</Button>
               </div>
             </div>
           ))}
           {filtered.length === 0 ? (
             <p className="py-8 text-center text-[12px] text-muted-foreground">
-              No matching audit events.
-            </p>
+              {translateUI("No matching audit events.")}</p>
           ) : null}
         </div>
       </StaffSection>

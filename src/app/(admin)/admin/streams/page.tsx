@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { Moon, Sun, Users } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -10,14 +11,15 @@ import { useAdminPeopleStore } from "@/lib/admin-people-store";
 import { useTimetableStore } from "@/lib/timetable-store";
 
 export default function AdminStreamsPage() {
+  const translateUI = useTranslate();
   const { streams: classStreams } = useClassRegistry();
   const { studentsForStream } = useAdminPeopleStore();
   const { forStream } = useTimetableStore();
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Class streams"
-        description="BENG24COE cohorts — day streams and the evening stream."
+        title={translateUI("Class streams")}
+        description={translateUI("BENG24COE cohorts — day streams and the evening stream.")}
         actions={
           <Button href="/admin/timetable" size="sm" variant="outline">
             Manage timetables
@@ -45,22 +47,22 @@ export default function AdminStreamsPage() {
                       )}
                     </span>
                     <div>
-                      <p className="font-heading text-[15px] font-semibold">{stream.label}</p>
-                      <p className="text-[11px] text-muted-foreground">{stream.description}</p>
+                      <p className="font-heading text-[15px] font-semibold">{translateUI(stream.label)}</p>
+                      <p className="text-[11px] text-muted-foreground">{translateUI(stream.description)}</p>
                     </div>
                   </div>
                 </div>
-                {stream.isEvening ? <Badge tone="cyan">Evening</Badge> : <Badge>Day</Badge>}
+                {stream.isEvening ? <Badge tone="cyan">{translateUI("Evening")}</Badge> : <Badge>{translateUI("Day")}</Badge>}
               </div>
 
               <div className="relative mt-4 grid grid-cols-2 gap-2">
                 <div className="rounded-xl bg-muted/40 px-2.5 py-2">
-                  <p className="text-[10px] text-muted-foreground">Students</p>
-                  <p className="mt-0.5 font-heading text-[16px] font-semibold">{students.length}</p>
+                  <p className="text-[10px] text-muted-foreground">{translateUI("Students")}</p>
+                  <p className="mt-0.5 font-heading text-[16px] font-semibold">{translateUI(students.length)}</p>
                 </div>
                 <div className="rounded-xl bg-muted/40 px-2.5 py-2">
-                  <p className="text-[10px] text-muted-foreground">Sessions</p>
-                  <p className="mt-0.5 font-heading text-[16px] font-semibold">{sessions}</p>
+                  <p className="text-[10px] text-muted-foreground">{translateUI("Sessions")}</p>
+                  <p className="mt-0.5 font-heading text-[16px] font-semibold">{translateUI(sessions)}</p>
                 </div>
               </div>
 
@@ -68,7 +70,7 @@ export default function AdminStreamsPage() {
                 <Users className="h-3.5 w-3.5" />
                 {students.length
                   ? students.map((s) => s.name.split(" ")[0]).join(", ")
-                  : "No roster sample yet"}
+                  : translateUI("No roster sample yet")}
               </div>
             </div>
           );

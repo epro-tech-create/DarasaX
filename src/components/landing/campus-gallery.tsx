@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -49,6 +50,7 @@ const heroPhotos = [
 ];
 
 export function HeroBackground() {
+  const translateUI = useTranslate();
   const reduced = useReducedMotion();
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -83,7 +85,7 @@ export function HeroBackground() {
           >
             <Image
               src={photo.src}
-              alt=""
+              alt={""}
               fill
               sizes="100vw"
               priority={index === 0}
@@ -98,7 +100,7 @@ export function HeroBackground() {
           type="button"
           onClick={() => setPaused(!paused)}
           aria-label={
-            paused ? "Play background slideshow" : "Pause background slideshow"
+            translateUI(paused ? "Play background slideshow" : "Pause background slideshow")
           }
           className="focus-ring absolute bottom-5 right-5 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-white/25 bg-black/20 text-white backdrop-blur-sm transition hover:bg-black/40 sm:right-8"
         >
@@ -143,6 +145,7 @@ function StoryCard({
   index: number;
   progress: MotionValue<number>;
 }) {
+  const translateUI = useTranslate();
   const reduced = useReducedMotion();
   const start = index / stories.length;
   const end = (index + 1) / stories.length;
@@ -171,7 +174,7 @@ function StoryCard({
         <div className="relative aspect-[4/3] md:aspect-auto">
           <Image
             src={story.photo.src}
-            alt={story.photo.alt}
+            alt={translateUI(story.photo.alt)}
             fill
             sizes="(max-width: 768px) 90vw, 550px"
             className="object-cover"
@@ -180,13 +183,13 @@ function StoryCard({
         </div>
         <div className="flex flex-col justify-center p-6 sm:p-9 lg:p-12">
           <p className="text-xs font-semibold uppercase tracking-widest text-primary">
-            {story.tag}
+            {translateUI(story.tag)}
           </p>
           <h3 className="mt-4 font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
             {story.title}
           </h3>
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground sm:text-base">
-            {story.text}
+            {translateUI(story.text)}
           </p>
         </div>
       </motion.article>
@@ -195,6 +198,7 @@ function StoryCard({
 }
 
 export function CampusStories() {
+  const translateUI = useTranslate();
   const stackRef = useRef<HTMLDivElement>(null);
   // Measure the stationary stack, never a sticky or transformed card.
   const { scrollYProgress } = useScroll({
@@ -209,18 +213,15 @@ export function CampusStories() {
       <div className="mb-9 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.15em] text-primary">
-            More than a workspace
-          </p>
+            {translateUI("More than a workspace")}</p>
           <h2
             id="campus-stories-title"
             className="font-heading text-3xl font-semibold tracking-tight sm:text-4xl"
           >
-            A little more campus.
-            <br />A little less chaos.
-          </h2>
+            {translateUI("A little more campus.")}<br />{translateUI("A little less chaos.")}</h2>
         </div>
         <p className="flex items-center gap-2 text-xs text-muted-foreground">
-          Keep scrolling <ArrowDown className="h-4 w-4" aria-hidden />
+          {translateUI("Keep scrolling ")}<ArrowDown className="h-4 w-4" aria-hidden />
         </p>
       </div>
       <div ref={stackRef} className="campus-stack">

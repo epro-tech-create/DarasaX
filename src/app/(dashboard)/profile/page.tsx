@@ -1,5 +1,8 @@
 "use client";
+
+import { useTranslate } from "@/components/providers/language-provider";
 import { ChangePasswordForm } from "@/components/auth/change-password-form";
+import { LanguageSettings } from "@/components/profile/language-settings";
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -17,6 +20,7 @@ const inputClass =
   "focus-ring mt-2 h-11 w-full rounded-xl border border-border bg-background px-3 text-sm transition-colors disabled:opacity-60";
 
 export default function ProfilePage() {
+  const translateUI = useTranslate();
   const router = useRouter();
   const { profile, avatarUrl, updateProfile } = useStudentProfile();
   const [form, setForm] = useState(() => ({
@@ -41,7 +45,7 @@ export default function ProfilePage() {
 
   if (!profile)
     return (
-      <AuthAlert message="We could not load your profile. Please refresh and try again." />
+      <AuthAlert message={translateUI("We could not load your profile. Please refresh and try again.")} />
     );
 
   async function onSave(event: FormEvent) {
@@ -121,11 +125,11 @@ export default function ProfilePage() {
   return (
     <div className="mx-auto max-w-4xl space-y-5">
       <PageHeader
-        title="Your profile"
-        description="Make it yours. Keep your student details up to date."
+        title={translateUI("Your profile")}
+        description={translateUI("Make it yours. Keep your student details up to date.")}
       />
-      {error && <AuthAlert message={error} />}
-      {success && <AuthAlert message={success} tone="success" />}
+      {error && <AuthAlert message={translateUI(error)} />}
+      {success && <AuthAlert message={translateUI(success)} tone="success" />}
       <form onSubmit={onSave} className="space-y-5">
         <fieldset disabled={saving} className="space-y-5 disabled:opacity-75">
           <section className="surface overflow-hidden rounded-2xl">
@@ -139,9 +143,8 @@ export default function ProfilePage() {
                   className="h-24 w-24 ring-4 ring-card"
                 />
                 <label className="focus-within:ring-2 focus-within:ring-primary relative inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-border px-3 text-sm font-medium hover:bg-muted">
-                  <Camera className="h-4 w-4" /> Change photo
-                  <input
-                    aria-label="Choose profile picture"
+                  <Camera className="h-4 w-4" /> {translateUI(" Change photo")}<input
+                    aria-label={translateUI("Choose profile picture")}
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
                     disabled={saving}
@@ -169,13 +172,12 @@ export default function ProfilePage() {
                     }}
                     className="min-h-11 px-1 text-sm text-muted-foreground hover:text-foreground"
                   >
-                    Remove photo
-                  </button>
+                    {translateUI("Remove photo")}</button>
                 )}
               </div>
               <div className="min-w-0 pt-4">
                 <h2 className="break-words text-xl font-semibold tracking-tight">
-                  {profile.full_name || "Student"}
+                  {profile.full_name || translateUI("Student")}
                 </h2>
                 <p className="mt-1 break-all text-sm text-muted-foreground">
                   {profile.email}
@@ -185,12 +187,10 @@ export default function ProfilePage() {
           </section>
           <section className="surface rounded-2xl p-5 sm:p-7">
             <h2 className="flex items-center gap-2 text-base font-semibold">
-              <UserRound className="h-4 w-4 text-primary" /> Personal details
-            </h2>
+              <UserRound className="h-4 w-4 text-primary" /> {translateUI(" Personal details")}</h2>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
               <label className="text-sm font-medium">
-                Full name
-                <input
+                {translateUI("Full name")}<input
                   required
                   maxLength={120}
                   autoComplete="name"
@@ -200,8 +200,7 @@ export default function ProfilePage() {
                 />
               </label>
               <label className="text-sm font-medium">
-                Email address
-                <input
+                {translateUI("Email address")}<input
                   type="email"
                   value={profile.email ?? ""}
                   readOnly
@@ -212,20 +211,15 @@ export default function ProfilePage() {
           </section>
           <section className="surface rounded-2xl p-5 sm:p-7">
             <h2 className="flex items-center gap-2 text-base font-semibold">
-              <GraduationCap className="h-4 w-4 text-primary" /> Academic
-              details
-            </h2>
+              <GraduationCap className="h-4 w-4 text-primary" /> {translateUI(" Academic details")}</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Academic details are set during onboarding and locked. Contact
-              your administrator to request a class change.
-            </p>
+              {translateUI("Academic details are set during onboarding and locked. Contact your administrator to request a class change.")}</p>
             <fieldset
               disabled
               className="mt-5 grid gap-5 sm:grid-cols-2 opacity-75"
             >
               <label className="text-sm font-medium">
-                Institution
-                <input
+                {translateUI("Institution")}<input
                   required
                   maxLength={180}
                   value={profile.institution ?? ""}
@@ -234,8 +228,7 @@ export default function ProfilePage() {
                 />
               </label>
               <label className="text-sm font-medium">
-                Programme
-                <input
+                {translateUI("Programme")}<input
                   required
                   maxLength={180}
                   value={profile.programme ?? ""}
@@ -244,42 +237,39 @@ export default function ProfilePage() {
                 />
               </label>
               <label className="text-sm font-medium">
-                Year of study
-                <select
+                {translateUI("Year of study")}<select
                   required
                   value={String(profile.year_of_study ?? "")}
                   onChange={(e) => change("year_of_study", e.target.value)}
                   className={inputClass}
                 >
-                  <option value="">Select year</option>
+                  <option value="">{translateUI("Select year")}</option>
                   {[1, 2, 3, 4, 5, 6].map((year) => (
                     <option key={year} value={year}>
-                      Year {year}
+                      {translateUI("Year ")}{translateUI(year)}
                     </option>
                   ))}
                 </select>
               </label>
               <label className="text-sm font-medium">
-                Semester
-                <select
+                {translateUI("Semester")}<select
                   required
                   value={String(profile.semester ?? "")}
                   onChange={(e) => change("semester", e.target.value)}
                   className={inputClass}
                 >
-                  <option value="">Select semester</option>
-                  <option value="1">Semester 1</option>
-                  <option value="2">Semester 2</option>
+                  <option value="">{translateUI("Select semester")}</option>
+                  <option value="1">{translateUI("Semester 1")}</option>
+                  <option value="2">{translateUI("Semester 2")}</option>
                 </select>
               </label>
               <label className="text-sm font-medium sm:col-span-2">
-                Class
-                <select
+                {translateUI("Class")}<select
                   value={profile.class_name ?? ""}
                   onChange={(e) => change("class_name", e.target.value)}
                   className={inputClass}
                 >
-                  <option value="">Select class</option>
+                  <option value="">{translateUI("Select class")}</option>
                   {form.class_name &&
                     !classStreams.some(
                       (stream) => stream.id === form.class_name,
@@ -290,8 +280,8 @@ export default function ProfilePage() {
                     )}
                   {classStreams.map((stream) => (
                     <option key={stream.id} value={stream.id}>
-                      {stream.label}
-                      {stream.isEvening ? " (Evening)" : ""}
+                      {translateUI(stream.label)}
+                      {translateUI(stream.isEvening ? " (Evening)" : "")}
                     </option>
                   ))}
                 </select>
@@ -301,11 +291,12 @@ export default function ProfilePage() {
           <div className="flex justify-end">
             <Button type="submit" disabled={saving}>
               <Save className="h-4 w-4" />
-              {saving ? "Saving changes..." : "Save changes"}
+              {translateUI(saving ? "Saving changes..." : "Save changes")}
             </Button>
           </div>
         </fieldset>
       </form>
+      <LanguageSettings />
       <ChangePasswordForm />
     </div>
   );

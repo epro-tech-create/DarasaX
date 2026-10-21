@@ -1,3 +1,5 @@
+"use client";
+import { useTranslate } from "@/components/providers/language-provider";
 import { cn } from "@/lib/utils";
 
 export function AuthAlert({
@@ -7,6 +9,7 @@ export function AuthAlert({
   message: string;
   tone?: "error" | "success" | "info";
 }) {
+  const translateUI = useTranslate();
   if (!message) return null;
 
   return (
@@ -19,7 +22,7 @@ export function AuthAlert({
         tone === "info" && "border-primary/25 bg-primary/10 text-primary",
       )}
     >
-      {message}
+      {translateUI(message)}
     </div>
   );
 }

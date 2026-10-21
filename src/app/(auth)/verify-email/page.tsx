@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
@@ -22,6 +23,7 @@ import { AUTH_OTP_LENGTH } from "@/lib/auth/constants";
 import { createClient } from "@/lib/supabase/client";
 
 export default function VerifyEmailPage() {
+  const translateUI = useTranslate();
   const router = useRouter();
   const appRole = getAppRole();
   const staffRole =
@@ -144,18 +146,18 @@ export default function VerifyEmailPage() {
 
   return (
     <AuthShell
-      title="Verify your email"
+      title={translateUI("Verify your email")}
       subtitle="Enter the code we sent so we can activate your DarasaX account."
     >
       {success ? (
         <>
           <AuthSteps current="verify" />
           <WelcomeCelebration
-            title="Email verified"
+            title={translateUI("Email verified")}
             subtitle={
               staffRole
-                ? "Great — your staff account is active."
-                : "Great — your account is active. Next, set up your academic profile."
+                ? translateUI("Great — your staff account is active.")
+                : translateUI("Great — your account is active. Next, set up your academic profile.")
             }
             ctaLabel={staffRole ? "Continue to desk" : "Continue to profile"}
             onContinue={() => {
@@ -168,18 +170,17 @@ export default function VerifyEmailPage() {
         <>
           <AuthSteps current="verify" />
           <h1 className="font-heading text-xl font-semibold tracking-tight">
-            Verify your email
-          </h1>
+            {translateUI("Verify your email")}</h1>
           <p className="mt-0.5 text-[11px] text-muted-foreground">
-            We sent a verification code to{" "}
+            {translateUI("We sent a verification code to")}{" "}
             <span className="font-medium text-foreground">
-              {email ? maskEmail(email) : "your email"}
+              {translateUI(email ? maskEmail(email) : "your email")}
             </span>
           </p>
 
           <form className="mt-3 space-y-2.5" onSubmit={onSubmit}>
-            {error ? <AuthAlert message={error} /> : null}
-            {info ? <AuthAlert message={info} tone="success" /> : null}
+            {error ? <AuthAlert message={translateUI(error)} /> : null}
+            {info ? <AuthAlert message={translateUI(info)} tone="success" /> : null}
 
             <OtpInput
               value={otp}
@@ -193,9 +194,8 @@ export default function VerifyEmailPage() {
               autoFocus
             />
 
-            <AuthSubmitButton loading={loading} loadingText="Verifying...">
-              Verify Email
-            </AuthSubmitButton>
+            <AuthSubmitButton loading={loading} loadingText={translateUI("Verifying...")}>
+              {translateUI("Verify Email")}</AuthSubmitButton>
 
             <div className="text-center">
               <button
@@ -204,12 +204,12 @@ export default function VerifyEmailPage() {
                 disabled={!cooldown.canResend || resending}
                 className="text-[12px] font-medium text-primary disabled:text-muted-foreground"
               >
-                {resending ? "Sending code..." : cooldown.label}
+                {translateUI(resending ? "Sending code..." : cooldown.label)}
               </button>
             </div>
 
             <p className="text-center text-[11px] text-muted-foreground">
-              Wrong email?{" "}
+              {translateUI("Wrong email?")}{" "}
               <Link
                 href={
                   staffRole === "class_rep" || staffRole === "lecturer"
@@ -220,8 +220,7 @@ export default function VerifyEmailPage() {
                 }
                 className="font-medium text-primary"
               >
-                Go back
-              </Link>
+                {translateUI("Go back")}</Link>
             </p>
           </form>
         </>

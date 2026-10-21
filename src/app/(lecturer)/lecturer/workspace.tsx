@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { usePathname } from "next/navigation";
 import { RoleGuard } from "@/components/staff/role-guard";
 import { StaffAuthGuard } from "@/components/staff/staff-auth-guard";
@@ -17,6 +18,7 @@ export default function LecturerLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const translateUI = useTranslate();
   const pathname = usePathname();
   const { session } = useStaffSession();
   const bare = lecturerHomeOrBare(pathname);
@@ -44,7 +46,7 @@ export default function LecturerLayout({
               streamIds={session?.streamIds}
               moduleIds={session?.moduleIds}
             >
-              {children}
+              {translateUI(children)}
             </StaffShell>
           )}
         </LecturerGate>

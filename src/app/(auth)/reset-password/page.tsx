@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -14,6 +15,7 @@ import { isPasswordStrongEnough } from "@/lib/auth/password";
 import { createClient } from "@/lib/supabase/client";
 
 export default function ResetPasswordPage() {
+  const translateUI = useTranslate();
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -90,7 +92,7 @@ export default function ResetPasswordPage() {
 
   if (!ready && !done) {
     return (
-      <AuthShell title="Reset password" subtitle="Preparing a secure reset session...">
+      <AuthShell title={translateUI("Reset password")} subtitle="Preparing a secure reset session...">
         <div className="h-40 animate-pulse rounded-2xl bg-muted" />
       </AuthShell>
     );
@@ -98,7 +100,7 @@ export default function ResetPasswordPage() {
 
   return (
     <AuthShell
-      title="Set a new password"
+      title={translateUI("Set a new password")}
       subtitle="Choose a strong password you haven’t used before."
     >
       {done ? (
@@ -109,30 +111,25 @@ export default function ResetPasswordPage() {
         >
           <CheckCircle2 className="mx-auto h-12 w-12 text-success" />
           <h1 className="mt-4 font-heading text-xl font-semibold">
-            Password changed successfully ✓
-          </h1>
+            {translateUI("Password changed successfully ✓")}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Your DarasaX password has been updated.
-          </p>
+            {translateUI("Your DarasaX password has been updated.")}</p>
           <Button className="mt-8 h-11 w-full text-sm" href="/login">
-            Continue to Sign In
-          </Button>
+            {translateUI("Continue to Sign In")}</Button>
         </motion.div>
       ) : (
         <>
           <h1 className="font-heading text-xl font-semibold tracking-tight">
-            Reset password
-          </h1>
+            {translateUI("Reset password")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Enter and confirm your new password.
-          </p>
+            {translateUI("Enter and confirm your new password.")}</p>
 
           <form className="mt-6 space-y-3.5" onSubmit={onSubmit}>
-            {error ? <AuthAlert message={error} /> : null}
+            {error ? <AuthAlert message={translateUI(error)} /> : null}
 
             <PasswordField
               id="new-password"
-              label="New Password"
+              label={translateUI("New Password")}
               value={password}
               onChange={setPassword}
               autoComplete="new-password"
@@ -141,7 +138,7 @@ export default function ResetPasswordPage() {
 
             <PasswordField
               id="confirm-password"
-              label="Confirm New Password"
+              label={translateUI("Confirm New Password")}
               value={confirm}
               onChange={setConfirm}
               autoComplete="new-password"
@@ -150,9 +147,8 @@ export default function ResetPasswordPage() {
               }
             />
 
-            <AuthSubmitButton loading={loading} loadingText="Updating password...">
-              Update Password
-            </AuthSubmitButton>
+            <AuthSubmitButton loading={loading} loadingText={translateUI("Updating password...")}>
+              {translateUI("Update Password")}</AuthSubmitButton>
           </form>
 
           <p className="mt-5 text-center text-xs text-muted-foreground">
@@ -162,7 +158,7 @@ export default function ResetPasswordPage() {
               disabled={leaving || loading}
               className="font-medium text-primary disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {leaving ? "Returning to sign in..." : "Back to sign in"}
+              {translateUI(leaving ? "Returning to sign in..." : "Back to sign in")}
             </button>
           </p>
         </>

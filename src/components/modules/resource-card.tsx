@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { Download, Eye, FileText, Presentation, Link2, Video, HelpCircle } from "lucide-react";
 import type { Resource } from "@/types";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +24,7 @@ export function ResourceCard({
   resource: Resource;
   showPreview?: boolean;
 }) {
+  const translateUI = useTranslate();
   const meta = typeMeta[resource.type];
   const Icon = meta.icon;
   const preview = showPreview ? getResourceDownloadContent(resource) : null;
@@ -36,12 +38,12 @@ export function ResourceCard({
           </div>
           <div className="min-w-0">
             <div className="mb-1 flex flex-wrap items-center gap-2">
-              <Badge tone="primary">{meta.label}</Badge>
-              <span className="text-xs text-muted-foreground">{resource.size}</span>
+              <Badge tone="primary">{translateUI(meta.label)}</Badge>
+              <span className="text-xs text-muted-foreground">{translateUI(resource.size)}</span>
             </div>
             <h3 className="font-heading text-base font-semibold">{resource.title}</h3>
             <p className="mt-1 text-sm text-muted-foreground">
-              Uploaded {formatRelativeTime(resource.uploadedAt)} · {resource.uploader}
+              {translateUI("Uploaded ")}{translateUI(formatRelativeTime(resource.uploadedAt))} · {resource.uploader}
             </p>
           </div>
         </div>
@@ -54,8 +56,7 @@ export function ResourceCard({
               onClick={() => window.open(resource.url, "_blank", "noopener,noreferrer")}
             >
               <Eye className="h-4 w-4" />
-              View
-            </Button>
+              {translateUI("View")}</Button>
           ) : null}
           <Button
             variant="outline"
@@ -64,18 +65,16 @@ export function ResourceCard({
             onClick={() => downloadResource(resource)}
           >
             <Download className="h-4 w-4" />
-            Download
-          </Button>
+            {translateUI("Download")}</Button>
         </div>
       </div>
       {preview ? (
         <div className="rounded-[14px] border border-border bg-muted/40 p-4">
           <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-            Preview
-          </p>
+            {translateUI("Preview")}</p>
           <pre className="max-h-48 overflow-auto whitespace-pre-wrap font-sans text-[12px] leading-relaxed text-foreground/90">
-            {preview.slice(0, 900)}
-            {preview.length > 900 ? "…" : ""}
+            {translateUI(preview.slice(0, 900))}
+            {translateUI(preview.length > 900 ? "…" : "")}
           </pre>
         </div>
       ) : null}

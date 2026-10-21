@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -42,6 +43,7 @@ const bottomNav = [
 ];
 
 export function AppSidebar() {
+  const translateUI = useTranslate();
   const pathname = usePathname();
   const { profile, avatarUrl } = useStudentProfile();
   const displayName = profile?.full_name?.trim() || "Student";
@@ -75,7 +77,7 @@ export function AppSidebar() {
           type="button"
           onClick={() => setCollapsed((v) => !v)}
           className="focus-ring inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-label={translateUI(collapsed ? "Expand sidebar" : "Collapse sidebar")}
         >
           {collapsed ? (
             <PanelLeft className="h-4 w-4" />
@@ -100,10 +102,10 @@ export function AppSidebar() {
                   : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 collapsed && "justify-center px-0",
               )}
-              title={collapsed ? item.label : undefined}
+              title={translateUI(collapsed ? item.label : undefined)}
             >
               <Icon className="h-4 w-4 shrink-0" />
-              {!collapsed ? <span>{item.label}</span> : null}
+              {!collapsed ? <span>{translateUI(item.label)}</span> : null}
             </Link>
           );
         })}
@@ -125,10 +127,10 @@ export function AppSidebar() {
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   collapsed && "justify-center px-0",
                 )}
-                title={collapsed ? item.label : undefined}
+                title={translateUI(collapsed ? item.label : undefined)}
               >
                 <Icon className="h-4 w-4 shrink-0" />
-                {!collapsed ? <span>{item.label}</span> : null}
+                {!collapsed ? <span>{translateUI(item.label)}</span> : null}
               </Link>
             );
           })}
@@ -142,7 +144,7 @@ export function AppSidebar() {
                 {displayName}
               </p>
               <p className="truncate text-[11px] text-muted-foreground">
-                {profile?.year_of_study ? `Year ${profile.year_of_study}` : "Student"} {profile?.semester ? ` / Sem ${profile.semester}` : ""}
+                {profile?.year_of_study ? `Year ${profile.year_of_study}` : translateUI("Student")} {profile?.semester ? ` / Sem ${profile.semester}` : ""}
               </p>
             </div>
           </div>
@@ -163,6 +165,7 @@ export function TopBar({
   onOpenNotifications: () => void;
   onOpenSearch: () => void;
 }) {
+  const translateUI = useTranslate();
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-border bg-background/85 px-4 backdrop-blur-md sm:px-5">
       <div className="lg:hidden">
@@ -173,10 +176,9 @@ export function TopBar({
         onClick={onOpenSearch}
         className="focus-ring hidden min-w-0 flex-1 items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-left text-[13px] text-muted-foreground transition hover:border-primary/30 md:flex md:max-w-md"
       >
-        <span className="truncate">Search modules, notes, assignments...</span>
+        <span className="truncate">{translateUI("Search modules, notes, assignments...")}</span>
         <kbd className="ml-auto rounded-md border border-border bg-muted px-1.5 py-0.5 text-[11px] font-medium">
-          Ctrl K
-        </kbd>
+          {translateUI("Ctrl K")}</kbd>
       </button>
       <div className="ml-auto flex items-center gap-2">
         <ThemeToggle />
@@ -184,10 +186,9 @@ export function TopBar({
           type="button"
           onClick={onOpenSearch}
           className="focus-ring inline-flex h-8 items-center justify-center rounded-lg border border-border bg-card px-2.5 text-xs font-medium text-muted-foreground hover:text-foreground md:hidden"
-          aria-label="Search"
+          aria-label={translateUI("Search")}
         >
-          Search
-        </button>
+          {translateUI("Search")}</button>
         <NotificationBellButton onOpen={onOpenNotifications} />
       </div>
     </header>
@@ -195,6 +196,7 @@ export function TopBar({
 }
 
 function NotificationBellButton({ onOpen }: { onOpen: () => void }) {
+  const translateUI = useTranslate();
   const { unreadCount } = useNotifications();
   return (
     <button
@@ -202,15 +204,15 @@ function NotificationBellButton({ onOpen }: { onOpen: () => void }) {
       onClick={onOpen}
       className="focus-ring relative inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground"
       aria-label={
-        unreadCount > 0
+        translateUI(unreadCount > 0
           ? `Notifications, ${unreadCount} unread`
-          : "Notifications"
+          : "Notifications")
       }
     >
       <Bell className="h-4 w-4" />
       {unreadCount > 0 ? (
         <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-semibold text-white">
-          {unreadCount > 9 ? "9+" : unreadCount}
+          {translateUI(unreadCount > 9 ? "9+" : unreadCount)}
         </span>
       ) : null}
     </button>

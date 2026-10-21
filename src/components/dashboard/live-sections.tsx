@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
 import { useMemo } from "react";
 import { ChevronRight } from "lucide-react";
@@ -13,6 +14,7 @@ import { enrichModules } from "@/lib/module-stats";
 import { useTopicProgress } from "@/lib/topic-progress-store";
 
 export function DashboardUpcoming() {
+  const translateUI = useTranslate();
   const { items } = useAssignments();
   const upcoming = useMemo(
     () =>
@@ -31,19 +33,16 @@ export function DashboardUpcoming() {
   return (
     <section>
       <div className="mb-3.5 flex items-center justify-between">
-        <h2 className="font-heading text-[15px] font-semibold">Upcoming</h2>
+        <h2 className="font-heading text-[15px] font-semibold">{translateUI("Upcoming")}</h2>
         <Button variant="ghost" size="sm" href="/assignments">
-          View all
-        </Button>
+          {translateUI("View all")}</Button>
       </div>
       <p className="mb-2.5 text-[11px] text-muted-foreground">
-        {pendingCount} pending · completed work stays off this list
-      </p>
+        {translateUI(pendingCount)} {translateUI(" pending · completed work stays off this list")}</p>
       <div className="space-y-2.5">
         {upcoming.length === 0 ? (
           <div className="surface rounded-[16px] px-4 py-6 text-center text-[12px] text-muted-foreground">
-            No upcoming assignments. Nice work.
-          </div>
+            {translateUI("No upcoming assignments. Nice work.")}</div>
         ) : (
           upcoming.map((item) => {
             const module = getModule(item.moduleId);
@@ -81,6 +80,7 @@ export function DashboardUpcoming() {
 }
 
 export function DashboardModulesPreview() {
+  const translateUI = useTranslate();
   const { published, ready: materialsReady } = useMaterialsStore();
   const { topics, ready: topicsReady } = useTopicProgress();
   const enriched = useMemo(
@@ -92,15 +92,14 @@ export function DashboardModulesPreview() {
   return (
     <section>
       <div className="mb-3.5 flex items-center justify-between">
-        <h2 className="font-heading text-[15px] font-semibold">Your modules</h2>
+        <h2 className="font-heading text-[15px] font-semibold">{translateUI("Your modules")}</h2>
         <Button variant="ghost" size="sm" href="/modules">
-          See all
-        </Button>
+          {translateUI("See all")}</Button>
       </div>
       {!ready ? (
         <div
           className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
-          aria-label="Loading modules"
+          aria-label={translateUI("Loading modules")}
         >
           {[0, 1, 2, 3, 4, 5].map((i) => (
             <div

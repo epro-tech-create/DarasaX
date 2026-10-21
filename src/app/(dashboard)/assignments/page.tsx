@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useMemo, useState } from "react";
 import { AssignmentCard } from "@/components/assignments/assignment-card";
 import { PageHeader } from "@/components/layout/page-header";
@@ -20,6 +21,7 @@ import {
 const tabs = ["Upcoming", "Completed", "All"] as const;
 
 export default function AssignmentsPage() {
+  const translateUI = useTranslate();
   const [tab, setTab] = useState<(typeof tabs)[number]>("Upcoming");
   const [moduleFilter, setModuleFilter] = useState("all");
   const [priority, setPriority] = useState("all");
@@ -61,45 +63,41 @@ export default function AssignmentsPage() {
   return (
     <div>
       <PageHeader
-        title="Assignments"
-        description="Stay on top of deadlines, CATs, and coursework."
+        title={translateUI("Assignments")}
+        description={translateUI("Stay on top of deadlines, CATs, and coursework.")}
       />
 
       <div className="mb-4 grid grid-cols-2 gap-2.5 lg:grid-cols-4">
         <div className="surface rounded-[14px] p-3">
           <p className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
             <ClipboardList className="h-3 w-3 text-primary" />
-            Upcoming
-          </p>
+            {translateUI("Upcoming")}</p>
           <p className="mt-0.5 font-heading text-[15px] font-semibold">
-            {upcoming.length}
+            {translateUI(upcoming.length)}
           </p>
         </div>
         <div className="surface rounded-[14px] p-3">
           <p className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
             <AlertTriangle className="h-3 w-3 text-warning" />
-            Due soon
-          </p>
+            {translateUI("Due soon")}</p>
           <p className="mt-0.5 font-heading text-[15px] font-semibold text-warning">
-            {dueSoon}
+            {translateUI(dueSoon)}
           </p>
         </div>
         <div className="surface rounded-[14px] p-3">
           <p className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
             <Flame className="h-3 w-3 text-danger" />
-            High priority
-          </p>
+            {translateUI("High priority")}</p>
           <p className="mt-0.5 font-heading text-[15px] font-semibold text-danger">
-            {highPriority}
+            {translateUI(highPriority)}
           </p>
         </div>
         <div className="surface rounded-[14px] p-3">
           <p className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
             <CheckCircle2 className="h-3 w-3 text-success" />
-            Completed
-          </p>
+            {translateUI("Completed")}</p>
           <p className="mt-0.5 font-heading text-[15px] font-semibold text-success">
-            {completed}
+            {translateUI(completed)}
           </p>
         </div>
       </div>
@@ -118,7 +116,7 @@ export default function AssignmentsPage() {
                   : "bg-muted text-muted-foreground hover:text-foreground",
               )}
             >
-              {item}
+              {translateUI(item)}
             </button>
           ))}
         </div>
@@ -133,10 +131,9 @@ export default function AssignmentsPage() {
           onClick={() => setFiltersOpen((v) => !v)}
         >
           <Filter className="h-3.5 w-3.5" />
-          Filters
-          {activeFilterCount > 0 ? (
+          {translateUI("Filters")}{activeFilterCount > 0 ? (
             <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary/15 px-1 text-[10px] font-semibold text-primary">
-              {activeFilterCount}
+              {translateUI(activeFilterCount)}
             </span>
           ) : null}
         </Button>
@@ -145,7 +142,7 @@ export default function AssignmentsPage() {
       {filtersOpen ? (
         <div className="surface mb-4 rounded-[14px] p-3.5">
           <div className="mb-2.5 flex items-center justify-between gap-2">
-            <p className="text-[12px] font-medium">Filter assignments</p>
+            <p className="text-[12px] font-medium">{translateUI("Filter assignments")}</p>
             <div className="flex items-center gap-1">
               {activeFilterCount > 0 ? (
                 <Button
@@ -155,14 +152,13 @@ export default function AssignmentsPage() {
                   className="h-7 text-[11px]"
                   onClick={clearFilters}
                 >
-                  Clear
-                </Button>
+                  {translateUI("Clear")}</Button>
               ) : null}
               <button
                 type="button"
                 onClick={() => setFiltersOpen(false)}
                 className="focus-ring inline-flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted"
-                aria-label="Close filters"
+                aria-label={translateUI("Close filters")}
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -171,14 +167,13 @@ export default function AssignmentsPage() {
           <div className="grid gap-2.5 sm:grid-cols-2">
             <label className="block space-y-1">
               <span className="text-[10px] font-medium text-muted-foreground">
-                Module
-              </span>
+                {translateUI("Module")}</span>
               <select
                 value={moduleFilter}
                 onChange={(e) => setModuleFilter(e.target.value)}
                 className="focus-ring h-9 w-full rounded-[10px] border border-border bg-card px-2.5 text-[12px]"
               >
-                <option value="all">All</option>
+                <option value="all">{translateUI("All")}</option>
                 {modules.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.name}
@@ -188,17 +183,16 @@ export default function AssignmentsPage() {
             </label>
             <label className="block space-y-1">
               <span className="text-[10px] font-medium text-muted-foreground">
-                Priority
-              </span>
+                {translateUI("Priority")}</span>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
                 className="focus-ring h-9 w-full rounded-[10px] border border-border bg-card px-2.5 text-[12px]"
               >
-                <option value="all">All</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
+                <option value="all">{translateUI("All")}</option>
+                <option value="high">{translateUI("High")}</option>
+                <option value="medium">{translateUI("Medium")}</option>
+                <option value="low">{translateUI("Low")}</option>
               </select>
             </label>
           </div>
@@ -206,23 +200,23 @@ export default function AssignmentsPage() {
       ) : null}
 
       <p className="mb-2.5 text-[11px] text-muted-foreground">
-        {filtered.length} assignment{filtered.length === 1 ? "" : "s"}
+        {translateUI(`${filtered.length} assignment${filtered.length === 1 ? "" : "s"}`)}
       </p>
 
       {filtered.length === 0 ? (
         <EmptyState
           icon={ClipboardList}
           title={
-            tab === "Upcoming"
+            translateUI(tab === "Upcoming"
               ? "Nothing upcoming"
               : tab === "Completed"
                 ? "No completed work yet"
-                : "No assignments yet"
+                : "No assignments yet")
           }
           description={
-            tab === "Upcoming"
+            translateUI(tab === "Upcoming"
               ? "Mark work complete from an assignment page and it leaves Upcoming."
-              : "When new coursework is posted, it will show up here."
+              : "When new coursework is posted, it will show up here.")
           }
         />
       ) : (

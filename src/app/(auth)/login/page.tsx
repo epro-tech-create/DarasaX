@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, Suspense, useEffect, useState } from "react";
@@ -27,6 +28,7 @@ import {
 } from "@/lib/staff-auth";
 
 function StudentLoginForm() {
+  const translateUI = useTranslate();
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next");
@@ -121,19 +123,16 @@ function StudentLoginForm() {
   return (
     <>
       <h1 className="font-heading text-xl font-semibold tracking-tight">
-        Welcome back
-      </h1>
+        {translateUI("Welcome back")}</h1>
       <p className="mt-1 text-sm text-muted-foreground sm:mt-0.5 sm:text-xs">
-        Log in to continue your semester.
-      </p>
+        {translateUI("Log in to continue your semester.")}</p>
 
       <form className="mt-5 space-y-3.5 sm:mt-4 sm:space-y-3" onSubmit={onSubmit} noValidate>
-        {error ? <AuthAlert message={error} /> : null}
-        {info ? <AuthAlert message={info} tone="info" /> : null}
+        {error ? <AuthAlert message={translateUI(error)} /> : null}
+        {info ? <AuthAlert message={translateUI(info)} tone="info" /> : null}
 
         <label className="block text-sm font-medium sm:text-xs">
-          Email
-          <input
+          {translateUI("Email")}<input
             type="email"
             autoComplete="email"
             required
@@ -145,7 +144,7 @@ function StudentLoginForm() {
 
         <PasswordField
           id="login-password"
-          label="Password"
+          label={translateUI("Password")}
           value={password}
           onChange={setPassword}
           autoComplete="current-password"
@@ -153,28 +152,25 @@ function StudentLoginForm() {
 
         <div className="flex justify-end">
           <Link href="/forgot-password" className="text-sm font-medium text-primary sm:text-xs">
-            Forgot password?
-          </Link>
+            {translateUI("Forgot password?")}</Link>
         </div>
 
-        <AuthSubmitButton loading={loading} loadingText="Signing in...">
-          Sign In
-        </AuthSubmitButton>
+        <AuthSubmitButton loading={loading} loadingText={translateUI("Signing in...")}>
+          {translateUI("Sign In")}</AuthSubmitButton>
       </form>
 
       <div className="my-5 flex items-center gap-3 sm:my-4">
         <span className="h-px flex-1 bg-border" />
-        <span className="text-xs text-muted-foreground sm:text-[11px]">OR</span>
+        <span className="text-xs text-muted-foreground sm:text-[11px]">{translateUI("OR")}</span>
         <span className="h-px flex-1 bg-border" />
       </div>
 
       <GoogleButton onClick={onGoogle} loading={googleLoading} />
 
       <p className="mt-5 text-center text-sm text-muted-foreground sm:mt-4 sm:text-xs">
-        Don&apos;t have an account?{" "}
+        {translateUI("Don't have an account?")}{" "}
         <Link href="/signup" className="font-medium text-primary">
-          Create account
-        </Link>
+          {translateUI("Create account")}</Link>
       </p>
     </>
   );
@@ -185,6 +181,7 @@ function StaffLoginForm({
 }: {
   role: "admin" | "class_rep" | "lecturer";
 }) {
+  const translateUI = useTranslate();
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next");
@@ -267,19 +264,18 @@ function StaffLoginForm({
   return (
     <>
       <h1 className="font-heading text-xl font-semibold tracking-tight">
-        {title}
+        {translateUI(title)}
       </h1>
       <p className="mt-1 text-sm text-muted-foreground sm:mt-0.5 sm:text-xs">
-        {blurb}
+        {translateUI(blurb)}
       </p>
 
       <form className="mt-5 space-y-3.5 sm:mt-4 sm:space-y-3" onSubmit={onSubmit} noValidate>
-        {info ? <AuthAlert message={info} tone="info" /> : null}
-        {error ? <AuthAlert message={error} /> : null}
+        {info ? <AuthAlert message={translateUI(info)} tone="info" /> : null}
+        {error ? <AuthAlert message={translateUI(error)} /> : null}
 
         <label className="block text-sm font-medium sm:text-xs">
-          Email
-          <input
+          {translateUI("Email")}<input
             type="email"
             autoComplete="email"
             required
@@ -291,20 +287,18 @@ function StaffLoginForm({
 
         <PasswordField
           id="staff-login-password"
-          label="Password"
+          label={translateUI("Password")}
           value={password}
           onChange={setPassword}
           autoComplete="current-password"
         />
 
-        <AuthSubmitButton loading={loading} loadingText="Signing in...">
-          Sign In
-        </AuthSubmitButton>
+        <AuthSubmitButton loading={loading} loadingText={translateUI("Signing in...")}>
+          {translateUI("Sign In")}</AuthSubmitButton>
       </form>
 
       <p className="mt-5 text-center text-sm text-muted-foreground">
-        Staff access is assigned by an administrator. Contact them for access.
-      </p>
+        {translateUI("Staff access is assigned by an administrator. Contact them for access.")}</p>
     </>
   );
 }
@@ -318,6 +312,7 @@ function LoginRouter() {
 }
 
 export default function LoginPage() {
+  const translateUI = useTranslate();
   const role = getAppRole();
   const staff =
     role === "admin" || role === "class_rep" || role === "lecturer";
@@ -328,39 +323,31 @@ export default function LoginPage() {
         staff ? (
           role === "admin" ? (
             <>
-              Admin desk,
-              <br />
-              secure access.
-            </>
+              {translateUI("Admin desk,")}<br />
+              {translateUI("secure access.")}</>
           ) : role === "lecturer" ? (
             <>
-              Lecturer desk,
-              <br />
-              teach and publish.
-            </>
+              {translateUI("Lecturer desk,")}<br />
+              {translateUI("teach and publish.")}</>
           ) : (
             <>
-              Class rep desk,
-              <br />
-              ready for your stream.
-            </>
+              {translateUI("Class rep desk,")}<br />
+              {translateUI("ready for your stream.")}</>
           )
         ) : (
           <>
-            Your academic day,
-            <br />
-            finally clear.
-          </>
+            {translateUI("Your academic day,")}<br />
+            {translateUI("finally clear.")}</>
         )
       }
       subtitle={
         staff
           ? role === "admin"
-            ? "Sign in to manage students, class reps, timetable, and materials."
+            ? translateUI("Sign in to manage students, class reps, timetable, and materials.")
             : role === "lecturer"
-              ? "Sign in to upload notes, assign work, and manage module topics."
-              : "Sign in to upload materials, edit the timetable, and support your class."
-          : "Modules, deadlines, notes and AI study help — ready when you open DarasaX."
+              ? translateUI("Sign in to upload notes, assign work, and manage module topics.")
+              : translateUI("Sign in to upload materials, edit the timetable, and support your class.")
+          : translateUI("Modules, deadlines, notes and AI study help — ready when you open DarasaX.")
       }
     >
       <Suspense fallback={<div className="h-64 animate-pulse rounded-2xl bg-muted" />}>

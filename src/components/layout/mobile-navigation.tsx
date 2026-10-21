@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -21,6 +22,7 @@ const items = [
 ];
 
 export function MobileNavigation() {
+  const translateUI = useTranslate();
   const pathname = usePathname();
   const { unreadCount } = useNotifications();
 
@@ -43,9 +45,9 @@ export function MobileNavigation() {
                   )}
                 >
                   <Icon className={cn("h-4 w-4", active && "stroke-[2.25px]")} />
-                  {item.label}
+                  {translateUI(item.label)}
                   {item.href === "/announcements" && unreadCount > 0 ? (
-                    <span className="absolute right-2 top-1 rounded-full bg-primary px-1.5 text-[10px] font-semibold text-white" aria-label={`${unreadCount} unread updates`}>{unreadCount > 9 ? "9+" : unreadCount}</span>
+                    <span className="absolute right-2 top-1 rounded-full bg-primary px-1.5 text-[10px] font-semibold text-white" aria-label={translateUI(`${unreadCount} unread updates`)}>{translateUI(unreadCount > 9 ? "9+" : unreadCount)}</span>
                   ) : null}
                 </Link>
               </li>

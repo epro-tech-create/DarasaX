@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Figtree, Outfit } from "next/font/google";
 import Script from "next/script";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { LanguageProvider } from "@/components/providers/language-provider";
 import { SessionTimeout } from "@/components/auth/session-timeout";
 import { BootSplash } from "@/components/brand/boot-splash";
 import { SiteVisitorTracker } from "@/components/analytics/site-visitor-tracker";
@@ -59,12 +60,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: themeInitScript }}
         />
-        <ThemeProvider>
+        <LanguageProvider>
+          <ThemeProvider>
           <SessionTimeout />
           <BootSplash />
           <SiteVisitorTracker />
           {children}
-        </ThemeProvider>
+          </ThemeProvider>
+        </LanguageProvider>
         <noscript>
           <style>{`#darasax-boot{display:none!important}`}</style>
         </noscript>

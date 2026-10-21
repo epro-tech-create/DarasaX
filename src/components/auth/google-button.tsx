@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -33,6 +34,7 @@ export function GoogleButton({
   onClick: () => void;
   loading?: boolean;
 }) {
+  const translateUI = useTranslate();
   return (
     <Button
       type="button"
@@ -46,7 +48,7 @@ export function GoogleButton({
       ) : (
         <GoogleIcon className="h-4 w-4" />
       )}
-      {loading ? "Connecting to Google..." : "Continue with Google"}
+      {translateUI(loading ? "Connecting to Google..." : "Continue with Google")}
     </Button>
   );
 }

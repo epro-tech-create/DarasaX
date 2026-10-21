@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
 import { Bell, CheckCheck } from "lucide-react";
 import { formatRelativeTime } from "@/lib/utils";
@@ -18,6 +19,7 @@ export function NotificationPanel({
   resolveHref?: (href: string) => string;
   emptyDescription?: string;
 }) {
+  const translateUI = useTranslate();
   const { items, unreadCount, ready, error, refresh, markRead, markAllRead } = useNotifications();
 
   if (!open) return null;
@@ -27,14 +29,14 @@ export function NotificationPanel({
       <button
         type="button"
         className="absolute inset-0 bg-black/30 backdrop-blur-[2px]"
-        aria-label="Close notifications"
+        aria-label={translateUI("Close notifications")}
         onClick={onClose}
       />
       <div className="absolute right-3 top-16 w-[min(100vw-1.5rem,380px)] overflow-hidden rounded-[20px] border border-border bg-card shadow-2xl sm:right-6">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <div className="flex items-center gap-2">
             <Bell className="h-4 w-4 text-primary" />
-            <h2 className="font-heading text-sm font-semibold">Notifications</h2>
+            <h2 className="font-heading text-sm font-semibold">{translateUI("Notifications")}</h2>
           </div>
           <Button
             variant="ghost"
@@ -44,22 +46,20 @@ export function NotificationPanel({
             disabled={unreadCount === 0}
           >
             <CheckCheck className="h-4 w-4" />
-            Mark all read
-          </Button>
+            {translateUI("Mark all read")}</Button>
         </div>
         {error ? <div role="alert" className="space-y-2 px-4 py-4 text-sm">
-          <p>{error}</p><Button variant="outline" size="sm" onClick={refresh}>Try again</Button>
+          <p>{translateUI(error)}</p><Button variant="outline" size="sm" onClick={refresh}>{translateUI("Try again")}</Button>
         </div> : null}
         {!ready ? (
           <p className="px-4 py-8 text-center text-[12px] text-muted-foreground">
-            Loading updates…
-          </p>
+            {translateUI("Loading updates…")}</p>
         ) : items.length === 0 ? (
           <div className="p-4">
             <EmptyState
               icon={Bell}
-              title="No notifications yet"
-              description={emptyDescription}
+              title={translateUI("No notifications yet")}
+              description={translateUI(emptyDescription)}
               className="border-0 bg-transparent py-8"
             />
           </div>
@@ -85,12 +85,12 @@ export function NotificationPanel({
                       }`}
                     />
                     <span className="min-w-0">
-                      <span className="block text-sm font-medium">{n.title}</span>
+                      <span className="block text-sm font-medium">{translateUI(n.title)}</span>
                       <span className="mt-0.5 block text-[13px] text-muted-foreground">
                         {n.body}
                       </span>
                       <span className="mt-1 block text-xs text-muted-foreground">
-                        {formatRelativeTime(n.createdAt)}
+                        {translateUI(formatRelativeTime(n.createdAt))}
                       </span>
                     </span>
                   </Link>

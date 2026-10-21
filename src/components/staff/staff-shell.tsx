@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
@@ -18,6 +19,7 @@ import {
   Shield,
   Users,
   ListOrdered,
+  UserRound,
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
@@ -112,12 +114,13 @@ export function StaffShell({
   moduleIds?: string[];
   children: ReactNode;
 }) {
+  const translateUI = useTranslate();
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const { unreadCount } = useNotifications();
-  const nav =
+  const baseNav =
     role === "admin"
       ? adminNav
       : role === "class_rep"
@@ -125,6 +128,7 @@ export function StaffShell({
         : lecturerNav;
   const home =
     role === "admin" ? "/admin" : role === "class_rep" ? "/cr" : "/lecturer";
+  const nav = [...baseNav, { href: `${home}/profile`, label: "Personal Profile", icon: UserRound }];
   const port =
     role === "admin"
       ? APP_PORTS.admin
@@ -175,7 +179,7 @@ export function StaffShell({
             type="button"
             onClick={() => setCollapsed((v) => !v)}
             className="focus-ring inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground"
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={translateUI(collapsed ? "Expand sidebar" : "Collapse sidebar")}
           >
             {collapsed ? (
               <PanelLeft className="h-4 w-4" />
@@ -214,7 +218,7 @@ export function StaffShell({
               <Link
                 key={item.href}
                 href={item.href}
-                title={item.label}
+                title={translateUI(item.label)}
                 className={cn(
                   "focus-ring flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium transition",
                   collapsed && "justify-center px-0",
@@ -224,7 +228,7 @@ export function StaffShell({
                 )}
               >
                 <Icon className="h-4 w-4 shrink-0" />
-                {!collapsed ? <span className="truncate">{item.label}</span> : null}
+                {!collapsed ? <span className="truncate">{translateUI(item.label)}</span> : null}
               </Link>
             );
           })}
@@ -233,8 +237,7 @@ export function StaffShell({
         <div className="space-y-1 border-t border-border p-2.5">
           {!collapsed ? (
             <p className="px-2.5 pb-1 text-[11px] text-muted-foreground">
-              Port {port} · isolated app
-            </p>
+              {translateUI("Port ")}{translateUI(port)} {translateUI(" · isolated app")}</p>
           ) : null}
         </div>
       </aside>
@@ -246,7 +249,7 @@ export function StaffShell({
           </div>
           <div className="hidden min-w-0 lg:block">
             <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
-              {roleLabel(role)}
+              {translateUI(roleLabel(role))}
             </p>
             <p className="truncate text-[13px] font-semibold">{userMeta}</p>
           </div>
@@ -257,20 +260,19 @@ export function StaffShell({
                 onClick={onSwitchClass}
                 className="focus-ring hidden h-9 items-center rounded-xl border border-border px-2.5 text-[11px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground sm:inline-flex"
               >
-                Switch class
-              </button>
+                {translateUI("Switch class")}</button>
             ) : null}
             <ThemeToggle />
             <button
               type="button"
               onClick={() => setNotificationsOpen(true)}
               className="focus-ring relative inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
-              aria-label="Notifications"
+              aria-label={translateUI("Notifications")}
             >
               <Bell className="h-4 w-4" />
               {unreadCount > 0 ? (
                 <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
-                  {unreadCount > 9 ? "9+" : unreadCount}
+                  {translateUI(unreadCount > 9 ? "9+" : unreadCount)}
                 </span>
               ) : null}
             </button>
@@ -278,18 +280,18 @@ export function StaffShell({
               type="button"
               onClick={() => void onSignOut()}
               className="focus-ring inline-flex h-9 items-center gap-1.5 rounded-xl border border-border px-2.5 text-[13px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
-              aria-label="Sign out"
-              title="Sign out"
+              aria-label={translateUI("Sign out")}
+              title={translateUI("Sign out")}
             >
               <LogOut className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Sign out</span>
+              <span className="hidden sm:inline">{translateUI("Sign out")}</span>
             </button>
           </div>
         </header>
 
         <main className="gradient-mesh flex-1 px-4 pb-28 pt-5 sm:px-5 lg:pb-10 lg:pt-6">
           <div className="mx-auto w-full max-w-7xl">
-            <StaffPageMotion>{children}</StaffPageMotion>
+            <StaffPageMotion>{translateUI(children)}</StaffPageMotion>
           </div>
         </main>
 
@@ -310,7 +312,7 @@ export function StaffShell({
                   )}
                 >
                   <Icon className="h-4 w-4" />
-                  <span className="max-w-full truncate">{item.label}</span>
+                  <span className="max-w-full truncate">{translateUI(item.label)}</span>
                 </Link>
               );
             })}
@@ -322,7 +324,7 @@ export function StaffShell({
         open={notificationsOpen}
         onClose={() => setNotificationsOpen(false)}
         resolveHref={(href) => staffNotificationHref(href, role)}
-        emptyDescription="When materials, topics, or assignments are published, they show up here."
+        emptyDescription={translateUI("When materials, topics, or assignments are published, they show up here.")}
       />
     </div>
   );

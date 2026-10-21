@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "@/components/providers/theme-provider";
@@ -7,6 +8,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { AuthAlert } from "@/components/auth/auth-alert";
 import { cn } from "@/lib/utils";
+import { LanguageSettings } from "@/components/profile/language-settings";
 import { createClient } from "@/lib/supabase/client";
 import { getAuthErrorMessage } from "@/lib/auth/errors";
 
@@ -39,6 +41,7 @@ const sections = [
 ] as const;
 
 export default function SettingsPage() {
+  const translateUI = useTranslate();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -75,13 +78,13 @@ export default function SettingsPage() {
   return (
     <div className="mx-auto max-w-3xl">
       <PageHeader
-        title="Settings"
-        description="Tune DarasaX to how you study."
+        title={translateUI("Settings")}
+        description={translateUI("Tune DarasaX to how you study.")}
       />
 
       {error ? (
         <div className="mb-4">
-          <AuthAlert message={error} />
+          <AuthAlert message={translateUI(error)} />
         </div>
       ) : null}
 
@@ -90,7 +93,7 @@ export default function SettingsPage() {
           <section key={section.id} className="surface rounded-[20px] p-5">
             <h2 className="font-heading text-lg font-semibold">{section.title}</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              {section.description}
+              {translateUI(section.description)}
             </p>
 
             {section.id === "appearance" && mounted ? (
@@ -107,7 +110,7 @@ export default function SettingsPage() {
                         : "border-border text-muted-foreground",
                     )}
                   >
-                    {value}
+                    {translateUI(value)}
                   </button>
                 ))}
               </div>
@@ -116,8 +119,7 @@ export default function SettingsPage() {
             {section.id === "notifications" ? (
               <div className="mt-4 space-y-3">
                 <label className="flex items-center justify-between gap-3 text-sm">
-                  Email notifications
-                  <input
+                  {translateUI("Email notifications")}<input
                     type="checkbox"
                     checked={emailNotifs}
                     onChange={(e) => setEmailNotifs(e.target.checked)}
@@ -125,8 +127,7 @@ export default function SettingsPage() {
                   />
                 </label>
                 <label className="flex items-center justify-between gap-3 text-sm">
-                  Push notifications
-                  <input
+                  {translateUI("Push notifications")}<input
                     type="checkbox"
                     checked={pushNotifs}
                     onChange={(e) => setPushNotifs(e.target.checked)}
@@ -137,18 +138,15 @@ export default function SettingsPage() {
             ) : null}
 
             {section.id === "language" ? (
-              <select className="focus-ring mt-4 h-11 w-full max-w-xs rounded-[12px] border border-border bg-background px-3 text-sm">
-                <option>English</option>
-                <option>Swahili</option>
-              </select>
+              <div className="mt-4"><LanguageSettings /></div>
             ) : null}
 
             {section.id === "account" ? (
               <div className="mt-4 space-y-3 text-sm text-muted-foreground">
                 <p>
-                  Signed in as{" "}
+                  {translateUI("Signed in as")}{" "}
                   <span className="font-medium text-foreground">
-                    {email || "…"}
+                    {translateUI(email || "…")}
                   </span>
                 </p>
                 <Button
@@ -156,8 +154,7 @@ export default function SettingsPage() {
                   href="/forgot-password"
                   className="h-10"
                 >
-                  Change password
-                </Button>
+                  {translateUI("Change password")}</Button>
                 <div>
                   <Button
                     variant="danger"
@@ -165,7 +162,7 @@ export default function SettingsPage() {
                     disabled={signingOut}
                     className="h-10"
                   >
-                    {signingOut ? "Signing out..." : "Sign out"}
+                    {translateUI(signingOut ? "Signing out..." : "Sign out")}
                   </Button>
                 </div>
               </div>
@@ -173,9 +170,7 @@ export default function SettingsPage() {
 
             {section.id === "privacy" ? (
               <p className="mt-4 text-sm text-muted-foreground">
-                Your study streak and module progress are visible only to you by
-                default.
-              </p>
+                {translateUI("Your study streak and module progress are visible only to you by default.")}</p>
             ) : null}
           </section>
         ))}

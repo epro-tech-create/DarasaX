@@ -1,3 +1,5 @@
+"use client";
+import { useTranslate } from "@/components/providers/language-provider";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -18,6 +20,7 @@ export function StaffStatCard({
   tone?: "primary" | "success" | "warning" | "danger";
   href?: string;
 }) {
+  const translateUI = useTranslate();
   const tones = {
     primary: "bg-primary/10 text-primary",
     success: "bg-success/15 text-success",
@@ -30,13 +33,13 @@ export function StaffStatCard({
       <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs font-medium text-muted-foreground">
-            {label}
+            {translateUI(label)}
           </p>
           <p className="mt-2 truncate font-heading text-2xl font-semibold leading-none tracking-tight">
-            {value}
+            {translateUI(value)}
           </p>
           {hint ? (
-            <p className="mt-1.5 truncate text-xs text-muted-foreground">{hint}</p>
+            <p className="mt-1.5 truncate text-xs text-muted-foreground">{translateUI(hint)}</p>
           ) : null}
         </div>
         <span
@@ -50,7 +53,7 @@ export function StaffStatCard({
       </div>
     </div>
   );
-  return href ? <Link href={href} className="focus-ring block rounded-2xl">{content}</Link> : content;
+  return href ? <Link href={href} className="focus-ring block rounded-2xl">{translateUI(content)}</Link> : content;
 }
 
 export function StaffSection({
@@ -66,20 +69,21 @@ export function StaffSection({
   children: ReactNode;
   className?: string;
 }) {
+  const translateUI = useTranslate();
   return (
     <section className={cn("surface overflow-hidden rounded-[20px]", className)}>
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border/70 px-4 py-3.5 sm:px-5">
         <div className="min-w-0 flex-1">
-          <h2 className="font-heading text-sm font-semibold tracking-tight">{title}</h2>
+          <h2 className="font-heading text-sm font-semibold tracking-tight">{translateUI(title)}</h2>
           {description ? (
             <p className="mt-1 max-w-xl text-xs leading-snug text-muted-foreground sm:text-[13px]">
-              {description}
+              {translateUI(description)}
             </p>
           ) : null}
         </div>
-        {action ? <div className="shrink-0">{action}</div> : null}
+        {action ? <div className="shrink-0">{translateUI(action)}</div> : null}
       </div>
-      <div className="p-4 sm:p-5">{children}</div>
+      <div className="p-4 sm:p-5">{translateUI(children)}</div>
     </section>
   );
 }

@@ -1,3 +1,5 @@
+"use client";
+import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { type ButtonHTMLAttributes, forwardRef } from "react";
@@ -32,19 +34,20 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "primary", size = "md", href, children, disabled, ...props }, ref) => {
+  const translateUI = useTranslate();
     const classes = cn(base, variants[variant], sizes[size], className);
 
     if (href) {
       return (
         <Link href={href} className={classes} aria-disabled={disabled}>
-          {children}
+          {translateUI(children)}
         </Link>
       );
     }
 
     return (
       <button ref={ref} className={classes} disabled={disabled} {...props}>
-        {children}
+        {translateUI(children)}
       </button>
     );
   },

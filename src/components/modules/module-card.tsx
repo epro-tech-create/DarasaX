@@ -1,3 +1,5 @@
+"use client";
+import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
 import {
   AudioWaveform,
@@ -40,6 +42,7 @@ export function ModuleCard({
   className?: string;
   compact?: boolean;
 }) {
+  const translateUI = useTranslate();
   const Icon = iconMap[module.icon] || BookFallback;
 
   if (compact) {
@@ -62,15 +65,14 @@ export function ModuleCard({
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-muted-foreground">
-              {module.code}
+              {translateUI(module.code)}
             </span>
             {module.credits ? (
               <span className="text-[10px] text-muted-foreground">
-                {module.credits} cr
-              </span>
+                {translateUI(module.credits)} {translateUI(" cr")}</span>
             ) : null}
             <span className="text-[10px] text-muted-foreground">
-              Sem {module.semester}
+              {translateUI("Sem ")}{translateUI(module.semester)}
             </span>
           </div>
           <h3 className="mt-1 truncate font-heading text-[14px] font-semibold tracking-tight group-hover:text-primary sm:text-[15px]">
@@ -90,23 +92,21 @@ export function ModuleCard({
               className="shrink-0 text-[11px] font-medium tabular-nums"
               style={{ color: module.accent }}
             >
-              {module.progress}%
+              {translateUI(module.progress)}%
             </span>
           </div>
           <p className="mt-1.5 text-[11px] text-muted-foreground sm:hidden">
-            {module.lecturer} · {module.notesCount} notes ·{" "}
-            {module.topicsCompleted}/{module.topicsTotal} topics
-          </p>
+            {translateUI(module.lecturer)} · {translateUI(module.notesCount)} {translateUI(" notes ·")}{" "}
+            {translateUI(module.topicsCompleted)}/{translateUI(module.topicsTotal)} {translateUI(" topics")}</p>
         </div>
 
         <div className="hidden min-w-[140px] text-right sm:block">
           <p className="truncate text-[13px] font-medium text-foreground/90">
-            {module.lecturer}
+            {translateUI(module.lecturer)}
           </p>
           <p className="mt-0.5 text-[11px] text-muted-foreground">
-            {module.notesCount} notes · {module.topicsCompleted}/
-            {module.topicsTotal} topics
-          </p>
+            {translateUI(module.notesCount)} {translateUI(" notes · ")}{translateUI(module.topicsCompleted)}/
+            {translateUI(module.topicsTotal)} {translateUI(" topics")}</p>
         </div>
 
         <ChevronRight className="hidden h-4 w-4 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary sm:block" />
@@ -130,19 +130,18 @@ export function ModuleCard({
           <Icon className="h-5 w-5" />
         </div>
         <span className="text-xs font-medium text-muted-foreground">
-          {module.code}
-          {module.credits ? ` · ${module.credits} cr` : ""}
+          {translateUI(module.code)}
+          {translateUI(module.credits ? ` · ${module.credits} cr` : "")}
         </span>
       </div>
       <h3 className="font-heading text-lg font-semibold tracking-tight group-hover:text-primary">
         {module.name}
       </h3>
-      <p className="mt-1 text-sm text-muted-foreground">{module.lecturer}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{translateUI(module.lecturer)}</p>
       <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-        <span>{module.notesCount} Notes</span>
+        <span>{translateUI(module.notesCount)} {translateUI(" Notes")}</span>
         <span>
-          {module.topicsCompleted}/{module.topicsTotal} topics
-        </span>
+          {translateUI(module.topicsCompleted)}/{translateUI(module.topicsTotal)} {translateUI(" topics")}</span>
       </div>
       <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
         <div
@@ -154,8 +153,7 @@ export function ModuleCard({
         />
       </div>
       <p className="mt-2 text-xs font-medium" style={{ color: module.accent }}>
-        {module.progress}% progress
-      </p>
+        {translateUI(module.progress)}{translateUI("% progress")}</p>
     </Link>
   );
 }

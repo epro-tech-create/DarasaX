@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { APP_HOME, getAppRole, type AppRole } from "@/lib/app-role";
@@ -12,6 +13,7 @@ export function RoleGuard({
   allow: AppRole;
   children: React.ReactNode;
 }) {
+  const translateUI = useTranslate();
   const router = useRouter();
   const role = getAppRole();
 
@@ -27,14 +29,13 @@ export function RoleGuard({
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <div className="surface max-w-sm rounded-2xl p-6 text-center">
-          <p className="font-heading text-[15px] font-semibold">Access denied</p>
+          <p className="font-heading text-[15px] font-semibold">{translateUI("Access denied")}</p>
           <p className="mt-2 text-[12px] text-muted-foreground">
-            This app is locked to the {allow.replace("_", " ")} workspace.
-          </p>
+            {translateUI("This app is locked to the ")}{translateUI(allow.replace("_", " "))} {translateUI(" workspace.")}</p>
         </div>
       </div>
     );
   }
 
-  return <>{children}</>;
+  return <>{translateUI(children)}</>;
 }

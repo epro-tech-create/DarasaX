@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useStaffSession } from "@/lib/staff-auth";
@@ -12,6 +13,7 @@ export function StaffAuthGuard({
   allow: StaffRole;
   children: React.ReactNode;
 }) {
+  const translateUI = useTranslate();
   const router = useRouter();
   const pathname = usePathname();
   const { session, ready } = useStaffSession();
@@ -35,10 +37,10 @@ export function StaffAuthGuard({
   if (!session || session.role !== allow) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
-        <p className="text-[13px] text-muted-foreground">Redirecting to login…</p>
+        <p className="text-[13px] text-muted-foreground">{translateUI("Redirecting to login…")}</p>
       </div>
     );
   }
 
-  return <>{children}</>;
+  return <>{translateUI(children)}</>;
 }

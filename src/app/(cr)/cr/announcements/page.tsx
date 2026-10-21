@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useState } from "react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +10,7 @@ import { useMaterialsStore } from "@/lib/materials-store";
 import { useStaffSession } from "@/lib/staff-auth";
 
 export default function ClassRepAnnouncementsPage() {
+  const translateUI = useTranslate();
   const { session } = useStaffSession();
   const streamId = session?.streamId ?? "BENG24COE-1";
   const { items, publishNotice } = useMaterialsStore();
@@ -55,45 +57,44 @@ export default function ClassRepAnnouncementsPage() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Class announcements"
-        description={`Posts target ${streamId} only — not the whole programme.`}
+        title={translateUI("Class announcements")}
+        description={translateUI(`Posts target ${streamId} only — not the whole programme.`)}
       />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="surface rounded-[20px] p-4 sm:p-5">
-          <h2 className="font-heading text-[14px] font-semibold">Write to class</h2>
+          <h2 className="font-heading text-[14px] font-semibold">{translateUI("Write to class")}</h2>
           <div className="mt-3 space-y-3">
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Lab moved to Lab 05"
+              placeholder={translateUI("e.g. Lab moved to Lab 05")}
               className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
             <textarea
               value={body}
               onChange={(e) => setBody(e.target.value)}
               rows={5}
-              placeholder="What should classmates know?"
+              placeholder={translateUI("What should classmates know?")}
               className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-[13px] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
             <Button type="button" disabled={busy} onClick={() => void publish()}>
-              {busy ? "Publishing…" : "Post to stream"}
+              {translateUI(busy ? "Publishing…" : "Post to stream")}
             </Button>
             {message ? (
-              <p className="text-[12px] font-medium text-success">{message}</p>
+              <p className="text-[12px] font-medium text-success">{translateUI(message)}</p>
             ) : null}
             {error ? (
-              <p className="text-[12px] font-medium text-danger">{error}</p>
+              <p className="text-[12px] font-medium text-danger">{translateUI(error)}</p>
             ) : null}
           </div>
         </div>
 
-        <StaffSection title="Posted for this class" description="Live student feed">
+        <StaffSection title={translateUI("Posted for this class")} description={translateUI("Live student feed")}>
           <div className="max-h-[360px] space-y-2 overflow-y-auto scrollbar-thin">
             {live.length === 0 ? (
               <p className="py-8 text-center text-[12px] text-muted-foreground">
-                Nothing posted for this stream yet.
-              </p>
+                {translateUI("Nothing posted for this stream yet.")}</p>
             ) : (
               live.map((item) => (
                 <div key={item.id} className="rounded-xl border border-border/70 px-3 py-2.5">

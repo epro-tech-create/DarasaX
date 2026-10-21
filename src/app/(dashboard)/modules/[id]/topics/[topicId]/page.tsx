@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
 import { useMemo } from "react";
 import { notFound, useParams } from "next/navigation";
@@ -22,6 +23,7 @@ import { useTopicProgress } from "@/lib/topic-progress-store";
 import { cn } from "@/lib/utils";
 
 export default function TopicDetailPage() {
+  const translateUI = useTranslate();
   const params = useParams<{ id: string; topicId: string }>();
   const courseModule = getModule(params.id);
   const { topics, setCompleted, ready, error, refresh } = useTopicProgress();
@@ -47,7 +49,7 @@ export default function TopicDetailPage() {
         aria-live="polite"
         className="surface animate-pulse rounded-2xl p-6"
       >
-        <p className="text-sm text-muted-foreground">Loading topic...</p>
+        <p className="text-sm text-muted-foreground">{translateUI("Loading topic...")}</p>
         <div className="mt-5 h-5 w-2/3 rounded bg-muted" />
         <div className="mt-3 h-24 rounded bg-muted" />
       </div>
@@ -55,14 +57,13 @@ export default function TopicDetailPage() {
   if (error)
     return (
       <div role="alert" className="surface space-y-4 rounded-2xl p-6">
-        <p>{error}</p>
-        <Button onClick={() => void refresh()}>Try again</Button>
+        <p>{translateUI(error)}</p>
+        <Button onClick={() => void refresh()}>{translateUI("Try again")}</Button>
         <Link
           href={`/modules/${courseModule.id}`}
           className="ml-3 text-sm text-primary"
         >
-          Back to module
-        </Link>
+          {translateUI("Back to module")}</Link>
       </div>
     );
   if (!topic || topic.moduleId !== courseModule.id) notFound();
@@ -80,11 +81,11 @@ export default function TopicDetailPage() {
           className="inline-flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground transition hover:text-primary"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          Back to {courseModule.name}
+          {translateUI("Back to ")}{courseModule.name}
         </Link>
         <PageHeader
           title={`Topic ${String(topic.number).padStart(2, "0")} — ${topic.title}`}
-          description={`${courseModule.code} · ${courseModule.lecturer}`}
+          description={translateUI(`${courseModule.code} · ${courseModule.lecturer}`)}
           actions={
             <Badge tone={topic.completed ? "success" : "primary"}>
               {topic.completed ? "Completed" : "In progress"}
@@ -97,11 +98,10 @@ export default function TopicDetailPage() {
         <div className="flex flex-wrap items-center gap-3 text-[12px] text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">
             <Clock3 className="h-3.5 w-3.5" />
-            {topic.durationMinutes} min read
-          </span>
+            {translateUI(topic.durationMinutes)} {translateUI(" min read")}</span>
           <span className="inline-flex items-center gap-1.5">
             <FileText className="h-3.5 w-3.5" />
-            {liveNotes.length} note{liveNotes.length === 1 ? "" : "s"}
+            {translateUI(`${liveNotes.length} note${liveNotes.length === 1 ? "" : "s"}`)}
           </span>
           <span className="inline-flex items-center gap-1.5">
             {topic.completed ? (
@@ -109,7 +109,7 @@ export default function TopicDetailPage() {
             ) : (
               <Circle className="h-3.5 w-3.5" />
             )}
-            {topic.completed ? "Marked complete" : "Not completed yet"}
+            {translateUI(topic.completed ? "Marked complete" : "Not completed yet")}
           </span>
         </div>
         {topic.summary ? (
@@ -125,19 +125,19 @@ export default function TopicDetailPage() {
             onClick={() => setCompleted(topic.id, !topic.completed)}
           >
             <CheckCircle2 className="h-4 w-4" />
-            {topic.completed ? "Undo complete" : "Mark topic done"}
+            {translateUI(topic.completed ? "Undo complete" : "Mark topic done")}
           </Button>
         </div>
       </section>
 
       {topic.learningObjectives && topic.learningObjectives.length > 0 && (
         <section className="surface rounded-[20px] p-5 sm:p-6">
-          <h2 className="text-base font-semibold">What you will learn</h2>
+          <h2 className="text-base font-semibold">{translateUI("What you will learn")}</h2>
           <ul className="mt-4 space-y-3">
             {topic.learningObjectives.map((objective, position) => (
               <li key={position} className="flex gap-3 text-sm leading-relaxed">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                {objective}
+                {translateUI(objective)}
               </li>
             ))}
           </ul>
@@ -155,19 +155,15 @@ export default function TopicDetailPage() {
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-3">
           <h2 className="font-heading text-[15px] font-semibold">
-            Notes & materials
-          </h2>
+            {translateUI("Notes & materials")}</h2>
           <p className="text-[11px] text-muted-foreground">
-            Staff uploads for this module
-          </p>
+            {translateUI("Staff uploads for this module")}</p>
         </div>
         {liveNotes.length === 0 ? (
           <div className="surface rounded-[18px] px-5 py-10 text-center">
-            <p className="text-[13px] font-medium">No notes uploaded yet</p>
+            <p className="text-[13px] font-medium">{translateUI("No notes uploaded yet")}</p>
             <p className="mt-1 text-[12px] text-muted-foreground">
-              When Admin or your class rep publishes notes for this module, they
-              appear here.
-            </p>
+              {translateUI("When Admin or your class rep publishes notes for this module, they appear here.")}</p>
           </div>
         ) : (
           liveNotes.map((item) => (
@@ -185,10 +181,9 @@ export default function TopicDetailPage() {
             <ArrowLeft className="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-primary" />
             <div className="min-w-0">
               <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                Previous
-              </p>
+                {translateUI("Previous")}</p>
               <p className="truncate text-[13px] font-medium">
-                Topic {String(prev.number).padStart(2, "0")} — {prev.title}
+                {translateUI("Topic ")}{translateUI(String(prev.number).padStart(2, "0"))} — {prev.title}
               </p>
             </div>
           </Link>
@@ -204,10 +199,9 @@ export default function TopicDetailPage() {
           >
             <div className="min-w-0">
               <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                Next
-              </p>
+                {translateUI("Next")}</p>
               <p className="truncate text-[13px] font-medium">
-                Topic {String(next.number).padStart(2, "0")} — {next.title}
+                {translateUI("Topic ")}{translateUI(String(next.number).padStart(2, "0"))} — {next.title}
               </p>
             </div>
             <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-primary" />

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useEffect, useMemo, useState } from "react";
 import {
   ClipboardList,
@@ -76,13 +77,14 @@ function FileActions({
   onDelete: () => void;
   className?: string;
 }) {
+  const translateUI = useTranslate();
   return (
     <div className={cn("flex items-center gap-0.5", className)}>
       <button
         type="button"
         disabled={busy}
-        aria-label="Open"
-        title="Open"
+        aria-label={translateUI("Open")}
+        title={translateUI("Open")}
         onClick={onView}
         className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40"
       >
@@ -91,8 +93,8 @@ function FileActions({
       <button
         type="button"
         disabled={busy}
-        aria-label="Download"
-        title="Download"
+        aria-label={translateUI("Download")}
+        title={translateUI("Download")}
         onClick={onDownload}
         className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40"
       >
@@ -102,8 +104,8 @@ function FileActions({
       <button
         type="button"
         disabled={busy}
-        aria-label="Edit"
-        title="Edit"
+        aria-label={translateUI("Edit")}
+        title={translateUI("Edit")}
         onClick={onEdit}
         className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40"
       >
@@ -112,8 +114,8 @@ function FileActions({
       <button
         type="button"
         disabled={busy}
-        aria-label="Delete"
-        title="Delete"
+        aria-label={translateUI("Delete")}
+        title={translateUI("Delete")}
         onClick={onDelete}
         className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-danger/10 hover:text-danger disabled:opacity-40"
       >
@@ -130,6 +132,7 @@ export function MaterialsLibrary({
   title?: string;
   filterItems?: (items: MaterialUpload[]) => MaterialUpload[];
 }) {
+  const translateUI = useTranslate();
   const { streams: classStreams } = useClassRegistry();
   const { items, ready, updateItem, deleteItem, bumpDownloads } =
     useMaterialsStore();
@@ -248,7 +251,7 @@ export function MaterialsLibrary({
   }
 
   async function onDelete(item: MaterialUpload) {
-    if (!window.confirm(`Delete “${item.title}”?`)) return;
+    if (!window.confirm(translateUI(`Delete “${item.title}”?`))) return;
     setBusyId(item.id);
     try {
       await deleteItem(item.id);
@@ -266,7 +269,7 @@ export function MaterialsLibrary({
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by title, module, or uploader…"
+            placeholder={translateUI("Search by title, module, or uploader…")}
             className="h-10 w-full rounded-xl border border-border bg-background pl-9 pr-3 text-[13px] outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
           />
         </div>
@@ -277,23 +280,23 @@ export function MaterialsLibrary({
           }
           className="h-10 rounded-xl border border-border bg-background px-3 text-[13px] outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 sm:w-44"
         >
-          <option value="all">All types</option>
+          <option value="all">{translateUI("All types")}</option>
           {kinds.map((k) => (
             <option key={k.id} value={k.id}>
-              {k.label}
+              {translateUI(k.label)}
             </option>
           ))}
         </select>
         <div
           className="inline-flex h-10 items-center rounded-xl border border-border p-0.5"
           role="group"
-          aria-label="View mode"
+          aria-label={translateUI("View mode")}
         >
           <button
             type="button"
-            aria-label="List view"
+            aria-label={translateUI("List view")}
             aria-pressed={view === "list"}
-            title="List"
+            title={translateUI("List")}
             onClick={() => changeView("list")}
             className={cn(
               "inline-flex h-9 w-9 items-center justify-center rounded-[10px] transition",
@@ -306,9 +309,9 @@ export function MaterialsLibrary({
           </button>
           <button
             type="button"
-            aria-label="Card view"
+            aria-label={translateUI("Card view")}
             aria-pressed={view === "cards"}
-            title="Cards"
+            title={translateUI("Cards")}
             onClick={() => changeView("cards")}
             className={cn(
               "inline-flex h-9 w-9 items-center justify-center rounded-[10px] transition",
@@ -324,14 +327,14 @@ export function MaterialsLibrary({
 
       {message ? (
         <p className="rounded-xl border border-success/30 bg-success/10 px-3 py-2 text-[12px] font-medium text-success">
-          {message}
+          {translateUI(message)}
         </p>
       ) : null}
 
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="font-heading text-[13px] font-semibold">{title}</h2>
+        <h2 className="font-heading text-[13px] font-semibold">{translateUI(title)}</h2>
         <p className="text-[12px] tabular-nums text-muted-foreground">
-          {ready ? `${filtered.length} file${filtered.length === 1 ? "" : "s"}` : "Loading…"}
+          {translateUI(ready ? `${filtered.length} file${filtered.length === 1 ? "" : "s"}` : "Loading…")}
         </p>
       </div>
 
@@ -340,11 +343,11 @@ export function MaterialsLibrary({
           <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
             <FolderOpen className="h-4 w-4" />
           </span>
-          <p className="text-[13px] font-medium">No files found</p>
+          <p className="text-[13px] font-medium">{translateUI("No files found")}</p>
           <p className="max-w-xs text-[12px] text-muted-foreground">
-            {query || kindFilter !== "all"
+            {translateUI(query || kindFilter !== "all"
               ? "Try a different search or filter."
-              : "Publish your first file above — it will appear here and on student accounts."}
+              : "Publish your first file above — it will appear here and on student accounts.")}
           </p>
         </div>
       ) : view === "cards" ? (
@@ -367,7 +370,7 @@ export function MaterialsLibrary({
                       {item.title}
                     </h3>
                     <p className="mt-1 truncate text-[11px] text-muted-foreground">
-                      {courseModule?.code ?? "General"} · {item.size} · {item.uploadedBy}
+                      {translateUI(courseModule?.code ?? "General")} · {translateUI(item.size)} · {item.uploadedBy}
                     </p>
                   </div>
                 </div>
@@ -404,7 +407,7 @@ export function MaterialsLibrary({
                       {item.title}
                     </p>
                     <p className="truncate text-[11px] text-muted-foreground">
-                      {courseModule?.code ?? "General"} · {item.size} · {item.uploadedBy}
+                      {translateUI(courseModule?.code ?? "General")} · {translateUI(item.size)} · {item.uploadedBy}
                     </p>
                   </div>
                   <FileActions
@@ -426,12 +429,12 @@ export function MaterialsLibrary({
       <StaffModal
         open={!!editing}
         onClose={closeEdit}
-        title="Edit file"
-        description="Changes sync to students."
+        title={translateUI("Edit file")}
+        description={translateUI("Changes sync to students.")}
       >
         <form onSubmit={onSave} className="space-y-3">
           <label className="block space-y-1">
-            <span className="text-[11px] text-muted-foreground">Title</span>
+            <span className="text-[11px] text-muted-foreground">{translateUI("Title")}</span>
             <input
               required
               value={form.title}
@@ -441,7 +444,7 @@ export function MaterialsLibrary({
           </label>
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block space-y-1">
-              <span className="text-[11px] text-muted-foreground">Type</span>
+              <span className="text-[11px] text-muted-foreground">{translateUI("Type")}</span>
               <select
                 value={form.kind}
                 onChange={(e) =>
@@ -451,13 +454,13 @@ export function MaterialsLibrary({
               >
                 {kinds.map((k) => (
                   <option key={k.id} value={k.id}>
-                    {k.label}
+                    {translateUI(k.label)}
                   </option>
                 ))}
               </select>
             </label>
             <label className="block space-y-1">
-              <span className="text-[11px] text-muted-foreground">Status</span>
+              <span className="text-[11px] text-muted-foreground">{translateUI("Status")}</span>
               <select
                 value={form.status}
                 onChange={(e) =>
@@ -468,14 +471,14 @@ export function MaterialsLibrary({
                 }
                 className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px]"
               >
-                <option value="published">Published</option>
-                <option value="pending">Pending</option>
-                <option value="processing">Processing</option>
-                <option value="rejected">Rejected</option>
+                <option value="published">{translateUI("Published")}</option>
+                <option value="pending">{translateUI("Pending")}</option>
+                <option value="processing">{translateUI("Processing")}</option>
+                <option value="rejected">{translateUI("Rejected")}</option>
               </select>
             </label>
             <label className="block space-y-1">
-              <span className="text-[11px] text-muted-foreground">Module</span>
+              <span className="text-[11px] text-muted-foreground">{translateUI("Module")}</span>
               <select
                 value={form.moduleId}
                 onChange={(e) =>
@@ -485,13 +488,13 @@ export function MaterialsLibrary({
               >
                 {modules.map((m) => (
                   <option key={m.id} value={m.id}>
-                    {m.code}
+                    {translateUI(m.code)}
                   </option>
                 ))}
               </select>
             </label>
             <label className="block space-y-1">
-              <span className="text-[11px] text-muted-foreground">Stream</span>
+              <span className="text-[11px] text-muted-foreground">{translateUI("Stream")}</span>
               <select
                 value={form.streamId}
                 onChange={(e) =>
@@ -502,10 +505,10 @@ export function MaterialsLibrary({
                 }
                 className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px]"
               >
-                <option value="all" disabled>Select a particular class</option>
+                <option value="all" disabled>{translateUI("Select a particular class")}</option>
                 {classStreams.map((s) => (
                   <option key={s.id} value={s.id}>
-                    {s.label}
+                    {translateUI(s.label)}
                   </option>
                 ))}
               </select>
@@ -513,8 +516,7 @@ export function MaterialsLibrary({
           </div>
           <label className="block space-y-1">
             <span className="text-[11px] text-muted-foreground">
-              Replace file
-            </span>
+              {translateUI("Replace file")}</span>
             <input
               type="file"
               accept=".pdf,.ppt,.pptx,.doc,.docx,.png,.jpg,.jpeg,.zip,.txt,.md"
@@ -526,11 +528,9 @@ export function MaterialsLibrary({
           </label>
           <div className="flex justify-end gap-2 pt-1">
             <Button type="button" variant="outline" onClick={closeEdit}>
-              Cancel
-            </Button>
+              {translateUI("Cancel")}</Button>
             <Button type="submit" disabled={busyId === editing?.id}>
-              Save
-            </Button>
+              {translateUI("Save")}</Button>
           </div>
         </form>
       </StaffModal>

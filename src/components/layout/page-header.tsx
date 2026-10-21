@@ -1,3 +1,5 @@
+"use client";
+import { useTranslate } from "@/components/providers/language-provider";
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 
@@ -14,6 +16,7 @@ export function PageHeader({
   className?: string;
   size?: "md" | "lg";
 }) {
+  const translateUI = useTranslate();
   return (
     <div
       className={cn(
@@ -28,7 +31,7 @@ export function PageHeader({
             size === "lg" ? "text-xl" : "text-[15px]",
           )}
         >
-          {title}
+          {translateUI(title)}
         </h1>
         {description ? (
           <p
@@ -39,13 +42,13 @@ export function PageHeader({
                 : "mt-0.5 text-xs sm:text-[13px]",
             )}
           >
-            {description}
+            {translateUI(description)}
           </p>
         ) : null}
       </div>
       {actions ? (
         <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
-          {actions}
+          {translateUI(actions)}
         </div>
       ) : null}
     </div>

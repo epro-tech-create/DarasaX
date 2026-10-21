@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useCallback } from "react";
 import { PageHeader } from "@/components/layout/page-header";
 import { UploadWorkspace } from "@/components/staff/upload-workspace";
@@ -9,6 +10,7 @@ import { useStaffSession } from "@/lib/staff-auth";
 import type { MaterialUpload } from "@/types";
 
 export default function LecturerAnnouncementsPage() {
+  const translateUI = useTranslate();
   const { session } = useStaffSession();
   const active = getActiveLecturerStream();
   const locked =
@@ -31,12 +33,12 @@ export default function LecturerAnnouncementsPage() {
     <div className="space-y-6">
       <PageHeader
         size="lg"
-        title="Announcements"
-        description="Post class notices for your streams. Students see them in notifications and on the Announcements page."
+        title={translateUI("Announcements")}
+        description={translateUI("Post class notices for your streams. Students see them in notifications and on the Announcements page.")}
       />
       <UploadWorkspace
-        title="Post an announcement"
-        description="Title + optional file for one of your modules / the active class."
+        title={translateUI("Post an announcement")}
+        description={translateUI("Title + optional file for one of your modules / the active class.")}
         defaultKind="announcement"
         showStream={!locked}
         lockedStream={locked}
@@ -46,7 +48,7 @@ export default function LecturerAnnouncementsPage() {
         role="lecturer"
       />
       <MaterialsLibrary
-        title="Class announcements"
+        title={translateUI("Class announcements")}
         filterItems={filterItems}
       />
     </div>

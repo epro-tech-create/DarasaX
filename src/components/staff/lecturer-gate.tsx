@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -21,6 +22,7 @@ const BARE_PATHS = new Set([
  * before the teaching desk shell.
  */
 export function LecturerGate({ children }: { children: React.ReactNode }) {
+  const translateUI = useTranslate();
   const router = useRouter();
   const pathname = usePathname();
   const { session, ready } = useStaffSession();
@@ -89,7 +91,7 @@ export function LecturerGate({ children }: { children: React.ReactNode }) {
     );
   }
 
-  return <>{children}</>;
+  return <>{translateUI(children)}</>;
 }
 
 export function lecturerHomeOrBare(pathname: string) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
@@ -16,6 +17,7 @@ import { isPasswordStrongEnough } from "@/lib/auth/password";
 import { createClient } from "@/lib/supabase/client";
 
 export default function SignupPage() {
+  const translateUI = useTranslate();
   const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -103,52 +105,46 @@ export default function SignupPage() {
     <AuthShell
       title={
         <>
-          Create your
-          <br />
-          academic home.
-        </>
+          {translateUI("Create your")}<br />
+          {translateUI("academic home.")}</>
       }
       subtitle="Sign up in minutes, join your class, and keep every module organized from day one."
     >
       <AuthSteps current="account" />
       <h1 className="font-heading text-xl font-semibold tracking-tight">
-        Create account
-      </h1>
+        {translateUI("Create account")}</h1>
       <p className="mt-1 text-sm text-muted-foreground sm:mt-0.5 sm:text-[11px]">
-        Start with your student details.
-      </p>
+        {translateUI("Start with your student details.")}</p>
 
       <form className="mt-5 space-y-3.5 sm:mt-3 sm:space-y-2.5" onSubmit={onSubmit} noValidate>
-        {error ? <AuthAlert message={error} /> : null}
+        {error ? <AuthAlert message={translateUI(error)} /> : null}
 
         <label className="block text-sm font-medium sm:text-[11px]">
-          Full Name
-          <input
+          {translateUI("Full Name")}<input
             required
             autoComplete="name"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             className="focus-ring mt-1.5 h-11 w-full rounded-[10px] border border-border bg-card px-3 text-[15px] sm:mt-1 sm:h-9 sm:rounded-[9px] sm:px-2.5 sm:text-[13px]"
-            placeholder="Ezekiel Mwamba"
+            placeholder={translateUI("Ezekiel Mwamba")}
           />
         </label>
 
         <label className="block text-sm font-medium sm:text-[11px]">
-          Email
-          <input
+          {translateUI("Email")}<input
             type="email"
             required
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="focus-ring mt-1.5 h-11 w-full rounded-[10px] border border-border bg-card px-3 text-[15px] sm:mt-1 sm:h-9 sm:rounded-[9px] sm:px-2.5 sm:text-[13px]"
-            placeholder="you@student.university.ac.tz"
+            placeholder={translateUI("you@student.university.ac.tz")}
           />
         </label>
 
         <PasswordField
           id="signup-password"
-          label="Password"
+          label={translateUI("Password")}
           value={password}
           onChange={setPassword}
           autoComplete="new-password"
@@ -157,31 +153,29 @@ export default function SignupPage() {
 
         <PasswordField
           id="signup-confirm"
-          label="Confirm Password"
+          label={translateUI("Confirm Password")}
           value={confirm}
           onChange={setConfirm}
           autoComplete="new-password"
           error={confirm && confirm !== password ? "Passwords do not match." : undefined}
         />
 
-        <AuthSubmitButton loading={loading} loadingText="Creating account...">
-          Create Account
-        </AuthSubmitButton>
+        <AuthSubmitButton loading={loading} loadingText={translateUI("Creating account...")}>
+          {translateUI("Create Account")}</AuthSubmitButton>
       </form>
 
       <div className="my-5 flex items-center gap-3 sm:my-3">
         <span className="h-px flex-1 bg-border" />
-        <span className="text-xs text-muted-foreground sm:text-[10px]">OR</span>
+        <span className="text-xs text-muted-foreground sm:text-[10px]">{translateUI("OR")}</span>
         <span className="h-px flex-1 bg-border" />
       </div>
 
       <GoogleButton onClick={onGoogle} loading={googleLoading} />
 
       <p className="mt-5 text-center text-sm text-muted-foreground sm:mt-3 sm:text-[11px]">
-        Already have an account?{" "}
+        {translateUI("Already have an account?")}{" "}
         <Link href="/login" className="font-medium text-primary">
-          Sign in
-        </Link>
+          {translateUI("Sign in")}</Link>
       </p>
     </AuthShell>
   );

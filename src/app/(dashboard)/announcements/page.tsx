@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useMemo, useState } from "react";
 import { AnnouncementCard } from "@/components/announcements/announcement-card";
 import { PageHeader } from "@/components/layout/page-header";
@@ -30,6 +31,7 @@ const categories: Array<{
 ];
 
 export default function AnnouncementsPage() {
+  const translateUI = useTranslate();
   const { published, ready } = useMaterialsStore();
   const [category, setCategory] = useState<(typeof categories)[number]["id"]>(
     "all",
@@ -64,30 +66,29 @@ export default function AnnouncementsPage() {
   return (
     <div>
       <PageHeader
-        title="Announcements"
-        description="Important updates from your classes and campus."
+        title={translateUI("Announcements")}
+        description={translateUI("Important updates from your classes and campus.")}
       />
 
       <div className="mb-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
         <div className="surface rounded-[14px] p-3">
-          <p className="text-[10px] text-muted-foreground">Total</p>
+          <p className="text-[10px] text-muted-foreground">{translateUI("Total")}</p>
           <p className="mt-0.5 font-heading text-[15px] font-semibold">
-            {announcements.length}
+            {translateUI(announcements.length)}
           </p>
         </div>
         <div className="surface rounded-[14px] p-3">
           <p className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
             <Pin className="h-3 w-3 text-primary" />
-            Pinned
-          </p>
+            {translateUI("Pinned")}</p>
           <p className="mt-0.5 font-heading text-[15px] font-semibold text-primary">
-            {pinnedCount}
+            {translateUI(pinnedCount)}
           </p>
         </div>
         <div className="surface col-span-2 rounded-[14px] p-3 sm:col-span-1">
-          <p className="text-[10px] text-muted-foreground">Showing</p>
+          <p className="text-[10px] text-muted-foreground">{translateUI("Showing")}</p>
           <p className="mt-0.5 font-heading text-[15px] font-semibold">
-            {filtered.length}
+            {translateUI(filtered.length)}
           </p>
         </div>
       </div>
@@ -109,7 +110,7 @@ export default function AnnouncementsPage() {
               )}
             >
               <Icon className="h-3.5 w-3.5" />
-              {item.label}
+              {translateUI(item.label)}
             </button>
           );
         })}
@@ -118,11 +119,11 @@ export default function AnnouncementsPage() {
       {filtered.length === 0 ? (
         <EmptyState
           icon={Megaphone}
-          title={ready ? "No announcements" : "Loading announcements"}
+          title={translateUI(ready ? "No announcements" : "Loading announcements")}
           description={
-            ready
+            translateUI(ready
               ? "You’re all caught up. New posts will appear here."
-              : "Checking for new posts."
+              : "Checking for new posts.")
           }
         />
       ) : (

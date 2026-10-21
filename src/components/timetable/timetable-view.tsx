@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useMemo, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -67,6 +68,7 @@ function ClassBlock({
   isNext?: boolean;
   compact?: boolean;
 }) {
+  const translateUI = useTranslate();
   const courseModule = getModule(entry.moduleId);
   const accent = courseModule?.accent ?? "#1E88E5";
 
@@ -102,8 +104,7 @@ function ClassBlock({
           </p>
           {isNext ? (
             <span className="shrink-0 rounded-md bg-primary/15 px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-primary">
-              Next
-            </span>
+              {translateUI("Next")}</span>
           ) : null}
         </div>
         <p
@@ -112,12 +113,12 @@ function ClassBlock({
             compact ? "text-[9px]" : "text-[10px]",
           )}
         >
-          {formatTime(entry.startTime)} – {formatTime(entry.endTime)}
+          {translateUI(formatTime(entry.startTime))} – {translateUI(formatTime(entry.endTime))}
         </p>
         {!compact ? (
           <p className="mt-auto truncate pt-1 text-[10px] text-muted-foreground">
             {entry.room}
-            {courseModule?.code ? ` · ${courseModule.code}` : ""}
+            {translateUI(courseModule?.code ? ` · ${courseModule.code}` : "")}
           </p>
         ) : (
           <p className="mt-auto truncate text-[9px] text-muted-foreground">
@@ -130,6 +131,7 @@ function ClassBlock({
 }
 
 export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStream, onEdit, actions }: { initialStream?: ClassStreamId; lockedStream?: ClassStreamId; onEdit?: (entry: TimetableEntry) => void; actions?: ReactNode }) {
+  const translateUI = useTranslate();
   const [view, setView] = useState<"today" | "week">("week");
   const [browsingStream, setBrowsingStream] = useState<ClassStreamId | null>(
     null,
@@ -187,8 +189,8 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Timetable"
-        description={lockedStream ? "Your class schedule. Select a session to edit it." : "Pick your stream to load the right weekly schedule."}
+        title={translateUI("Timetable")}
+        description={translateUI(lockedStream ? "Your class schedule. Select a session to edit it." : "Pick your stream to load the right weekly schedule.")}
         actions={
           <div className="flex flex-wrap items-center gap-2">
             {actions}
@@ -216,10 +218,9 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
       <div className="surface flex flex-col gap-3 rounded-2xl p-3.5 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-            Class stream
-          </p>
+            {translateUI("Class stream")}</p>
           <p className="mt-0.5 font-heading text-[14px] font-semibold">
-            {selectedStream.label}
+            {translateUI(selectedStream.label)}
           </p>
           <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
             {selectedStream.isEvening ? (
@@ -227,26 +228,25 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
             ) : (
               <Sun className="h-3 w-3 text-primary" />
             )}
-            {selectedStream.description}
+            {translateUI(selectedStream.description)}
           </p>
         </div>
         <label className="flex w-full flex-col gap-1 sm:w-auto sm:min-w-[240px]">
           <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-            Select stream
-          </span>
+            {translateUI("Select stream")}</span>
           <select
             value={streamId}
             disabled={Boolean(lockedStream)}
             onChange={(event) =>
               setBrowsingStream(event.target.value as ClassStreamId)
             }
-            aria-label="View class timetable"
+            aria-label={translateUI("View class timetable")}
             className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px] font-medium outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
           >
             {classStreams.map((stream) => (
               <option key={stream.id} value={stream.id}>
-                {stream.label}
-                {stream.isEvening ? " (Evening)" : ""}
+                {translateUI(stream.label)}
+                {translateUI(stream.isEvening ? " (Evening)" : "")}
               </option>
             ))}
           </select>
@@ -265,18 +265,18 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
             label: "This week",
             value: String(weekEntries.length),
             hint: selectedStream.isEvening
-              ? "Evening sessions"
-              : "Mon – Fri sessions",
+              ? translateUI("Evening sessions")
+              : translateUI("Mon – Fri sessions"),
             icon: Clock3,
           },
           {
             label: "Next up",
             value: next
               ? (getModule(next.entry.moduleId)?.code ?? "—")
-              : "Free",
+              : translateUI("Free"),
             hint: next
               ? `${formatTime(next.entry.startTime)} · ${next.entry.room}`
-              : "Nothing scheduled",
+              : translateUI("Nothing scheduled"),
             icon: Sparkles,
           },
         ].map((stat) => (
@@ -288,13 +288,13 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
             <div className="relative flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-                  {stat.label}
+                  {translateUI(stat.label)}
                 </p>
                 <p className="mt-1 truncate font-heading text-xl font-semibold tracking-tight">
-                  {stat.value}
+                  {translateUI(stat.value)}
                 </p>
                 <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
-                  {stat.hint}
+                  {translateUI(stat.hint)}
                 </p>
               </div>
               <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -316,21 +316,19 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
           >
             <div className="mb-3 flex items-center justify-between">
               <h3 className="font-heading text-[15px] font-semibold">
-                {dayFull[today]}
+                {translateUI(dayFull[today])}
               </h3>
               <p className="text-[11px] text-muted-foreground">
-                {todayEntries.length} session
-                {todayEntries.length === 1 ? "" : "s"} · {selectedStream.label}
+                {translateUI(`${todayEntries.length} session${todayEntries.length === 1 ? "" : "s"}`)} · {translateUI(selectedStream.label)}
               </p>
             </div>
 
             {todayEntries.length === 0 ? (
               <div className="surface rounded-[20px] px-5 py-12 text-center">
                 <CalendarDays className="mx-auto h-8 w-8 text-muted-foreground/45" />
-                <p className="mt-3 text-[13px] font-medium">No classes today</p>
+                <p className="mt-3 text-[13px] font-medium">{translateUI("No classes today")}</p>
                 <p className="mt-1 text-[12px] text-muted-foreground">
-                  Nothing scheduled for {selectedStream.label} today.
-                </p>
+                  {translateUI("Nothing scheduled for ")}{translateUI(selectedStream.label)} {translateUI(" today.")}</p>
               </div>
             ) : (
               <div className="relative space-y-0 pl-1">
@@ -371,18 +369,18 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
                               {courseModule?.name}
                             </p>
                             <p className="mt-0.5 text-[11px] text-muted-foreground">
-                              {courseModule?.code} ·{" "}
-                              {durationLabel(entry.startTime, entry.endTime)}
+                              {translateUI(courseModule?.code)} ·{" "}
+                              {translateUI(durationLabel(entry.startTime, entry.endTime))}
                             </p>
                           </div>
-                          {onEdit && <button type="button" className="focus-ring rounded-lg px-2 py-1 text-xs font-semibold text-primary" onClick={() => onEdit(entry)}>Edit</button>}
-                          {isNext ? <Badge tone="primary">Next</Badge> : null}
+                          {onEdit && <button type="button" className="focus-ring rounded-lg px-2 py-1 text-xs font-semibold text-primary" onClick={() => onEdit(entry)}>{translateUI("Edit")}</button>}
+                          {isNext ? <Badge tone="primary">{translateUI("Next")}</Badge> : null}
                         </div>
                         <div className="mt-2.5 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
                           <span className="inline-flex items-center gap-1">
                             <Clock3 className="h-3 w-3" />
-                            {formatTime(entry.startTime)} —{" "}
-                            {formatTime(entry.endTime)}
+                            {translateUI(formatTime(entry.startTime))} —{" "}
+                            {translateUI(formatTime(entry.endTime))}
                           </span>
                           <span className="inline-flex items-center gap-1">
                             <MapPin className="h-3 w-3" />
@@ -426,19 +424,17 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
                     <div className="flex items-center justify-between border-b border-border/70 bg-muted/30 px-3.5 py-2.5">
                       <div>
                         <p className="font-heading text-[13px] font-semibold">
-                          {dayFull[day]}
+                          {translateUI(dayFull[day])}
                         </p>
                         <p className="text-[10px] text-muted-foreground">
-                          {entries.length} class
-                          {entries.length === 1 ? "" : "es"}
+                          {translateUI(`${entries.length} class${entries.length === 1 ? "" : "es"}`)}
                         </p>
                       </div>
-                      {isToday ? <Badge tone="primary">Today</Badge> : null}
+                      {isToday ? <Badge tone="primary">{translateUI("Today")}</Badge> : null}
                     </div>
                     {entries.length === 0 ? (
                       <p className="px-3.5 py-6 text-center text-[11px] text-muted-foreground">
-                        Free day
-                      </p>
+                        {translateUI("Free day")}</p>
                     ) : (
                       <div className="divide-y divide-border/60">
                         {entries.map((entry) => {
@@ -458,8 +454,8 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
                                   {courseModule?.name}
                                 </p>
                                 <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
-                                  {formatTime(entry.startTime)} –{" "}
-                                  {formatTime(entry.endTime)} · {entry.room}
+                                  {translateUI(formatTime(entry.startTime))} –{" "}
+                                  {translateUI(formatTime(entry.endTime))} · {entry.room}
                                 </p>
                               </div>
                             </div>
@@ -476,22 +472,19 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/70 bg-muted/25 px-4 py-3">
                 <div>
                   <p className="font-heading text-[13px] font-semibold">
-                    Weekly schedule
-                  </p>
+                    {translateUI("Weekly schedule")}</p>
                   <p className="text-[11px] text-muted-foreground">
-                    07:00 – 21:00 · {weekEntries.length} sessions ·{" "}
-                    {selectedStream.label}
+                    07:00 – 21:00 · {translateUI(weekEntries.length)} {translateUI(" sessions ·")}{" "}
+                    {translateUI(selectedStream.label)}
                   </p>
                 </div>
                 <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
                   <span className="inline-flex items-center gap-1.5">
                     <span className="h-2 w-2 rounded-full bg-primary" />
-                    Today
-                  </span>
+                    {translateUI("Today")}</span>
                   <span className="inline-flex items-center gap-1.5">
                     <span className="h-0.5 w-4 rounded-full bg-rose-400" />
-                    Now
-                  </span>
+                    {translateUI("Now")}</span>
                 </div>
               </div>
 
@@ -522,15 +515,14 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
                             isToday ? "text-primary" : "text-muted-foreground",
                           )}
                         >
-                          {dayNames[day]}
+                          {translateUI(dayNames[day])}
                         </p>
                         <p className="mt-0.5 text-[10px] text-muted-foreground">
-                          {count} class{count === 1 ? "" : "es"}
+                          {translateUI(`${count} class${count === 1 ? "" : "es"}`)}
                         </p>
                         {isToday ? (
                           <span className="mt-1.5 inline-flex rounded-full bg-primary px-2 py-0.5 text-[9px] font-semibold text-primary-foreground">
-                            Today
-                          </span>
+                            {translateUI("Today")}</span>
                         ) : null}
                       </div>
                     );
@@ -552,7 +544,7 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
                                 isFirst ? "mt-1" : "-translate-y-1/2",
                               )}
                             >
-                              {String(hour).padStart(2, "0")}:00
+                              {translateUI(String(hour).padStart(2, "0"))}:00
                             </span>
                           </div>
                         );
@@ -612,7 +604,7 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
                                 className="absolute inset-x-1.5 z-10"
                                 style={{ top, height }}
                               >
-                                {onEdit ? <button type="button" className="focus-ring block h-full w-full rounded-xl text-left" aria-label={`Edit ${getModule(entry.moduleId)?.name ?? "session"} ${entry.startTime}`} onClick={() => onEdit(entry)}>
+                                {onEdit ? <button type="button" className="focus-ring block h-full w-full rounded-xl text-left" aria-label={`Edit ${getModule(entry.moduleId)?.name ?? translateUI("session")} ${entry.startTime}`} onClick={() => onEdit(entry)}>
                                   <ClassBlock entry={entry} isNext={next?.entry.id === entry.id} compact={height < 56} />
                                 </button> : <ClassBlock entry={entry} isNext={next?.entry.id === entry.id} compact={height < 56} />}
                               </div>

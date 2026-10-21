@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useState, type ReactNode } from "react";
 import { CheckCircle2, FileUp, UploadCloud } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,7 @@ export function UploadWorkspace({
   allowedStreamIds?: ClassStreamId[];
   onBusyChange?: (busy: boolean) => void;
 }) {
+  const translateUI = useTranslate();
   const { streams: classStreams } = useClassRegistry();
   const { publish } = useMaterialsStore();
   const catalog = (() => {
@@ -114,8 +116,8 @@ export function UploadWorkspace({
     <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)]">
       <div className="surface min-w-0 rounded-[20px] p-4 sm:p-5">
         <div className="mb-4">
-          <h2 className="font-heading text-[15px] font-semibold tracking-tight">{title}</h2>
-          <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-muted-foreground">{description}</p>
+          <h2 className="font-heading text-[15px] font-semibold tracking-tight">{translateUI(title)}</h2>
+          <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-muted-foreground">{translateUI(description)}</p>
         </div>
 
         <label
@@ -134,28 +136,28 @@ export function UploadWorkspace({
             <UploadCloud className="h-5 w-5" />
           </span>
           <p className="mt-3 max-w-full truncate text-[13px] font-semibold">
-            {file ? file.name : "Drop a file here or click to browse"}
+            {file ? file.name : translateUI("Drop a file here or click to browse")}
           </p>
           <p className="mt-1 max-w-sm text-[11px] leading-snug text-muted-foreground">
-            {file
+            {translateUI(file
               ? `${(file.size / 1024).toFixed(1)} KB · stored so students (and you) can view or download it.`
-              : "PDF, slides, docs, images, or ZIP. Maximum 500 MB per file."}
+              : "PDF, slides, docs, images, or ZIP. Maximum 500 MB per file.")}
           </p>
         </label>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <label className="block space-y-1.5 sm:col-span-2">
-            <span className="text-[11px] font-medium text-muted-foreground">Title</span>
+            <span className="text-[11px] font-medium text-muted-foreground">{translateUI("Title")}</span>
             <input
               value={titleValue}
               onChange={(e) => setTitleValue(e.target.value)}
-              placeholder="e.g. Topic 04 — Fourier notes"
+              placeholder={translateUI("e.g. Topic 04 — Fourier notes")}
               className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
           </label>
 
           <label className="block space-y-1.5">
-            <span className="text-[11px] font-medium text-muted-foreground">Type</span>
+            <span className="text-[11px] font-medium text-muted-foreground">{translateUI("Type")}</span>
             <select
               value={kind}
               onChange={(e) => setKind(e.target.value as UploadKind)}
@@ -163,14 +165,14 @@ export function UploadWorkspace({
             >
               {kinds.map((k) => (
                 <option key={k.id} value={k.id}>
-                  {k.label}
+                  {translateUI(k.label)}
                 </option>
               ))}
             </select>
           </label>
 
           <label className="block space-y-1.5">
-            <span className="text-[11px] font-medium text-muted-foreground">Module</span>
+            <span className="text-[11px] font-medium text-muted-foreground">{translateUI("Module")}</span>
             <select
               value={moduleId}
               onChange={(e) => setModuleId(e.target.value)}
@@ -178,11 +180,11 @@ export function UploadWorkspace({
               disabled={catalog.length === 0}
             >
               {catalog.length === 0 ? (
-                <option value="">No modules assigned</option>
+                <option value="">{translateUI("No modules assigned")}</option>
               ) : null}
               {catalog.map((m) => (
                 <option key={m.id} value={m.id}>
-                  {m.code} · {m.name}
+                  {translateUI(m.code)} · {m.name}
                 </option>
               ))}
             </select>
@@ -191,8 +193,7 @@ export function UploadWorkspace({
           {showStream && !lockedStream ? (
             <label className="block space-y-1.5 sm:col-span-2">
               <span className="text-[11px] font-medium text-muted-foreground">
-                Target stream
-              </span>
+                {translateUI("Target stream")}</span>
               <select
                 value={streamId}
                 onChange={(e) =>
@@ -202,8 +203,8 @@ export function UploadWorkspace({
               >
                 {streamOptions.map((s) => (
                   <option key={s.id} value={s.id}>
-                    {s.label}
-                    {s.isEvening ? " (Evening)" : ""}
+                    {translateUI(s.label)}
+                    {translateUI(s.isEvening ? " (Evening)" : "")}
                   </option>
                 ))}
               </select>
@@ -211,12 +212,11 @@ export function UploadWorkspace({
           ) : null}
         </div>
 
-        {kind === "assignment" && <label className="mt-4 block text-sm font-medium">Assignment deadline (optional)
-          <input type="datetime-local" value={dueAt} onChange={(event) => setDueAt(event.target.value)} className="focus-ring mt-2 h-11 w-full rounded-xl border border-border bg-background px-3" />
+        {kind === "assignment" && <label className="mt-4 block text-sm font-medium">{translateUI("Assignment deadline (optional)")}<input type="datetime-local" value={dueAt} onChange={(event) => setDueAt(event.target.value)} className="focus-ring mt-2 h-11 w-full rounded-xl border border-border bg-background px-3" />
         </label>}
         {error ? (
           <p className="mt-3 rounded-xl border border-danger/30 bg-danger/10 px-3 py-2 text-[12px] font-medium text-danger">
-            {error}
+            {translateUI(error)}
           </p>
         ) : null}
 
@@ -227,7 +227,7 @@ export function UploadWorkspace({
             disabled={!file || !titleValue.trim() || publishing || !moduleId}
           >
             <FileUp className="h-3.5 w-3.5" />
-            {publishing ? "Publishing…" : "Publish to students"}
+            {translateUI(publishing ? "Publishing…" : "Publish to students")}
           </Button>
           <Button
             type="button"
@@ -239,16 +239,14 @@ export function UploadWorkspace({
               setError("");
             }}
           >
-            Clear
-          </Button>
+            {translateUI("Clear")}</Button>
           {published ? (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-[12px] font-medium text-success">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              Live on student Modules / Past Papers
-            </span>
+              {translateUI("Live on student Modules / Past Papers")}</span>
           ) : null}
         </div>
-        {footerNote ? <div className="mt-3">{footerNote}</div> : null}
+        {footerNote ? <div className="mt-3">{translateUI(footerNote)}</div> : null}
       </div>
 
       <aside className="flex min-w-0 flex-col gap-3">
@@ -263,20 +261,15 @@ export function UploadWorkspace({
             aria-hidden
           />
           <p className="relative text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70">
-            Student delivery
-          </p>
+            {translateUI("Student delivery")}</p>
           <p className="relative mt-2 font-heading text-[16px] font-semibold leading-snug tracking-tight">
-            One publish → student accounts
-          </p>
+            {translateUI("One publish → student accounts")}</p>
           <p className="relative mt-2 text-[12px] leading-relaxed text-white/85">
-            Pick the module carefully. Notes and slides appear on that module’s
-            Notes tab; past papers appear under Past Papers for the whole class.
-          </p>
+            {translateUI("Pick the module carefully. Notes and slides appear on that module’s Notes tab; past papers appear under Past Papers for the whole class.")}</p>
         </div>
         <div className="surface rounded-[20px] p-4 sm:p-5">
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-            Before you publish
-          </p>
+            {translateUI("Before you publish")}</p>
           <ul className="mt-3 space-y-2.5 text-[12px] text-muted-foreground">
             {[
               "Clear title students recognise",
@@ -285,7 +278,7 @@ export function UploadWorkspace({
             ].map((item) => (
               <li key={item} className="flex items-start gap-2">
                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                <span className="leading-snug">{item}</span>
+                <span className="leading-snug">{translateUI(item)}</span>
               </li>
             ))}
           </ul>

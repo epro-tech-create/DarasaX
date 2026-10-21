@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useMemo, useState } from "react";
 import { Archive, Download, Eye, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +21,7 @@ export function PastPapersBrowser({
   title?: string;
   description?: string;
 }) {
+  const translateUI = useTranslate();
   const [query, setQuery] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
   const { published, ready } = useMaterialsStore();
@@ -65,17 +67,17 @@ export function PastPapersBrowser({
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search past papers by title, module, or lecturer…"
+          placeholder={translateUI("Search past papers by title, module, or lecturer…")}
           className="h-10 w-full rounded-xl border border-border bg-background pl-9 pr-3 text-[13px] outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
         />
       </div>
 
       <StaffSection
-        title={title}
+        title={translateUI(title)}
         description={
-          ready
+          translateUI(ready
             ? `${filtered.length} paper${filtered.length === 1 ? "" : "s"} · ${description}`
-            : "Loading…"
+            : "Loading…")
         }
       >
         <div className="space-y-2">
@@ -84,11 +86,11 @@ export function PastPapersBrowser({
               <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
                 <Archive className="h-4 w-4" />
               </span>
-              <p className="text-[13px] font-medium">No past papers yet</p>
+              <p className="text-[13px] font-medium">{translateUI("No past papers yet")}</p>
               <p className="max-w-xs text-[12px] text-muted-foreground">
-                {query
+                {translateUI(query
                   ? "No papers match your search. Try different keywords."
-                  : "Upload one from the Upload page — students will see it here instantly."}
+                  : "Upload one from the Upload page — students will see it here instantly.")}
               </p>
             </div>
           ) : null}
@@ -104,12 +106,12 @@ export function PastPapersBrowser({
                 <div className="min-w-0">
                   <p className="truncate text-[13px] font-semibold">{item.title}</p>
                   <p className="mt-1 truncate text-[11px] text-muted-foreground">
-                    {module ? `${module.code} · ${module.name}` : "No module"} ·{" "}
-                    {item.uploadedBy} · {item.size}
+                    {module ? `${module.code} · ${module.name}` : translateUI("No module")} ·{" "}
+                    {item.uploadedBy} · {translateUI(item.size)}
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <Badge>{year}</Badge>
+                  <Badge>{translateUI(year)}</Badge>
                   <Button
                     size="sm"
                     variant="outline"
@@ -118,8 +120,7 @@ export function PastPapersBrowser({
                     onClick={() => void onView(item)}
                   >
                     <Eye className="h-3.5 w-3.5" />
-                    View
-                  </Button>
+                    {translateUI("View")}</Button>
                   <Button
                     size="sm"
                     type="button"
@@ -127,8 +128,7 @@ export function PastPapersBrowser({
                     onClick={() => void onDownload(item)}
                   >
                     <Download className="h-3.5 w-3.5" />
-                    Download
-                  </Button>
+                    {translateUI("Download")}</Button>
                 </div>
               </div>
             );

@@ -1,4 +1,6 @@
 "use client";
+
+import { useTranslate } from "@/components/providers/language-provider";
 import { useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Copy, Download, Share2 } from "lucide-react";
@@ -16,6 +18,7 @@ export function MaterialShareButton({
   token?: string;
   compact?: boolean;
 }) {
+  const translateUI = useTranslate();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [url, setUrl] = useState("");
@@ -97,17 +100,17 @@ export function MaterialShareButton({
         size={compact ? "icon" : "sm"}
         type="button"
         variant={compact ? "ghost" : "outline"}
-        aria-label={`Share ${title}`}
+        aria-label={translateUI(`Share ${title}`)}
         onClick={() => void prepare()}
       >
         <Share2 className="h-4 w-4" />
-        {!compact && "Share"}
+        {translateUI(!compact && "Share")}
       </Button>
       <StaffModal
         open={open}
         onClose={() => setOpen(false)}
-        title="Share material"
-        description="Anyone with this link or QR code can view and download this file without signing in."
+        title={translateUI("Share material")}
+        description={translateUI("Anyone with this link or QR code can view and download this file without signing in.")}
       >
         <p className="mb-4 text-sm font-medium">{title}</p>
         {busy ? (
@@ -115,8 +118,7 @@ export function MaterialShareButton({
             role="status"
             className="py-8 text-center text-sm text-muted-foreground"
           >
-            Creating share link…
-          </p>
+            {translateUI("Creating share link…")}</p>
         ) : url ? (
           <div className="space-y-4">
             <div className="mx-auto w-fit rounded-2xl border border-border bg-white p-3">
@@ -126,12 +128,11 @@ export function MaterialShareButton({
                 size={208}
                 level="M"
                 marginSize={4}
-                title={`Scan to open ${title}`}
+                title={translateUI(`Scan to open ${title}`)}
               />
             </div>
             <label className="block text-xs text-muted-foreground">
-              Share link
-              <input
+              {translateUI("Share link")}<input
                 ref={input}
                 value={url}
                 readOnly
@@ -142,30 +143,26 @@ export function MaterialShareButton({
             <div className="flex flex-wrap justify-center gap-2">
               <Button size="sm" onClick={() => void copy()}>
                 <Copy className="h-4 w-4" />
-                Copy link
-              </Button>
+                {translateUI("Copy link")}</Button>
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => void nativeShare()}
               >
                 <Share2 className="h-4 w-4" />
-                Send
-              </Button>
+                {translateUI("Send")}</Button>
               <Button size="sm" variant="outline" onClick={downloadQR}>
                 <Download className="h-4 w-4" />
-                Save QR
-              </Button>
+                {translateUI("Save QR")}</Button>
             </div>
           </div>
         ) : (
           <Button size="sm" variant="outline" onClick={() => void prepare()}>
-            Try again
-          </Button>
+            {translateUI("Try again")}</Button>
         )}
         {message && (
           <p role="status" className="mt-4 text-sm text-muted-foreground">
-            {message}
+            {translateUI(message)}
           </p>
         )}
       </StaffModal>

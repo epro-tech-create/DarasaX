@@ -1,3 +1,5 @@
+"use client";
+import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
 import type { Assignment, Module } from "@/types";
 import { Badge } from "@/components/ui/badge";
@@ -6,11 +8,12 @@ import { deadlineLabel, daysUntil, cn } from "@/lib/utils";
 import { ArrowUpRight, Clock3 } from "lucide-react";
 
 export function DeadlineBadge({ deadline }: { deadline: string }) {
-  if (!deadline) return <Badge tone="default">No deadline set</Badge>;
+  const translateUI = useTranslate();
+  if (!deadline) return <Badge tone="default">{translateUI("No deadline set")}</Badge>;
   const days = daysUntil(deadline);
   const tone =
     days < 0 || days <= 1 ? "danger" : days <= 3 ? "warning" : "success";
-  return <Badge tone={tone}>{deadlineLabel(deadline)}</Badge>;
+  return <Badge tone={tone}>{translateUI(deadlineLabel(deadline))}</Badge>;
 }
 
 export function AssignmentCard({
@@ -22,6 +25,7 @@ export function AssignmentCard({
   module?: Module;
   className?: string;
 }) {
+  const translateUI = useTranslate();
   return (
     <Link
       href={`/assignments/${assignment.id}`}
@@ -53,23 +57,23 @@ export function AssignmentCard({
             {assignment.priority}
           </Badge>
           {assignment.status === "completed" ? (
-            <Badge tone="success">Done</Badge>
+            <Badge tone="success">{translateUI("Done")}</Badge>
           ) : null}
         </div>
         <h3 className="font-heading text-[13px] font-semibold tracking-tight group-hover:text-primary sm:text-[14px]">
           {assignment.title}
         </h3>
         <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">
-          <span>{module?.name || "Module"}</span>
+          <span>{module?.name || translateUI("Module")}</span>
           <span className="inline-flex items-center gap-1">
             <Clock3 className="h-3 w-3" />
-            {assignment.deadline ? new Date(assignment.deadline).toLocaleString("en-GB", {
+            {assignment.deadline ? new Date(assignment.deadline).toLocaleString(translateUI.locale, {
               weekday: "short",
               day: "numeric",
               month: "short",
               hour: "2-digit",
               minute: "2-digit",
-            }) : "Deadline not specified"}
+            }) : translateUI("Deadline not specified")}
           </span>
         </p>
       </div>
@@ -80,8 +84,7 @@ export function AssignmentCard({
           className="pointer-events-none"
           tabIndex={-1}
         >
-          Open
-          <ArrowUpRight className="h-3.5 w-3.5" />
+          {translateUI("Open")}<ArrowUpRight className="h-3.5 w-3.5" />
         </Button>
       </div>
     </Link>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, FileText, BookOpen, ClipboardList, Archive, Megaphone } from "lucide-react";
@@ -27,6 +28,7 @@ export function SearchCommand({
   open: boolean;
   onClose: () => void;
 }) {
+  const translateUI = useTranslate();
   const router = useRouter();
   const [query, setQuery] = useState("");
 
@@ -103,7 +105,7 @@ export function SearchCommand({
       <button
         type="button"
         className="absolute inset-0 cursor-default"
-        aria-label="Close search"
+        aria-label={translateUI("Close search")}
         onClick={onClose}
       />
       <div className="relative w-full max-w-xl overflow-hidden rounded-[20px] border border-border bg-card shadow-2xl">
@@ -113,23 +115,21 @@ export function SearchCommand({
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search modules, notes, assignments..."
+            placeholder={translateUI("Search modules, notes, assignments...")}
             className="h-14 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
           <kbd className="rounded-md border border-border bg-muted px-1.5 py-0.5 text-[10px]">
-            ESC
-          </kbd>
+            {translateUI("ESC")}</kbd>
         </div>
         <div className="max-h-80 overflow-y-auto p-2">
           {query && results.length === 0 ? (
             <p className="px-3 py-8 text-center text-sm text-muted-foreground">
-              No results for “{query}”
+              {translateUI("No results for “")}{translateUI(query)}”
             </p>
           ) : null}
           {!query ? (
             <p className="px-3 py-8 text-center text-sm text-muted-foreground">
-              Type to search across your academic workspace
-            </p>
+              {translateUI("Type to search across your academic workspace")}</p>
           ) : null}
           {results.map((item) => {
             const Icon = item.icon;
@@ -151,7 +151,7 @@ export function SearchCommand({
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-medium">{item.title}</span>
                   <span className="block truncate text-xs text-muted-foreground">
-                    {item.subtitle}
+                    {translateUI(item.subtitle)}
                   </span>
                 </span>
               </button>

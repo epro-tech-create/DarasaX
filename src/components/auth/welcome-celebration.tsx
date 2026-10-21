@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -125,6 +126,7 @@ export function WelcomeCelebration({
   onContinue: () => void;
   tone?: "default" | "dark";
 }) {
+  const translateUI = useTranslate();
   const isDark = tone === "dark";
 
   return (
@@ -168,7 +170,7 @@ export function WelcomeCelebration({
           isDark && "text-white",
         )}
       >
-        {title}
+        {translateUI(title)}
       </motion.h1>
 
       <motion.p
@@ -180,7 +182,7 @@ export function WelcomeCelebration({
           isDark ? "text-white/65" : "text-muted-foreground",
         )}
       >
-        {subtitle}
+        {translateUI(subtitle)}
       </motion.p>
 
       <motion.div
@@ -190,7 +192,7 @@ export function WelcomeCelebration({
         className="relative z-10 mt-5 w-full max-w-xs"
       >
         <Button className="h-9 w-full text-[13px]" onClick={onContinue}>
-          {ctaLabel}
+          {translateUI(ctaLabel)}
         </Button>
       </motion.div>
     </div>

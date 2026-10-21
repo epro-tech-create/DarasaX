@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { notFound, useParams } from "next/navigation";
@@ -33,6 +34,7 @@ import { cn } from "@/lib/utils";
 const tabs = ["Overview", "Notes", "Assignments", "Past Papers", "Resources"] as const;
 
 export default function ModuleDetailPage() {
+  const translateUI = useTranslate();
   const params = useParams<{ id: string }>();
   const base = getModule(params.id);
   const [tab, setTab] = useState<(typeof tabs)[number]>("Overview");
@@ -73,7 +75,7 @@ export default function ModuleDetailPage() {
     <div>
       <PageHeader
         title={module.name}
-        description={`${module.code} · ${module.lecturer} · Semester ${module.semester}`}
+        description={translateUI(`${module.code} · ${module.lecturer} · Semester ${module.semester}`)}
         actions={<Badge tone="primary">{module.progress}% complete</Badge>}
       />
 
@@ -90,8 +92,8 @@ export default function ModuleDetailPage() {
             onClick={() => setTab(target as (typeof tabs)[number])}
             className="surface rounded-[18px] p-4 text-left transition hover:border-primary/30 hover:shadow-md hover:shadow-primary/10"
           >
-            <p className="text-sm text-muted-foreground">{label}</p>
-            <p className="mt-1 font-heading text-xl font-semibold">{value}</p>
+            <p className="text-sm text-muted-foreground">{translateUI(label)}</p>
+            <p className="mt-1 font-heading text-xl font-semibold">{translateUI(value)}</p>
           </button>
         ))}
       </div>
@@ -109,7 +111,7 @@ export default function ModuleDetailPage() {
                 : "bg-muted text-muted-foreground hover:text-foreground",
             )}
           >
-            {item}
+            {translateUI(item)}
           </button>
         ))}
       </div>
@@ -117,11 +119,10 @@ export default function ModuleDetailPage() {
       {tab === "Overview" ? (
         <section id="topics" className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h3 className="font-heading text-lg font-semibold">Topics</h3>
+            <h3 className="font-heading text-lg font-semibold">{translateUI("Topics")}</h3>
             {topics.length > 0 ? (
               <p className="text-sm text-muted-foreground">
-                Mark topics done to update module progress
-              </p>
+                {translateUI("Mark topics done to update module progress")}</p>
             ) : null}
           </div>
           {!topicsReady ? (
@@ -129,8 +130,8 @@ export default function ModuleDetailPage() {
           ) : topics.length === 0 ? (
             <EmptyState
               icon={BookOpen}
-              title="No topics yet"
-              description="Admin or your Class Rep adds the course outline under Topics. Once published, they appear here and drive your progress %."
+              title={translateUI("No topics yet")}
+              description={translateUI("Admin or your Class Rep adds the course outline under Topics. Once published, they appear here and drive your progress %.")}
             />
           ) : (
             topics.map((topic) => (
@@ -149,12 +150,11 @@ export default function ModuleDetailPage() {
                   )}
                   <div className="min-w-0">
                     <p className="font-medium group-hover:text-primary">
-                      Topic {String(topic.number).padStart(2, "0")} —{" "}
+                      {translateUI("Topic ")}{translateUI(String(topic.number).padStart(2, "0"))} —{" "}
                       {topic.title}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {topic.durationMinutes} min
-                    </p>
+                      {translateUI(topic.durationMinutes)} {translateUI(" min")}</p>
                   </div>
                 </Link>
                 <div className="flex shrink-0 items-center gap-2">
@@ -164,7 +164,7 @@ export default function ModuleDetailPage() {
                     type="button"
                     onClick={() => setCompleted(topic.id, !topic.completed)}
                   >
-                    {topic.completed ? "Done" : "Mark done"}
+                    {translateUI(topic.completed ? "Done" : "Mark done")}
                   </Button>
                   <ChevronRight className="hidden h-4 w-4 text-muted-foreground sm:block" />
                 </div>
@@ -177,15 +177,15 @@ export default function ModuleDetailPage() {
       {tab === "Notes" ? (
         <section className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h3 className="font-heading text-lg font-semibold">Notes & slides</h3>
+            <h3 className="font-heading text-lg font-semibold">{translateUI("Notes & slides")}</h3>
           </div>
           {!materialsReady ? (
             <LoadingList />
           ) : liveNotes.length === 0 ? (
             <EmptyState
               icon={FileText}
-              title="No notes yet"
-              description="When your class rep or admin uploads notes for this module, they will appear here."
+              title={translateUI("No notes yet")}
+              description={translateUI("When your class rep or admin uploads notes for this module, they will appear here.")}
             />
           ) : (
             liveNotes.map((item) => (
@@ -200,8 +200,8 @@ export default function ModuleDetailPage() {
           {moduleAssignments.length === 0 ? (
             <EmptyState
               icon={ClipboardList}
-              title="No assignments"
-              description="Assignments for this module will show up here."
+              title={translateUI("No assignments")}
+              description={translateUI("Assignments for this module will show up here.")}
             />
           ) : (
             moduleAssignments.map((a) => (
@@ -218,8 +218,8 @@ export default function ModuleDetailPage() {
           ) : livePapers.length === 0 ? (
             <EmptyState
               icon={ScrollText}
-              title="No past papers yet"
-              description="Published past papers for this module will appear here."
+              title={translateUI("No past papers yet")}
+              description={translateUI("Published past papers for this module will appear here.")}
             />
           ) : (
             livePapers.map((item) => (
@@ -231,14 +231,14 @@ export default function ModuleDetailPage() {
 
       {tab === "Resources" ? (
         <div className="space-y-3">
-          <h3 className="font-heading text-lg font-semibold">All materials</h3>
+          <h3 className="font-heading text-lg font-semibold">{translateUI("All materials")}</h3>
           {!materialsReady ? (
             <LoadingList />
           ) : liveAll.length === 0 ? (
             <EmptyState
               icon={FileText}
-              title="Nothing uploaded yet"
-              description="Staff uploads for this module will show here for the whole class."
+              title={translateUI("Nothing uploaded yet")}
+              description={translateUI("Staff uploads for this module will show here for the whole class.")}
             />
           ) : (
             liveAll.map((item) => (
@@ -252,8 +252,9 @@ export default function ModuleDetailPage() {
 }
 
 function LoadingList() {
+  const translateUI = useTranslate();
   return (
-    <div className="space-y-3" aria-label="Loading">
+    <div className="space-y-3" aria-label={translateUI("Loading")}>
       {[0, 1, 2].map((i) => (
         <div
           key={i}

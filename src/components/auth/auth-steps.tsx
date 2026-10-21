@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import {
   Check,
   CircleUserRound,
@@ -25,10 +26,11 @@ export function AuthSteps({
   current: AuthJourneyStep;
   className?: string;
 }) {
+  const translateUI = useTranslate();
   const index = JOURNEY.findIndex((s) => s.id === current);
 
   return (
-    <nav aria-label="Sign up progress" className={cn("mb-3", className)}>
+    <nav aria-label={translateUI("Sign up progress")} className={cn("mb-3", className)}>
       <ol className="grid grid-cols-4 gap-1">
         {JOURNEY.map((step, i) => {
           const Icon = step.icon;
@@ -61,7 +63,7 @@ export function AuthSteps({
                       : "text-muted-foreground",
                 )}
               >
-                {step.label}
+                {translateUI(step.label)}
               </span>
             </li>
           );

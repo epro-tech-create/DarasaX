@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
@@ -11,6 +12,7 @@ import { isValidEmail, normalizeEmail } from "@/lib/auth/email";
 import { createClient } from "@/lib/supabase/client";
 
 export default function ForgotPasswordPage() {
+  const translateUI = useTranslate();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
@@ -71,42 +73,37 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthShell
-      title="Forgot your password?"
+      title={translateUI("Forgot your password?")}
       subtitle="Enter your email and we’ll send a verification code to reset it."
     >
       <h1 className="font-heading text-xl font-semibold tracking-tight">
-        Forgot your password?
-      </h1>
+        {translateUI("Forgot your password?")}</h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        Enter the email associated with your DarasaX account.
-      </p>
+        {translateUI("Enter the email associated with your DarasaX account.")}</p>
 
       <form className="mt-6 space-y-3.5" onSubmit={onSubmit} noValidate>
-        {error ? <AuthAlert message={error} /> : null}
+        {error ? <AuthAlert message={translateUI(error)} /> : null}
 
         <label className="block text-sm font-medium">
-          Email
-          <input
+          {translateUI("Email")}<input
             type="email"
             required
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="focus-ring mt-1.5 h-11 w-full rounded-[12px] border border-border bg-card px-3.5 text-sm"
-            placeholder="you@student.university.ac.tz"
+            placeholder={translateUI("you@student.university.ac.tz")}
           />
         </label>
 
-        <AuthSubmitButton loading={loading} loadingText="Sending code...">
-          Send Verification Code
-        </AuthSubmitButton>
+        <AuthSubmitButton loading={loading} loadingText={translateUI("Sending code...")}>
+          {translateUI("Send Verification Code")}</AuthSubmitButton>
       </form>
 
       <p className="mt-5 text-center text-sm text-muted-foreground">
-        Remembered it?{" "}
+        {translateUI("Remembered it?")}{" "}
         <Link href="/login" className="font-medium text-primary">
-          Sign in
-        </Link>
+          {translateUI("Sign in")}</Link>
       </p>
     </AuthShell>
   );

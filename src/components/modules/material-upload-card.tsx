@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useState } from "react";
 import {
   Download,
@@ -27,6 +28,7 @@ const kindMeta: Record<
 };
 
 export function MaterialUploadCard({ item }: { item: MaterialUpload }) {
+  const translateUI = useTranslate();
   const [downloading, setDownloading] = useState(false);
   async function handleDownload() {
     if (downloading) return;
@@ -48,12 +50,12 @@ export function MaterialUploadCard({ item }: { item: MaterialUpload }) {
         </div>
         <div className="min-w-0">
           <div className="mb-1 flex flex-wrap items-center gap-2">
-            <Badge tone={meta.tone}>{meta.label}</Badge>
-            <span className="text-xs text-muted-foreground">{item.size}</span>
+            <Badge tone={meta.tone}>{translateUI(meta.label)}</Badge>
+            <span className="text-xs text-muted-foreground">{translateUI(item.size)}</span>
           </div>
           <h3 className="font-heading text-base font-semibold">{item.title}</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            Uploaded {formatRelativeTime(item.createdAt)} · {item.uploadedBy}
+            {translateUI("Uploaded ")}{translateUI(formatRelativeTime(item.createdAt))} · {item.uploadedBy}
           </p>
         </div>
       </div>
@@ -65,8 +67,7 @@ export function MaterialUploadCard({ item }: { item: MaterialUpload }) {
           onClick={() => void viewMaterial(item)}
         >
           <Eye className="h-4 w-4" />
-          View
-        </Button>
+          {translateUI("View")}</Button>
         <Button
           size="sm"
           type="button"
@@ -74,7 +75,7 @@ export function MaterialUploadCard({ item }: { item: MaterialUpload }) {
           onClick={() => void handleDownload()}
         >
           <Download className="h-4 w-4" />
-          {downloading ? "Downloading…" : "Download"}
+          {translateUI(downloading ? "Downloading…" : "Download")}
         </Button>
         {item.status === "published" &&
           ["notes", "slides", "assignment", "past_paper"].includes(

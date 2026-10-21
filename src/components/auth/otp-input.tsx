@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { cn } from "@/lib/utils";
 import {
   useEffect,
@@ -23,6 +24,7 @@ export function OtpInput({
   error?: boolean;
   autoFocus?: boolean;
 }) {
+  const translateUI = useTranslate();
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
   const digits = Array.from({ length }, (_, i) => value[i] ?? "");
 
@@ -77,7 +79,7 @@ export function OtpInput({
   }
 
   return (
-    <div className="flex justify-center gap-2 sm:gap-2.5" role="group" aria-label="Verification code">
+    <div className="flex justify-center gap-2 sm:gap-2.5" role="group" aria-label={translateUI("Verification code")}>
       {digits.map((digit, index) => (
         <input
           key={index}

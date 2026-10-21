@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "@/components/providers/theme-provider";
 import { useEffect, useState } from "react";
@@ -13,6 +14,7 @@ export function ThemeToggle({
   /** Use white styling for dark photo backgrounds */
   lightOnDark?: boolean;
 }) {
+  const translateUI = useTranslate();
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -31,7 +33,7 @@ export function ThemeToggle({
           : "border-border bg-card text-muted-foreground hover:text-foreground",
         className,
       )}
-      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      aria-label={translateUI(isDark ? "Switch to light mode" : "Switch to dark mode")}
     >
       {isDark ? <Sun className="h-[18px] w-[18px]" /> : <Moon className="h-[18px] w-[18px]" />}
     </button>

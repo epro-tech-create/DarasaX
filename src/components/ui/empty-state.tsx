@@ -1,3 +1,5 @@
+"use client";
+import { useTranslate } from "@/components/providers/language-provider";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "./button";
@@ -17,6 +19,7 @@ export function EmptyState({
   onAction?: () => void;
   className?: string;
 }) {
+  const translateUI = useTranslate();
   return (
     <div
       className={cn(
@@ -27,11 +30,11 @@ export function EmptyState({
       <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-primary">
         <Icon className="h-6 w-6" />
       </div>
-      <h3 className="font-heading text-base font-semibold">{title}</h3>
-      <p className="mt-2 max-w-sm text-sm text-muted-foreground">{description}</p>
+      <h3 className="font-heading text-base font-semibold">{translateUI(title)}</h3>
+      <p className="mt-2 max-w-sm text-sm text-muted-foreground">{translateUI(description)}</p>
       {actionLabel && onAction ? (
         <Button className="mt-5" onClick={onAction}>
-          {actionLabel}
+          {translateUI(actionLabel)}
         </Button>
       ) : null}
     </div>

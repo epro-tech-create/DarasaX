@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { classStreams } from "@/data/mock";
 import { useState } from "react";
 import { PageHeader } from "@/components/layout/page-header";
@@ -10,6 +11,7 @@ import { useMaterialsStore } from "@/lib/materials-store";
 import { useStaffSession } from "@/lib/staff-auth";
 
 export default function AdminAnnouncementsPage() {
+  const translateUI = useTranslate();
   const { session } = useStaffSession();
   const { items, publishNotice } = useMaterialsStore();
   const [streamId, setStreamId] = useState(classStreams[0].id);
@@ -52,58 +54,56 @@ export default function AdminAnnouncementsPage() {
 
   return (
     <div className="space-y-5">
-      <label className="mb-4 block text-sm font-medium">Recipient class
-        <select value={streamId} onChange={(event) => setStreamId(event.target.value as typeof streamId)} className="focus-ring ml-3 h-11 rounded-xl border border-border bg-background px-3">{classStreams.map((stream) => <option key={stream.id} value={stream.id}>{stream.label}</option>)}</select>
+      <label className="mb-4 block text-sm font-medium">{translateUI("Recipient class")}<select value={streamId} onChange={(event) => setStreamId(event.target.value as typeof streamId)} className="focus-ring ml-3 h-11 rounded-xl border border-border bg-background px-3">{classStreams.map((stream) => <option key={stream.id} value={stream.id}>{translateUI(stream.label)}</option>)}</select>
       </label>
       <PageHeader
-        title="Announcements"
-        description="Broadcast a notice to every stream. Students see it on Announcements and in notifications."
+        title={translateUI("Announcements")}
+        description={translateUI("Broadcast a notice to every stream. Students see it on Announcements and in notifications.")}
       />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="surface rounded-[20px] p-4 sm:p-5">
-          <h2 className="font-heading text-[14px] font-semibold">Compose</h2>
+          <h2 className="font-heading text-[14px] font-semibold">{translateUI("Compose")}</h2>
           <div className="mt-3 space-y-3">
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Headline"
+              placeholder={translateUI("Headline")}
               className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
             <textarea
               value={body}
               onChange={(e) => setBody(e.target.value)}
-              placeholder="Details students need…"
+              placeholder={translateUI("Details students need…")}
               rows={5}
               className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-[13px] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
             <Button type="button" disabled={busy} onClick={() => void publish()}>
-              {busy ? "Publishing…" : "Publish"}
+              {translateUI(busy ? "Publishing…" : "Publish")}
             </Button>
             {message ? (
-              <p className="text-[12px] font-medium text-success">{message}</p>
+              <p className="text-[12px] font-medium text-success">{translateUI(message)}</p>
             ) : null}
             {error ? (
-              <p className="text-[12px] font-medium text-danger">{error}</p>
+              <p className="text-[12px] font-medium text-danger">{translateUI(error)}</p>
             ) : null}
           </div>
         </div>
 
-        <StaffSection title="Live feed" description="Published announcements students can open">
+        <StaffSection title={translateUI("Live feed")} description={translateUI("Published announcements students can open")}>
           <div className="max-h-[420px] space-y-2.5 overflow-y-auto scrollbar-thin">
             {live.length === 0 ? (
               <p className="py-8 text-center text-[12px] text-muted-foreground">
-                No announcements published yet.
-              </p>
+                {translateUI("No announcements published yet.")}</p>
             ) : (
               live.map((item) => (
                 <div key={item.id} className="rounded-xl border border-border/70 px-3 py-2.5">
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-[12px] font-semibold">{item.title}</p>
-                    <Badge tone="primary">{item.streamId ?? "All streams"}</Badge>
+                    <Badge tone="primary">{translateUI(item.streamId ?? "All streams")}</Badge>
                   </div>
                   <p className="mt-1 line-clamp-3 text-[11px] text-muted-foreground">
-                    {item.body || "Published notice"}
+                    {item.body || translateUI("Published notice")}
                   </p>
                 </div>
               ))

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useMemo, useState } from "react";
 import { GraduationCap, Pencil, Plus, Trash2, Users } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
@@ -19,6 +20,7 @@ const emptyForm = {
 };
 
 export default function AdminStudentsPage() {
+  const translateUI = useTranslate();
   const { streams: classStreams } = useClassRegistry();
   const { students, addStudent, updateStudent, deleteStudent } =
     useAdminPeopleStore();
@@ -103,7 +105,7 @@ export default function AdminStudentsPage() {
   }
 
   function onDelete(s: StudentMonitor) {
-    if (!window.confirm(`Remove ${s.name} from the roster?`)) return;
+    if (!window.confirm(translateUI(`Remove ${s.name} from the roster?`))) return;
     deleteStudent(s.id).then(
       () => setMessage(`Removed ${s.name}.`),
       () => setMessage("Could not remove. Try again."),
@@ -113,8 +115,8 @@ export default function AdminStudentsPage() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Students"
-        description="Add, edit, or remove students. Changes sync across Admin and Class Rep."
+        title={translateUI("Students")}
+        description={translateUI("Add, edit, or remove students. Changes sync across Admin and Class Rep.")}
         actions={
           <Button size="sm" type="button" onClick={openAdd}>
             <Plus className="h-3.5 w-3.5" />
@@ -124,16 +126,16 @@ export default function AdminStudentsPage() {
       />
 
       <div className="grid gap-2.5 sm:grid-cols-2">
-        <StaffStatCard label="Students" value={String(students.length)} icon={Users} />
+        <StaffStatCard label={translateUI("Students")} value={String(students.length)} icon={Users} />
         <StaffStatCard
-          label="Streams"
+          label={translateUI("Streams")}
           value={String(streamCount)}
           icon={GraduationCap}
         />
       </div>
 
       {message ? (
-        <p className="text-[12px] font-medium text-success">{message}</p>
+        <p className="text-[12px] font-medium text-success">{translateUI(message)}</p>
       ) : null}
 
       <div className="flex flex-col gap-2 sm:flex-row">
@@ -142,23 +144,23 @@ export default function AdminStudentsPage() {
           onChange={(e) => setStream(e.target.value)}
           className="h-10 rounded-xl border border-border bg-background px-3 text-[13px]"
         >
-          <option value="all">All streams</option>
+          <option value="all">{translateUI("All streams")}</option>
           {classStreams.map((s) => (
             <option key={s.id} value={s.id}>
-              {s.label}
+              {translateUI(s.label)}
             </option>
           ))}
         </select>
       </div>
 
-      <StaffSection title="Roster" description={`${filtered.length} students`}>
+      <StaffSection title={translateUI("Roster")} description={translateUI(`${filtered.length} students`)}>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[520px] text-left text-[12px]">
             <thead>
               <tr className="border-b border-border text-[10px] uppercase tracking-wide text-muted-foreground">
-                <th className="pb-2 pr-3 font-medium">Student</th>
-                <th className="pb-2 pr-3 font-medium">Stream</th>
-                <th className="pb-2 pr-3 font-medium">Year</th>
+                <th className="pb-2 pr-3 font-medium">{translateUI("Student")}</th>
+                <th className="pb-2 pr-3 font-medium">{translateUI("Stream")}</th>
+                <th className="pb-2 pr-3 font-medium">{translateUI("Year")}</th>
                 <th className="pb-2 text-right font-medium"> </th>
               </tr>
             </thead>
@@ -178,8 +180,8 @@ export default function AdminStudentsPage() {
                       </div>
                     </div>
                   </td>
-                  <td className="py-3 pr-3 text-muted-foreground">{s.streamId}</td>
-                  <td className="py-3 pr-3 tabular-nums">{s.year}</td>
+                  <td className="py-3 pr-3 text-muted-foreground">{translateUI(s.streamId)}</td>
+                  <td className="py-3 pr-3 tabular-nums">{translateUI(s.year)}</td>
                   <td className="py-3">
                     <div className="flex justify-end gap-0.5">
                       <Button
@@ -187,7 +189,7 @@ export default function AdminStudentsPage() {
                         type="button"
                         variant="ghost"
                         aria-label={`Edit ${s.name}`}
-                        title="Edit"
+                        title={translateUI("Edit")}
                         onClick={() => openEdit(s)}
                       >
                         <Pencil className="h-3.5 w-3.5" />
@@ -198,7 +200,7 @@ export default function AdminStudentsPage() {
                         variant="ghost"
                         className="text-muted-foreground hover:bg-danger/10 hover:text-danger"
                         aria-label={`Delete ${s.name}`}
-                        title="Delete"
+                        title={translateUI("Delete")}
                         onClick={() => onDelete(s)}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -215,23 +217,22 @@ export default function AdminStudentsPage() {
       <StaffModal
         open={modalOpen}
         onClose={closeModal}
-        title={editing ? "Edit student" : "Add student"}
+        title={translateUI(editing ? "Edit student" : "Add student")}
         description={
-          editing
+          translateUI(editing
             ? "Update details. Changes appear for Class Reps on the same roster."
-            : "Enter student details. They appear on the Class Rep members list."
+            : "Enter student details. They appear on the Class Rep members list.")
         }
       >
         <form onSubmit={onSubmit} className="space-y-3">
-          {message && <p role="status" className="text-sm">{message}</p>}
-          {!editing && <label className="block space-y-1 text-sm">Temporary password
-            <input required type="password" minLength={8} autoComplete="new-password" value={form.temporaryPassword}
+          {message && <p role="status" className="text-sm">{translateUI(message)}</p>}
+          {!editing && <label className="block space-y-1 text-sm">{translateUI("Temporary password")}<input required type="password" minLength={8} autoComplete="new-password" value={form.temporaryPassword}
               onChange={e => setForm(f => ({ ...f, temporaryPassword: e.target.value }))}
               className="h-11 w-full rounded-xl border border-border bg-background px-3" />
-            <span className="block text-xs text-muted-foreground">At least 8 characters. Share it privately; the student can change it in Profile.</span>
+            <span className="block text-xs text-muted-foreground">{translateUI("At least 8 characters. Share it privately; the student can change it in Profile.")}</span>
           </label>}
           <label className="block space-y-1">
-            <span className="text-[11px] text-muted-foreground">Full name</span>
+            <span className="text-[11px] text-muted-foreground">{translateUI("Full name")}</span>
             <input
               required
               value={form.name}
@@ -240,7 +241,7 @@ export default function AdminStudentsPage() {
             />
           </label>
           <label className="block space-y-1">
-            <span className="text-[11px] text-muted-foreground">Email</span>
+            <span className="text-[11px] text-muted-foreground">{translateUI("Email")}</span>
             <input
               required
               type="email"
@@ -251,7 +252,7 @@ export default function AdminStudentsPage() {
           </label>
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block space-y-1">
-              <span className="text-[11px] text-muted-foreground">Stream</span>
+              <span className="text-[11px] text-muted-foreground">{translateUI("Stream")}</span>
               <select
                 value={form.streamId}
                 onChange={(e) =>
@@ -264,13 +265,13 @@ export default function AdminStudentsPage() {
               >
                 {classStreams.map((s) => (
                   <option key={s.id} value={s.id}>
-                    {s.label}
+                    {translateUI(s.label)}
                   </option>
                 ))}
               </select>
             </label>
             <label className="block space-y-1">
-              <span className="text-[11px] text-muted-foreground">Year</span>
+              <span className="text-[11px] text-muted-foreground">{translateUI("Year")}</span>
               <select
                 value={form.year}
                 onChange={(e) =>
@@ -280,7 +281,7 @@ export default function AdminStudentsPage() {
               >
                 {[3].map((y) => (
                   <option key={y} value={y}>
-                    Year {y}
+                    {translateUI("Year ")}{translateUI(y)}
                   </option>
                 ))}
               </select>
@@ -288,9 +289,8 @@ export default function AdminStudentsPage() {
           </div>
           <div className="flex justify-end gap-2 pt-1">
             <Button type="button" variant="outline" onClick={closeModal}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={saving}>{saving ? "Saving…" : editing ? "Save changes" : "Add student"}</Button>
+              {translateUI("Cancel")}</Button>
+            <Button type="submit" disabled={saving}>{translateUI(saving ? "Saving…" : editing ? "Save changes" : "Add student")}</Button>
           </div>
         </form>
       </StaffModal>

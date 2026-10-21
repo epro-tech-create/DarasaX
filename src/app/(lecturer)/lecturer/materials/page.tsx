@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useCallback } from "react";
 import { PageHeader } from "@/components/layout/page-header";
 import { LibraryUploadButton } from "@/components/staff/library-upload-button";
@@ -9,6 +10,7 @@ import { useStaffSession } from "@/lib/staff-auth";
 import type { MaterialUpload } from "@/types";
 
 export default function LecturerMaterialsPage() {
+  const translateUI = useTranslate();
   const { session } = useStaffSession();
   const active = getActiveLecturerStream();
 
@@ -37,13 +39,13 @@ export default function LecturerMaterialsPage() {
     <div className="space-y-6">
       <PageHeader
         size="lg"
-        title="Teaching library"
-        description="Published files for your modules and classes — including uploads from admin and class reps."
+        title={translateUI("Teaching library")}
+        description={translateUI("Published files for your modules and classes — including uploads from admin and class reps.")}
         actions={
           <LibraryUploadButton />
         }
       />
-      <MaterialsLibrary title="Class & module materials" filterItems={filterItems} />
+      <MaterialsLibrary title={translateUI("Class & module materials")} filterItems={filterItems} />
     </div>
   );
 }

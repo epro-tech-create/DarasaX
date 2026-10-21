@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useMemo, useState } from "react";
 import { LayoutGrid, List, Search } from "lucide-react";
 import { ModuleCard } from "@/components/modules/module-card";
@@ -13,6 +14,7 @@ import { cn } from "@/lib/utils";
 type CategoryFilter = "all" | "fundamentals" | "core" | "elective";
 
 export default function ModulesPage() {
+  const translateUI = useTranslate();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<CategoryFilter>("all");
   const [view, setView] = useState<"grid" | "list">("grid");
@@ -39,7 +41,7 @@ export default function ModulesPage() {
 
   return (
     <div>
-      <PageHeader title="Modules" description="Year 3 · Semester 1" />
+      <PageHeader title={translateUI("Modules")} description={translateUI("Year 3 · Semester 1")} />
 
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative min-w-0 flex-1">
@@ -47,7 +49,7 @@ export default function ModulesPage() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search modules..."
+            placeholder={translateUI("Search modules...")}
             className="focus-ring h-10 w-full rounded-[10px] border border-border bg-card pl-10 pr-3 text-sm outline-none"
           />
         </div>
@@ -56,10 +58,10 @@ export default function ModulesPage() {
           onChange={(e) => setCategory(e.target.value as CategoryFilter)}
           className="focus-ring h-10 rounded-[10px] border border-border bg-card px-3 text-sm"
         >
-          <option value="all">All categories</option>
-          <option value="fundamentals">Fundamentals</option>
-          <option value="core">Core</option>
-          <option value="elective">Elective</option>
+          <option value="all">{translateUI("All categories")}</option>
+          <option value="fundamentals">{translateUI("Fundamentals")}</option>
+          <option value="core">{translateUI("Core")}</option>
+          <option value="elective">{translateUI("Elective")}</option>
         </select>
         <div className="inline-flex rounded-[10px] border border-border bg-card p-0.5">
           <button
@@ -69,7 +71,7 @@ export default function ModulesPage() {
               "rounded-lg p-1.5",
               view === "grid" ? "btn-gradient" : "text-muted-foreground",
             )}
-            aria-label="Grid view"
+            aria-label={translateUI("Grid view")}
           >
             <LayoutGrid className="h-4 w-4" />
           </button>
@@ -80,7 +82,7 @@ export default function ModulesPage() {
               "rounded-lg p-1.5",
               view === "list" ? "btn-gradient" : "text-muted-foreground",
             )}
-            aria-label="List view"
+            aria-label={translateUI("List view")}
           >
             <List className="h-4 w-4" />
           </button>
@@ -88,8 +90,7 @@ export default function ModulesPage() {
       </div>
 
       <p className="mb-4 text-sm text-muted-foreground">
-        {filtered.length} modules · {totalCredits} credits
-      </p>
+        {translateUI(filtered.length)} {translateUI(" modules · ")}{translateUI(totalCredits)} {translateUI(" credits")}</p>
 
       {view === "grid" ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

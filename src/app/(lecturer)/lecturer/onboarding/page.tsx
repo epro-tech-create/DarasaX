@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthAlert } from "@/components/auth/auth-alert";
@@ -21,6 +22,7 @@ import type { ClassStreamId } from "@/types";
 type Step = "module" | "stream-count" | "streams";
 
 export default function LecturerOnboardingPage() {
+  const translateUI = useTranslate();
   const router = useRouter();
   const [step, setStep] = useState<Step>("module");
   const [moduleIds, setModuleIds] = useState<string[]>([]);
@@ -126,24 +128,18 @@ export default function LecturerOnboardingPage() {
     <AuthShell
       title={
         <>
-          Set up your
-          <br />
-          teaching desk.
-        </>
+          {translateUI("Set up your")}<br />
+          {translateUI("teaching desk.")}</>
       }
       subtitle="Pick the module(s) you teach, then say whether you cover one stream or more."
     >
       <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-        Lecturer setup
-      </p>
+        {translateUI("Lecturer setup")}</p>
       <h1 className="mt-1 font-heading text-xl font-semibold tracking-tight">
-        Lecturer onboarding
-      </h1>
+        {translateUI("Lecturer onboarding")}</h1>
       <p className="mt-1.5 text-sm text-muted-foreground sm:text-[13px]">
-        Step{" "}
-        {step === "module" ? "1" : step === "stream-count" ? "2" : "3"} of 3 ·
-        Module names are fixed for this programme.
-      </p>
+        {translateUI("Step")}{" "}
+        {translateUI(step === "module" ? "1" : step === "stream-count" ? "2" : "3")} {translateUI(" of 3 · Module names are fixed for this programme.")}</p>
 
       <div className="mt-4 flex items-center gap-1.5" aria-hidden>
         {(["module", "stream-count", "streams"] as Step[]).map((s) => (
@@ -164,7 +160,7 @@ export default function LecturerOnboardingPage() {
 
       {error ? (
         <div className="mt-4">
-          <AuthAlert message={error} />
+          <AuthAlert message={translateUI(error)} />
         </div>
       ) : null}
 
@@ -172,12 +168,9 @@ export default function LecturerOnboardingPage() {
         <div className="mt-5 space-y-4">
           <fieldset>
             <legend className="text-[13px] font-semibold">
-              Which module(s) do you teach?
-            </legend>
+              {translateUI("Which module(s) do you teach?")}</legend>
             <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
-              Choose one or more. Notes, topics, and assignments stay limited to
-              these modules.
-            </p>
+              {translateUI("Choose one or more. Notes, topics, and assignments stay limited to these modules.")}</p>
             <div className="mt-3 max-h-72 space-y-1.5 overflow-y-auto rounded-2xl border border-border bg-card p-2 scrollbar-thin">
               {LECTURER_MODULE_OPTIONS.map((m) => {
                 const on = moduleIds.includes(m.id);
@@ -203,12 +196,12 @@ export default function LecturerOnboardingPage() {
                       )}
                       aria-hidden
                     >
-                      {on ? "✓" : ""}
+                      {translateUI(on ? "✓" : "")}
                     </span>
                     <span className="min-w-0">
                       <span className="block font-semibold">{m.name}</span>
                       <span className="text-[11px] text-muted-foreground">
-                        {m.code}
+                        {translateUI(m.code)}
                       </span>
                     </span>
                   </button>
@@ -216,8 +209,7 @@ export default function LecturerOnboardingPage() {
               })}
             </div>
             <p className="mt-2 rounded-full bg-muted/70 px-3 py-1 text-center text-[11px] font-medium text-muted-foreground">
-              {moduleIds.length} selected
-              {moduleIds.length > 0 ? " · you can add more later" : ""}
+              {translateUI(moduleIds.length)} {translateUI(" selected")}{translateUI(moduleIds.length > 0 ? " · you can add more later" : "")}
             </p>
           </fieldset>
 
@@ -226,8 +218,7 @@ export default function LecturerOnboardingPage() {
             loading={false}
             onClick={goNextFromModule}
           >
-            Next — streams
-          </AuthSubmitButton>
+            {translateUI("Next — streams")}</AuthSubmitButton>
         </div>
       ) : null}
 
@@ -235,12 +226,9 @@ export default function LecturerOnboardingPage() {
         <div className="mt-5 space-y-4">
           <fieldset>
             <legend className="text-sm font-medium sm:text-xs">
-              How many streams do you teach?
-            </legend>
+              {translateUI("How many streams do you teach?")}</legend>
             <p className="mt-1 text-[11px] text-muted-foreground">
-              If you teach the same module to more than one class, pick 2 or
-              more.
-            </p>
+              {translateUI("If you teach the same module to more than one class, pick 2 or more.")}</p>
             <div className="mt-3 grid gap-2">
               {(
                 [
@@ -265,7 +253,7 @@ export default function LecturerOnboardingPage() {
                 >
                   <span className="text-[13px] font-semibold">{opt.title}</span>
                   <span className="text-[11px] text-muted-foreground">
-                    {opt.hint}
+                    {translateUI(opt.hint)}
                   </span>
                 </button>
               ))}
@@ -280,8 +268,7 @@ export default function LecturerOnboardingPage() {
               setStep("module");
             }}
           >
-            Back
-          </Button>
+            {translateUI("Back")}</Button>
         </div>
       ) : null}
 
@@ -289,22 +276,21 @@ export default function LecturerOnboardingPage() {
         <form className="mt-5 space-y-4" onSubmit={onSubmit} noValidate>
           <fieldset>
             <legend className="text-sm font-medium sm:text-xs">
-              Select your {streamCountLabel}
+              {translateUI("Select your ")}{translateUI(streamCountLabel)}
             </legend>
             <p className="mt-1 text-[11px] text-muted-foreground">
-              {streamCount === 1
+              {translateUI(streamCount === 1
                 ? "Tap the class you teach."
                 : streamCount === 2
                   ? "Tap exactly two classes."
-                  : "Tap at least three classes."}{" "}
-              ({streamIds.length}
-              {requiredStreams
+                  : "Tap at least three classes.")}{" "}
+              ({translateUI(streamIds.length)}
+              {translateUI(requiredStreams
                 ? streamCount === "more"
                   ? ` / ${requiredStreams}+`
                   : ` / ${requiredStreams}`
-                : ""}{" "}
-              selected)
-            </p>
+                : "")}{" "}
+              {translateUI("selected)")}</p>
             <div className="mt-2 grid gap-2">
               {classStreams.map((s) => {
                 const on = streamIds.includes(s.id);
@@ -328,15 +314,15 @@ export default function LecturerOnboardingPage() {
                           : "border-border",
                       )}
                     >
-                      {on ? "✓" : ""}
+                      {translateUI(on ? "✓" : "")}
                     </span>
                     <span className="min-w-0">
                       <span className="block text-[13px] font-semibold">
-                        {s.label}
+                        {translateUI(s.label)}
                       </span>
                       <span className="block text-[11px] text-muted-foreground">
-                        {s.description}
-                        {s.isEvening ? " · Evening" : ""}
+                        {translateUI(s.description)}
+                        {translateUI(s.isEvening ? " · Evening" : "")}
                       </span>
                     </span>
                   </button>
@@ -346,9 +332,8 @@ export default function LecturerOnboardingPage() {
           </fieldset>
 
           <div className="flex flex-col gap-2">
-            <AuthSubmitButton loading={loading} loadingText="Saving…">
-              Finish setup
-            </AuthSubmitButton>
+            <AuthSubmitButton loading={loading} loadingText={translateUI("Saving…")}>
+              {translateUI("Finish setup")}</AuthSubmitButton>
             <Button
               type="button"
               variant="outline"
@@ -358,8 +343,7 @@ export default function LecturerOnboardingPage() {
                 setStep("stream-count");
               }}
             >
-              Back
-            </Button>
+              {translateUI("Back")}</Button>
           </div>
         </form>
       ) : null}

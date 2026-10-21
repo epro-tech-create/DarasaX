@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useMemo, useState } from "react";
 import { Check, Pencil, Plus, Trash2, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +26,7 @@ export function TimetableEditor({
   title?: string;
   description?: string;
 }) {
+  const translateUI = useTranslate();
   const { streams: classStreams } = useClassRegistry();
   const { forStream, updateEntry, addEntry, deleteEntry, ready } =
     useTimetableStore();
@@ -110,7 +112,7 @@ export function TimetableEditor({
   function onDelete(id: string, moduleName: string) {
     if (
       !window.confirm(
-        `Remove “${moduleName}” from this stream’s timetable? Students will lose this session.`,
+        translateUI(`Remove “${moduleName}” from this stream’s timetable? Students will lose this session.`),
       )
     ) {
       return;
@@ -154,18 +156,17 @@ export function TimetableEditor({
       <div className="surface flex flex-col gap-3 rounded-2xl p-4 sm:flex-row sm:items-end sm:justify-between sm:p-5">
         <div className="min-w-0">
           <h2 className="font-heading text-[15px] font-semibold tracking-tight">
-            {title}
+            {translateUI(title)}
           </h2>
           <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-muted-foreground">
-            {description}
+            {translateUI(description)}
           </p>
         </div>
         <div className="flex flex-wrap items-end gap-2">
           {!lockedStream ? (
             <label className="block min-w-[200px]">
               <span className="mb-1 block text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                Stream
-              </span>
+                {translateUI("Stream")}</span>
               <select
                 value={streamId}
                 onChange={(e) => {
@@ -177,8 +178,8 @@ export function TimetableEditor({
               >
                 {classStreams.map((s) => (
                   <option key={s.id} value={s.id}>
-                    {s.label}
-                    {s.isEvening ? " (Evening)" : ""}
+                    {translateUI(s.label)}
+                    {translateUI(s.isEvening ? " (Evening)" : "")}
                   </option>
                 ))}
               </select>
@@ -195,7 +196,7 @@ export function TimetableEditor({
             }}
           >
             <Plus className="h-3.5 w-3.5" />
-            {showAdd ? "Close" : "Add session"}
+            {translateUI(showAdd ? "Close" : "Add session")}
           </Button>
         </div>
       </div>
@@ -210,7 +211,7 @@ export function TimetableEditor({
           )}
           role="status"
         >
-          {flash}
+          {translateUI(flash)}
         </p>
       ) : null}
 
@@ -221,13 +222,13 @@ export function TimetableEditor({
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h3 className="font-heading text-[13px] font-semibold">
-              New session · {activeStream}
+              {translateUI("New session · ")}{translateUI(activeStream)}
             </h3>
-            <Badge tone="primary">Live to students on save</Badge>
+            <Badge tone="primary">{translateUI("Live to students on save")}</Badge>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <label className="block space-y-1">
-              <span className="text-[11px] text-muted-foreground">Module</span>
+              <span className="text-[11px] text-muted-foreground">{translateUI("Module")}</span>
               <select
                 value={addForm.moduleId}
                 onChange={(e) =>
@@ -241,13 +242,13 @@ export function TimetableEditor({
               >
                 {modules.map((m) => (
                   <option key={m.id} value={m.id}>
-                    {m.code} · {m.name}
+                    {translateUI(m.code)} · {m.name}
                   </option>
                 ))}
               </select>
             </label>
             <label className="block space-y-1">
-              <span className="text-[11px] text-muted-foreground">Day</span>
+              <span className="text-[11px] text-muted-foreground">{translateUI("Day")}</span>
               <select
                 value={addForm.day}
                 onChange={(e) =>
@@ -257,13 +258,13 @@ export function TimetableEditor({
               >
                 {[1, 2, 3, 4, 5].map((d) => (
                   <option key={d} value={d}>
-                    {dayNames[d]}
+                    {translateUI(dayNames[d])}
                   </option>
                 ))}
               </select>
             </label>
             <label className="block space-y-1">
-              <span className="text-[11px] text-muted-foreground">Room</span>
+              <span className="text-[11px] text-muted-foreground">{translateUI("Room")}</span>
               <input
                 required
                 value={addForm.room}
@@ -274,7 +275,7 @@ export function TimetableEditor({
               />
             </label>
             <label className="block space-y-1">
-              <span className="text-[11px] text-muted-foreground">Start</span>
+              <span className="text-[11px] text-muted-foreground">{translateUI("Start")}</span>
               <input
                 required
                 type="time"
@@ -286,7 +287,7 @@ export function TimetableEditor({
               />
             </label>
             <label className="block space-y-1">
-              <span className="text-[11px] text-muted-foreground">End</span>
+              <span className="text-[11px] text-muted-foreground">{translateUI("End")}</span>
               <input
                 required
                 type="time"
@@ -299,8 +300,7 @@ export function TimetableEditor({
             </label>
             <label className="block space-y-1">
               <span className="text-[11px] text-muted-foreground">
-                Lecturer
-              </span>
+                {translateUI("Lecturer")}</span>
               <input
                 required
                 value={addForm.lecturer}
@@ -312,36 +312,34 @@ export function TimetableEditor({
             </label>
           </div>
           <Button type="submit" className="w-full sm:w-auto">
-            Save to student timetable
-          </Button>
+            {translateUI("Save to student timetable")}</Button>
         </form>
       ) : null}
 
       <div className="surface overflow-hidden rounded-[20px]">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/70 bg-muted/25 px-4 py-3 sm:px-5">
           <div>
-            <p className="text-[12px] font-semibold">{activeStream}</p>
+            <p className="text-[12px] font-semibold">{translateUI(activeStream)}</p>
             <p className="text-[11px] text-muted-foreground">
-              {ready
+              {translateUI(ready
                 ? `${entries.length} session${entries.length === 1 ? "" : "s"}`
-                : "Loading…"}{" "}
-              · shared with students
-            </p>
+                : "Loading…")}{" "}
+              {translateUI("· shared with students")}</p>
           </div>
-          <Badge>{ready ? `${entries.length} total` : "…"}</Badge>
+          <Badge>{translateUI(ready ? `${entries.length} total` : "…")}</Badge>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[880px] text-left text-[12px]">
             <thead>
               <tr className="border-b border-border text-[10px] uppercase tracking-wide text-muted-foreground">
-                <th className="px-4 py-2.5 font-medium">Day</th>
-                <th className="px-3 py-2.5 font-medium">Start</th>
-                <th className="px-3 py-2.5 font-medium">End</th>
-                <th className="px-3 py-2.5 font-medium">Module</th>
-                <th className="px-3 py-2.5 font-medium">Room</th>
-                <th className="px-3 py-2.5 font-medium">Lecturer</th>
-                <th className="px-4 py-2.5 font-medium">Actions</th>
+                <th className="px-4 py-2.5 font-medium">{translateUI("Day")}</th>
+                <th className="px-3 py-2.5 font-medium">{translateUI("Start")}</th>
+                <th className="px-3 py-2.5 font-medium">{translateUI("End")}</th>
+                <th className="px-3 py-2.5 font-medium">{translateUI("Module")}</th>
+                <th className="px-3 py-2.5 font-medium">{translateUI("Room")}</th>
+                <th className="px-3 py-2.5 font-medium">{translateUI("Lecturer")}</th>
+                <th className="px-4 py-2.5 font-medium">{translateUI("Actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -351,8 +349,7 @@ export function TimetableEditor({
                     colSpan={7}
                     className="px-4 py-10 text-center text-[12px] text-muted-foreground"
                   >
-                    No sessions yet. Use Add session to create the first one.
-                  </td>
+                    {translateUI("No sessions yet. Use Add session to create the first one.")}</td>
                 </tr>
               ) : null}
               {entries.map((entry) => {
@@ -383,12 +380,12 @@ export function TimetableEditor({
                         >
                           {[1, 2, 3, 4, 5].map((d) => (
                             <option key={d} value={d}>
-                              {dayNames[d]}
+                              {translateUI(dayNames[d])}
                             </option>
                           ))}
                         </select>
                       ) : (
-                        <Badge>{dayNames[entry.day]}</Badge>
+                        <Badge>{translateUI(dayNames[entry.day])}</Badge>
                       )}
                     </td>
                     <td className="px-3 py-2.5">
@@ -406,7 +403,7 @@ export function TimetableEditor({
                         />
                       ) : (
                         <span className="tabular-nums text-muted-foreground">
-                          {entry.startTime}
+                          {translateUI(entry.startTime)}
                         </span>
                       )}
                     </td>
@@ -422,7 +419,7 @@ export function TimetableEditor({
                         />
                       ) : (
                         <span className="tabular-nums text-muted-foreground">
-                          {entry.endTime}
+                          {translateUI(entry.endTime)}
                         </span>
                       )}
                     </td>
@@ -442,7 +439,7 @@ export function TimetableEditor({
                         >
                           {modules.map((m) => (
                             <option key={m.id} value={m.id}>
-                              {m.code}
+                              {translateUI(m.code)}
                             </option>
                           ))}
                         </select>
@@ -490,7 +487,7 @@ export function TimetableEditor({
                             size="icon"
                             type="button"
                             onClick={() => saveEdit(entry.id)}
-                            aria-label="Save"
+                            aria-label={translateUI("Save")}
                           >
                             <Check className="h-3.5 w-3.5" />
                           </Button>
@@ -499,7 +496,7 @@ export function TimetableEditor({
                             type="button"
                             variant="ghost"
                             onClick={cancelEdit}
-                            aria-label="Cancel"
+                            aria-label={translateUI("Cancel")}
                           >
                             <X className="h-3.5 w-3.5" />
                           </Button>
@@ -513,8 +510,7 @@ export function TimetableEditor({
                             onClick={() => startEdit(entry)}
                           >
                             <Pencil className="h-3 w-3" />
-                            Edit
-                          </Button>
+                            {translateUI("Edit")}</Button>
                           <Button
                             size="sm"
                             type="button"
@@ -528,8 +524,7 @@ export function TimetableEditor({
                             }
                           >
                             <Trash2 className="h-3 w-3" />
-                            Delete
-                          </Button>
+                            {translateUI("Delete")}</Button>
                         </div>
                       )}
                     </td>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useMemo, useState } from "react";
 import { Archive, Download, Eye, Filter, Search, X } from "lucide-react";
 import { MaterialShareButton } from "@/components/modules/material-share-button";
@@ -24,6 +25,7 @@ function inferPaperType(title: string): "cat" | "test" | "final" {
 }
 
 export default function PastPapersPage() {
+  const translateUI = useTranslate();
   const [query, setQuery] = useState("");
   const [moduleId, setModuleId] = useState("all");
   const [type, setType] = useState("all");
@@ -73,8 +75,8 @@ export default function PastPapersPage() {
   return (
     <div>
       <PageHeader
-        title="Past Papers"
-        description="Papers published by Admin or your Class Rep. Nothing else is listed here."
+        title={translateUI("Past Papers")}
+        description={translateUI("Papers published by Admin or your Class Rep. Nothing else is listed here.")}
       />
 
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -83,7 +85,7 @@ export default function PastPapersPage() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search papers..."
+            placeholder={translateUI("Search papers...")}
             className="focus-ring h-11 w-full rounded-[12px] border border-border bg-card pl-10 pr-3 text-sm"
           />
         </div>
@@ -97,10 +99,9 @@ export default function PastPapersPage() {
           onClick={() => setFiltersOpen((v) => !v)}
         >
           <Filter className="h-4 w-4" />
-          Filters
-          {activeFilterCount > 0 ? (
+          {translateUI("Filters")}{activeFilterCount > 0 ? (
             <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary/15 px-1.5 text-[11px] font-semibold text-primary">
-              {activeFilterCount}
+              {translateUI(activeFilterCount)}
             </span>
           ) : null}
         </Button>
@@ -109,7 +110,7 @@ export default function PastPapersPage() {
       {filtersOpen ? (
         <div className="surface mb-5 rounded-[16px] p-4">
           <div className="mb-3 flex items-center justify-between gap-2">
-            <p className="text-[13px] font-medium">Filter papers</p>
+            <p className="text-[13px] font-medium">{translateUI("Filter papers")}</p>
             <div className="flex items-center gap-1">
               {activeFilterCount > 0 ? (
                 <Button
@@ -119,14 +120,13 @@ export default function PastPapersPage() {
                   className="h-8 text-[12px]"
                   onClick={clearFilters}
                 >
-                  Clear
-                </Button>
+                  {translateUI("Clear")}</Button>
               ) : null}
               <button
                 type="button"
                 onClick={() => setFiltersOpen(false)}
                 className="focus-ring inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
-                aria-label="Close filters"
+                aria-label={translateUI("Close filters")}
               >
                 <X className="h-4 w-4" />
               </button>
@@ -135,14 +135,13 @@ export default function PastPapersPage() {
           <div className="grid gap-3 sm:grid-cols-3">
             <label className="block space-y-1.5">
               <span className="text-[11px] font-medium text-muted-foreground">
-                Module
-              </span>
+                {translateUI("Module")}</span>
               <select
                 value={moduleId}
                 onChange={(e) => setModuleId(e.target.value)}
                 className="focus-ring h-10 w-full rounded-[12px] border border-border bg-card px-3 text-sm"
               >
-                <option value="all">All</option>
+                <option value="all">{translateUI("All")}</option>
                 {modules.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.name}
@@ -152,32 +151,30 @@ export default function PastPapersPage() {
             </label>
             <label className="block space-y-1.5">
               <span className="text-[11px] font-medium text-muted-foreground">
-                Type
-              </span>
+                {translateUI("Type")}</span>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value)}
                 className="focus-ring h-10 w-full rounded-[12px] border border-border bg-card px-3 text-sm"
               >
-                <option value="all">All</option>
-                <option value="cat">CAT</option>
-                <option value="test">Test</option>
-                <option value="final">Final</option>
+                <option value="all">{translateUI("All")}</option>
+                <option value="cat">{translateUI("CAT")}</option>
+                <option value="test">{translateUI("Test")}</option>
+                <option value="final">{translateUI("Final")}</option>
               </select>
             </label>
             <label className="block space-y-1.5">
               <span className="text-[11px] font-medium text-muted-foreground">
-                Year
-              </span>
+                {translateUI("Year")}</span>
               <select
                 value={year}
                 onChange={(e) => setYear(e.target.value)}
                 className="focus-ring h-10 w-full rounded-[12px] border border-border bg-card px-3 text-sm"
               >
-                <option value="all">All</option>
+                <option value="all">{translateUI("All")}</option>
                 {years.map((y) => (
                   <option key={y} value={y}>
-                    {y}
+                    {translateUI(y)}
                   </option>
                 ))}
               </select>
@@ -187,16 +184,16 @@ export default function PastPapersPage() {
       ) : null}
 
       <p className="mb-3 text-[12px] text-muted-foreground">
-        {ready
+        {translateUI(ready
           ? `${filtered.length} paper${filtered.length === 1 ? "" : "s"}`
-          : "Loading uploads…"}
+          : "Loading uploads…")}
       </p>
 
       {!ready ? null : filtered.length === 0 ? (
         <EmptyState
           icon={Archive}
-          title="No past papers yet"
-          description="When Admin or your Class Rep uploads a past paper, it will show up here."
+          title={translateUI("No past papers yet")}
+          description={translateUI("When Admin or your Class Rep uploads a past paper, it will show up here.")}
         />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -210,6 +207,7 @@ export default function PastPapersPage() {
 }
 
 function PaperCard({ paper }: { paper: MaterialUpload }) {
+  const translateUI = useTranslate();
   const courseModule = paper.moduleId ? getModule(paper.moduleId) : null;
   const paperType = inferPaperType(paper.title);
   const paperYear = new Date(paper.createdAt).getFullYear();
@@ -217,17 +215,17 @@ function PaperCard({ paper }: { paper: MaterialUpload }) {
   return (
     <article className="surface flex flex-col rounded-[18px] p-4 transition duration-200 hover:border-primary/40 sm:p-5">
       <div className="mb-3 flex flex-wrap gap-1.5">
-        <Badge tone="primary">{paperType.toUpperCase()}</Badge>
-        <Badge>{paperYear}</Badge>
+        <Badge tone="primary">{translateUI(paperType.toUpperCase())}</Badge>
+        <Badge>{translateUI(paperYear)}</Badge>
       </div>
       <h3 className="font-heading text-[15px] font-semibold tracking-tight">
-        {courseModule?.name ?? "Module"}
+        {courseModule?.name ?? translateUI("Module")}
       </h3>
       <p className="mt-1 line-clamp-2 text-[12px] text-muted-foreground">
         {paper.title}
       </p>
       <p className="mt-2 text-[11px] text-muted-foreground">
-        {paper.size} · {paper.uploadedBy}
+        {translateUI(paper.size)} · {translateUI(paper.uploadedBy)}
       </p>
       <div className="mt-auto flex flex-wrap gap-2 pt-4">
         <Button
@@ -237,16 +235,14 @@ function PaperCard({ paper }: { paper: MaterialUpload }) {
           onClick={() => void viewMaterial(paper)}
         >
           <Eye className="h-4 w-4" />
-          View
-        </Button>
+          {translateUI("View")}</Button>
         <Button
           size="sm"
           type="button"
           onClick={() => void downloadMaterial(paper)}
         >
           <Download className="h-4 w-4" />
-          Download
-        </Button>
+          {translateUI("Download")}</Button>
         <MaterialShareButton materialId={paper.id} title={paper.title} />
       </div>
     </article>

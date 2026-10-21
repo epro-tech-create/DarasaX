@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button, type ButtonProps } from "@/components/ui/button";
@@ -12,6 +13,7 @@ export function AuthSubmitButton({
   disabled,
   ...props
 }: ButtonProps & { loading?: boolean; loadingText?: string }) {
+  const translateUI = useTranslate();
   return (
     <Button
       type="submit"
@@ -22,7 +24,7 @@ export function AuthSubmitButton({
       {loading ? (
         <>
           <Loader2 className="h-4 w-4 animate-spin" />
-          {loadingText || "Please wait..."}
+          {translateUI(loadingText || "Please wait...")}
         </>
       ) : (
         children

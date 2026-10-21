@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
@@ -44,6 +45,7 @@ const SEMESTERS = [1, 2].map((value) => ({
 }));
 
 export default function OnboardingPage() {
+  const translateUI = useTranslate();
   const router = useRouter();
   const {
     classes,
@@ -161,29 +163,24 @@ export default function OnboardingPage() {
       <main className="mx-auto w-full max-w-2xl px-4 pb-10">
         <div className="mb-3 text-center sm:text-left">
           <p className="text-[9px] font-medium uppercase tracking-[0.14em] text-primary">
-            Profile setup
-          </p>
+            {translateUI("Profile setup")}</p>
           <h1 className="mt-1 font-heading text-xl font-semibold tracking-tight">
-            Complete your DarasaX profile
-          </h1>
+            {translateUI("Complete your DarasaX profile")}</h1>
           <p className="mt-0.5 text-[11px] text-muted-foreground">
-            A few quick details so we can personalize your semester workspace.
-          </p>
+            {translateUI("A few quick details so we can personalize your semester workspace.")}</p>
         </div>
 
         <div className="mt-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm">
-          <p className="font-semibold">DIT / BENG24COE / Year 3 / Semester 1</p>
+          <p className="font-semibold">{translateUI("DIT / BENG24COE / Year 3 / Semester 1")}</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Only this current cohort is open. Your class controls which
-            materials you can access.
-          </p>
+            {translateUI("Only this current cohort is open. Your class controls which materials you can access.")}</p>
         </div>
         <HorizontalStepper steps={STEPS} current={step} />
 
         <div className="surface mt-4 rounded-[20px] p-4 sm:p-6">
           {error ? (
             <div className="mb-4">
-              <AuthAlert message={error} />
+              <AuthAlert message={translateUI(error)} />
             </div>
           ) : null}
 
@@ -195,7 +192,7 @@ export default function OnboardingPage() {
                 animate={{ opacity: 1, scale: 1 }}
               >
                 <WelcomeCelebration
-                  title="Congratulations!"
+                  title={translateUI("Congratulations!")}
                   subtitle="Your academic profile is ready. Welcome to DarasaX."
                   ctaLabel="Enter dashboard"
                   onContinue={() => {
@@ -216,11 +213,9 @@ export default function OnboardingPage() {
                   <div className="grid items-center gap-6 md:grid-cols-[1fr_0.9fr]">
                     <div>
                       <h2 className="font-heading text-[15px] font-semibold tracking-tight">
-                        Select your institution
-                      </h2>
+                        {translateUI("Select your institution")}</h2>
                       <p className="mt-0.5 text-[11px] text-muted-foreground">
-                        Choose the university or college you attend.
-                      </p>
+                        {translateUI("Choose the university or college you attend.")}</p>
 
                       <div className="relative mt-4">
                         <button
@@ -234,7 +229,7 @@ export default function OnboardingPage() {
                               !institution && "text-muted-foreground",
                             )}
                           >
-                            {institution || "Select university..."}
+                            {translateUI(institution || "Select university...")}
                           </span>
                           <ChevronDown
                             className={cn(
@@ -251,7 +246,7 @@ export default function OnboardingPage() {
                                 autoFocus
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Search universities..."
+                                placeholder={translateUI("Search universities...")}
                                 className="focus-ring h-10 w-full rounded-[10px] border border-border bg-background px-3 text-sm"
                               />
                             </div>
@@ -279,8 +274,7 @@ export default function OnboardingPage() {
                               ))}
                               {filteredUniversities.length === 0 ? (
                                 <li className="px-3 py-4 text-center text-sm text-muted-foreground">
-                                  No universities found
-                                </li>
+                                  {translateUI("No universities found")}</li>
                               ) : null}
                             </ul>
                           </div>
@@ -295,11 +289,9 @@ export default function OnboardingPage() {
                   <div className="grid items-center gap-6 md:grid-cols-[1fr_0.9fr]">
                     <div>
                       <h2 className="font-heading text-[15px] font-semibold tracking-tight">
-                        Academic year
-                      </h2>
+                        {translateUI("Academic year")}</h2>
                       <p className="mt-0.5 text-[11px] text-muted-foreground">
-                        Which year of study are you currently in?
-                      </p>
+                        {translateUI("Which year of study are you currently in?")}</p>
                       <div className="mt-4 grid grid-cols-2 gap-2.5">
                         {YEARS.map((item) => (
                           <button
@@ -318,7 +310,7 @@ export default function OnboardingPage() {
                             )}
                           >
                             <p className="text-sm font-semibold">
-                              {item.label}
+                              {translateUI(item.label)}
                             </p>
                             <p
                               className={cn(
@@ -328,46 +320,42 @@ export default function OnboardingPage() {
                                   : "text-muted-foreground",
                               )}
                             >
-                              {item.hint}
+                              {translateUI(item.hint)}
                             </p>
                           </button>
                         ))}
                       </div>
                       <label className="mt-4 block text-sm font-medium">
-                        Your class
-                        <select
+                        {translateUI("Your class")}<select
                           disabled={!classesReady}
                           required
                           value={streamId}
                           onChange={(event) => setStreamId(event.target.value)}
                           className="focus-ring mt-2 h-11 w-full rounded-xl border border-border bg-background px-3"
                         >
-                          <option value="">Choose your class</option>
+                          <option value="">{translateUI("Choose your class")}</option>
                           {availableClasses.map((stream) => (
                             <option key={stream.id} value={stream.id}>
-                              {stream.label}
+                              {translateUI(stream.label)}
                             </option>
                           ))}
                         </select>
                       </label>
                       {classesError ? (
                         <p role="alert" className="mt-2 text-xs text-danger">
-                          {classesError}{" "}
+                          {translateUI(classesError)}{" "}
                           <button
                             type="button"
                             onClick={() => void refreshClasses()}
                             className="underline"
                           >
-                            Retry
-                          </button>
+                            {translateUI("Retry")}</button>
                         </p>
                       ) : classesReady &&
                         year &&
                         availableClasses.length === 0 ? (
                         <p className="mt-2 text-xs text-muted-foreground">
-                          No classes are available for this institution and year
-                          yet.
-                        </p>
+                          {translateUI("No classes are available for this institution and year yet.")}</p>
                       ) : null}
                     </div>
                     <YearIllustration className="mx-auto h-40 w-full max-w-[260px] md:h-44" />
@@ -378,11 +366,9 @@ export default function OnboardingPage() {
                   <div className="grid items-center gap-6 md:grid-cols-[1fr_0.9fr]">
                     <div>
                       <h2 className="font-heading text-[15px] font-semibold tracking-tight">
-                        Select semester
-                      </h2>
+                        {translateUI("Select semester")}</h2>
                       <p className="mt-0.5 text-[11px] text-muted-foreground">
-                        Pick the semester you are in right now.
-                      </p>
+                        {translateUI("Pick the semester you are in right now.")}</p>
                       <div className="mt-4 grid gap-2.5">
                         {SEMESTERS.map((item) => (
                           <button
@@ -400,7 +386,7 @@ export default function OnboardingPage() {
                             )}
                           >
                             <p className="text-sm font-semibold">
-                              {item.label}
+                              {translateUI(item.label)}
                             </p>
                             <p
                               className={cn(
@@ -410,7 +396,7 @@ export default function OnboardingPage() {
                                   : "text-muted-foreground",
                               )}
                             >
-                              {item.hint}
+                              {translateUI(item.hint)}
                             </p>
                           </button>
                         ))}
@@ -428,8 +414,7 @@ export default function OnboardingPage() {
                       disabled={loading}
                       className="text-xs font-medium text-muted-foreground transition hover:text-foreground"
                     >
-                      Back
-                    </button>
+                      {translateUI("Back")}</button>
                   ) : (
                     <span />
                   )}
@@ -438,11 +423,11 @@ export default function OnboardingPage() {
                     disabled={loading}
                     className="h-9 min-w-28 text-sm"
                   >
-                    {loading
+                    {translateUI(loading
                       ? "Saving..."
                       : step === 2
                         ? "Finish"
-                        : "Next Step"}
+                        : "Next Step")}
                   </Button>
                 </div>
               </motion.div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useMemo, useState } from "react";
 import { ListOrdered, Pencil, Plus, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
@@ -44,6 +45,7 @@ export function TopicsWorkspace({
   /** When set (e.g. lecturer), only these modules appear in filters/forms. */
   allowedModuleIds?: string[];
 }) {
+  const translateUI = useTranslate();
   const { rows, ready, createTopic, updateTopic, deleteTopic } = useTopicsStore();
   const catalog = useMemo(() => {
     if (!allowedModuleIds || allowedModuleIds.length === 0) return modules;
@@ -173,7 +175,7 @@ export function TopicsWorkspace({
   async function onDelete(row: ModuleTopicRow) {
     if (
       !window.confirm(
-        `Delete “${row.title}”? Students will lose this topic from the outline.`,
+        translateUI(`Delete “${row.title}”? Students will lose this topic from the outline.`),
       )
     ) {
       return;
@@ -191,8 +193,8 @@ export function TopicsWorkspace({
     <div className="space-y-5">
       <PageHeader
         size="lg"
-        title="Module topics"
-        description="Manage the topics students follow in each module."
+        title={translateUI("Module topics")}
+        description={translateUI("Manage the topics students follow in each module.")}
         actions={
           <Button
             size="sm"
@@ -208,64 +210,59 @@ export function TopicsWorkspace({
 
       {message ? (
         <p className="rounded-xl border border-success/30 bg-success/10 px-3 py-2.5 text-[12px] font-medium text-success">
-          {message}
+          {translateUI(message)}
         </p>
       ) : null}
       {error && !modalOpen ? (
         <p className="rounded-xl border border-danger/30 bg-danger/10 px-3 py-2.5 text-[12px] font-medium text-danger">
-          {error}
+          {translateUI(error)}
         </p>
       ) : null}
 
       <div className="surface flex flex-col gap-3 rounded-2xl p-4 sm:flex-row sm:items-end sm:p-5">
         <label className="block min-w-0 flex-1 space-y-1.5">
           <span className="text-[11px] font-medium text-muted-foreground">
-            Filter by module
-          </span>
+            {translateUI("Filter by module")}</span>
           <select
             value={moduleFilter}
             onChange={(e) => setModuleFilter(e.target.value)}
             className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px] outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
           >
-            <option value="all">All modules ({scopedRows.length})</option>
+            <option value="all">{translateUI("All modules (")}{translateUI(scopedRows.length)})</option>
             {catalog.map((m) => (
               <option key={m.id} value={m.id}>
-                {m.code} · {m.name}
+                {translateUI(m.code)} · {m.name}
               </option>
             ))}
           </select>
         </label>
         <p className="rounded-full bg-muted/70 px-3 py-1.5 text-[11px] font-medium tabular-nums text-muted-foreground sm:mb-0.5">
-          {ready
+          {translateUI(ready
             ? `${filtered.length} topic${filtered.length === 1 ? "" : "s"}`
-            : "Loading…"}
+            : "Loading…")}
         </p>
       </div>
 
       {catalog.length === 0 ? (
         <p className="rounded-xl border border-warning/30 bg-warning/10 px-3 py-2.5 text-[12px] leading-relaxed text-warning">
-          No modules assigned to your profile. Complete lecturer onboarding or
-          ask an admin to assign modules.
-        </p>
+          {translateUI("No modules assigned to your profile. Complete lecturer onboarding or ask an admin to assign modules.")}</p>
       ) : null}
 
       <StaffSection
-        title="Course outline"
-        description="Same list students see under each module’s Overview tab (when published)."
+        title={translateUI("Course outline")}
+        description={translateUI("Same list students see under each module’s Overview tab (when published).")}
       >
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-10 text-center">
             <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
               <ListOrdered className="h-4 w-4" />
             </span>
-            <p className="text-[13px] font-medium">No topics yet</p>
+            <p className="text-[13px] font-medium">{translateUI("No topics yet")}</p>
             <p className="max-w-xs text-[12px] text-muted-foreground">
-              Add the first topic for a module — students use it to track progress.
-            </p>
+              {translateUI("Add the first topic for a module — students use it to track progress.")}</p>
             <Button size="sm" type="button" onClick={openAdd} className="mt-1">
               <Plus className="h-3.5 w-3.5" />
-              Add topic
-            </Button>
+              {translateUI("Add topic")}</Button>
           </div>
         ) : (
           <div className="space-y-2">
@@ -280,11 +277,11 @@ export function TopicsWorkspace({
                   <div className="min-w-0">
                     <div className="mb-1 flex flex-wrap items-center gap-1.5">
                       <Badge tone="primary">
-                        Topic {String(row.number).padStart(2, "0")}
+                        {translateUI("Topic ")}{translateUI(String(row.number).padStart(2, "0"))}
                       </Badge>
-                      <Badge>{courseModule?.code ?? row.module_id}</Badge>
+                      <Badge>{translateUI(courseModule?.code ?? row.module_id)}</Badge>
                       {!row.published ? (
-                        <Badge tone="warning">Draft</Badge>
+                        <Badge tone="warning">{translateUI("Draft")}</Badge>
                       ) : null}
                     </div>
                     <p className="truncate text-[13px] font-semibold">
@@ -305,8 +302,7 @@ export function TopicsWorkspace({
                       onClick={() => openEdit(row)}
                     >
                       <Pencil className="h-3.5 w-3.5" />
-                      Edit
-                    </Button>
+                      {translateUI("Edit")}</Button>
                     <Button
                       size="sm"
                       variant="danger"
@@ -314,8 +310,7 @@ export function TopicsWorkspace({
                       onClick={() => void onDelete(row)}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
-                      Delete
-                    </Button>
+                      {translateUI("Delete")}</Button>
                   </div>
                 </div>
               );
@@ -327,14 +322,13 @@ export function TopicsWorkspace({
       <StaffModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editingId ? "Edit topic" : "Add topic"}
-        description="Students see published topics on the module Overview and use them for progress."
+        title={translateUI(editingId ? "Edit topic" : "Add topic")}
+        description={translateUI("Students see published topics on the module Overview and use them for progress.")}
       >
         <form className="space-y-3" onSubmit={onSubmit}>
           <label className="block space-y-1.5">
             <span className="text-[11px] font-medium text-muted-foreground">
-              Module
-            </span>
+              {translateUI("Module")}</span>
             <select
               value={form.moduleId}
               onChange={(e) =>
@@ -345,7 +339,7 @@ export function TopicsWorkspace({
             >
               {catalog.map((m) => (
                 <option key={m.id} value={m.id}>
-                  {m.code} · {m.name}
+                  {translateUI(m.code)} · {m.name}
                 </option>
               ))}
             </select>
@@ -353,8 +347,7 @@ export function TopicsWorkspace({
           <div className="grid gap-3">
             <label className="block space-y-1.5">
               <span className="text-[11px] font-medium text-muted-foreground">
-                Topic number
-              </span>
+                {translateUI("Topic number")}</span>
               <input
                 type="number"
                 min={1}
@@ -369,20 +362,19 @@ export function TopicsWorkspace({
           </div>
           <label className="block space-y-1.5">
             <span className="text-[11px] font-medium text-muted-foreground">
-              Title
-            </span>
+              {translateUI("Title")}</span>
             <input
               value={form.title}
               onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-              placeholder="e.g. Requirements Engineering"
+              placeholder={translateUI("e.g. Requirements Engineering")}
               className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px]"
               required
             />
           </label>
           <label className="block space-y-1.5">
-            <span className="text-[11px] font-medium text-muted-foreground">Description (optional)</span>
+            <span className="text-[11px] font-medium text-muted-foreground">{translateUI("Description (optional)")}</span>
             <textarea value={form.content} onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-              rows={4} maxLength={30000} placeholder="Explain the topic, key concepts, examples, and important information."
+              rows={4} maxLength={30000} placeholder={translateUI("Explain the topic, key concepts, examples, and important information.")}
               className="w-full rounded-xl border border-border bg-background px-3 py-2 text-[13px]" />
           </label>
           <label className="flex items-center gap-2 text-[12px]">
@@ -394,10 +386,9 @@ export function TopicsWorkspace({
               }
               className="h-4 w-4 rounded border-border"
             />
-            Published (visible to students)
-          </label>
+            {translateUI("Published (visible to students)")}</label>
           {error ? (
-            <p className="text-[12px] font-medium text-danger">{error}</p>
+            <p className="text-[12px] font-medium text-danger">{translateUI(error)}</p>
           ) : null}
           <div className="flex justify-end gap-2 pt-1">
             <Button
@@ -405,10 +396,9 @@ export function TopicsWorkspace({
               variant="outline"
               onClick={() => setModalOpen(false)}
             >
-              Cancel
-            </Button>
+              {translateUI("Cancel")}</Button>
             <Button type="submit" disabled={busy}>
-              {busy ? "Saving…" : editingId ? "Save changes" : "Publish topic"}
+              {translateUI(busy ? "Saving…" : editingId ? "Save changes" : "Publish topic")}
             </Button>
           </div>
         </form>

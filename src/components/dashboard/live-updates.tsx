@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import {
   Archive,
   CalendarClock,
@@ -22,24 +23,21 @@ const feedIcons = {
 } as const;
 
 export function DashboardLiveUpdates() {
+  const translateUI = useTranslate();
   const { items, ready } = useNotifications();
   const feed = items.slice(0, 6);
 
   return (
     <section>
       <h2 className="mb-3.5 font-heading text-[15px] font-semibold">
-        Latest updates
-      </h2>
+        {translateUI("Latest updates")}</h2>
       <div className="surface divide-y divide-border overflow-hidden rounded-[20px]">
         {!ready ? (
           <p className="px-4 py-6 text-[12px] text-muted-foreground">
-            Loading updates…
-          </p>
+            {translateUI("Loading updates…")}</p>
         ) : feed.length === 0 ? (
           <p className="px-4 py-6 text-[12px] text-muted-foreground">
-            No updates yet. When lecturers or class reps publish materials, they
-            appear here and in notifications.
-          </p>
+            {translateUI("No updates yet. When lecturers or class reps publish materials, they appear here and in notifications.")}</p>
         ) : (
           feed.map((item) => {
             const Icon =
@@ -58,7 +56,7 @@ export function DashboardLiveUpdates() {
                     {item.body}
                   </p>
                   <p className="mt-1 text-[11px] text-muted-foreground">
-                    {formatRelativeTime(item.createdAt)}
+                    {translateUI(formatRelativeTime(item.createdAt))}
                   </p>
                 </div>
               </div>

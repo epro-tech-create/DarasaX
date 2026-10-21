@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { PastPapersBrowser } from "@/components/staff/past-papers-browser";
@@ -8,6 +9,7 @@ import { getActiveLecturerStream } from "@/lib/lecturer-context";
 import { useStaffSession } from "@/lib/staff-auth";
 
 export default function LecturerPastPapersPage() {
+  const translateUI = useTranslate();
   const { session } = useStaffSession();
   const active = getActiveLecturerStream();
   const locked =
@@ -17,8 +19,8 @@ export default function LecturerPastPapersPage() {
     <div className="space-y-6">
       <PageHeader
         size="lg"
-        title="Past papers"
-        description="Upload exam papers for your modules. Students find them under Past Papers the moment you publish."
+        title={translateUI("Past papers")}
+        description={translateUI("Upload exam papers for your modules. Students find them under Past Papers the moment you publish.")}
         actions={
           <Button href="/lecturer/materials" size="sm" variant="outline">
             Full upload desk
@@ -26,8 +28,8 @@ export default function LecturerPastPapersPage() {
         }
       />
       <UploadWorkspace
-        title="Publish a past paper"
-        description="Limited to modules you teach. Students see it as soon as you publish."
+        title={translateUI("Publish a past paper")}
+        description={translateUI("Limited to modules you teach. Students see it as soon as you publish.")}
         defaultKind="past_paper"
         showStream={!locked}
         lockedStream={locked}
@@ -37,8 +39,8 @@ export default function LecturerPastPapersPage() {
         role="lecturer"
       />
       <PastPapersBrowser
-        title="Published past papers"
-        description="Live student-facing list (shared with admin & class rep uploads)"
+        title={translateUI("Published past papers")}
+        description={translateUI("Live student-facing list (shared with admin & class rep uploads)")}
       />
     </div>
   );

@@ -1,3 +1,5 @@
+"use client";
+import { useTranslate } from "@/components/providers/language-provider";
 import Image from "next/image";
 import type { ReactNode } from "react";
 import { Logo } from "@/components/brand/logo";
@@ -14,12 +16,13 @@ export function AuthShell({
   subtitle?: ReactNode;
   footer?: ReactNode;
 }) {
+  const translateUI = useTranslate();
   return (
     <div className="grid min-h-screen font-sans lg:grid-cols-2">
       <div className="relative hidden overflow-hidden p-8 text-white lg:flex lg:flex-col lg:justify-between xl:p-10">
         <Image
           src="/auth-panel.jpg"
-          alt="Student studying with joy"
+          alt={translateUI("Student studying with joy")}
           fill
           priority
           className="object-cover object-center"
@@ -36,17 +39,16 @@ export function AuthShell({
         </div>
         <div className="relative z-10">
           <h1 className="font-heading text-2xl font-semibold leading-tight tracking-tight">
-            {title}
+            {translateUI(title)}
           </h1>
           {subtitle ? (
             <p className="mt-2.5 max-w-md text-sm leading-relaxed text-white/80">
-              {subtitle}
+              {translateUI(subtitle)}
             </p>
           ) : null}
         </div>
         <p className="relative z-10 text-sm text-white/65">
-          Everything for class. One place.
-        </p>
+          {translateUI("Everything for class. One place.")}</p>
       </div>
 
       <div className="relative flex items-center justify-center px-4 py-8 sm:py-10">
@@ -57,8 +59,8 @@ export function AuthShell({
           <div className="mb-6 lg:hidden">
             <Logo href="/" />
           </div>
-          {children}
-          {footer ? <div className="mt-5">{footer}</div> : null}
+          {translateUI(children)}
+          {footer ? <div className="mt-5">{translateUI(footer)}</div> : null}
         </div>
       </div>
     </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useMemo } from "react";
 import { useMaterialsStore } from "@/lib/materials-store";
 import { cn } from "@/lib/utils";
@@ -22,7 +23,7 @@ function kindLabel(kind: MaterialUpload["kind"]) {
   return kind.replace("_", " ");
 }
 
-function buildWeek(items: MaterialUpload[]) {
+function buildWeek(items: MaterialUpload[], locale: string) {
   const today = startOfDay(new Date());
   const start = today - 6 * DAY_MS;
   const days = Array.from({ length: 7 }, (_, i) => {
@@ -30,7 +31,7 @@ function buildWeek(items: MaterialUpload[]) {
     const date = new Date(time);
     return {
       key: time,
-      weekday: date.toLocaleDateString("en-GB", { weekday: "narrow" }).toUpperCase(),
+      weekday: date.toLocaleDateString(locale, { weekday: "narrow" }).toUpperCase(),
       dayNum: date.getDate(),
       count: 0,
     };
@@ -44,7 +45,7 @@ function buildWeek(items: MaterialUpload[]) {
   }
 
   const fmt = (time: number) =>
-    new Date(time).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+    new Date(time).toLocaleDateString(locale, { day: "numeric", month: "short" });
 
   return {
     days,
@@ -60,10 +61,11 @@ function niceCeil(n: number) {
 }
 
 export function StudyChart() {
+  const translateUI = useTranslate();
   const { published, ready } = useMaterialsStore();
   const { days, total, rangeLabel } = useMemo(
-    () => buildWeek(published),
-    [published],
+    () => buildWeek(published, translateUI.locale),
+    [published, translateUI.locale],
   );
 
   const max = niceCeil(Math.max(...days.map((d) => d.count), 1));
@@ -88,28 +90,26 @@ export function StudyChart() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 className="font-heading text-[15px] font-semibold tracking-tight">
-            Class activity
-          </h2>
+            {translateUI("Class activity")}</h2>
           <p className="mt-0.5 text-[12px] text-muted-foreground">
-            {ready
+            {translateUI(ready
               ? `${total} new file${total === 1 ? "" : "s"} · last 7 days · ${rangeLabel}`
-              : "Loading this week’s uploads…"}
+              : "Loading this week’s uploads…")}
           </p>
         </div>
         <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
           <span className="h-2 w-2 rounded-full bg-primary" />
-          Files per day
-        </span>
+          {translateUI("Files per day")}</span>
       </div>
 
       {ready && total === 0 ? (
-        <p className="mt-4 rounded-xl bg-muted/40 p-4 text-sm text-muted-foreground">No new materials this week. Your existing notes are available in Modules.</p>
+        <p className="mt-4 rounded-xl bg-muted/40 p-4 text-sm text-muted-foreground">{translateUI("No new materials this week. Your existing notes are available in Modules.")}</p>
       ) : <div className="mt-3 text-primary">
         <svg
           viewBox={`0 0 ${W} ${H}`}
           className="h-36 w-full sm:h-44"
           role="img"
-          aria-label={`New class files per day, ${rangeLabel}`}
+          aria-label={translateUI(`New class files per day, ${rangeLabel}`)}
         >
           <defs>
             <linearGradient id="study-area-fill" x1="0" y1="0" x2="0" y2="1">
@@ -136,7 +136,7 @@ export function StudyChart() {
                 className="fill-muted-foreground"
                 fontSize="10"
               >
-                {v}
+                {translateUI(v)}
               </text>
             </g>
           ))}
@@ -169,7 +169,7 @@ export function StudyChart() {
                 fontWeight="600"
                 className={cn("fill-foreground tabular-nums")}
               >
-                {d.count}
+                {translateUI(d.count)}
               </text>
               <text
                 x={x(i)}
@@ -179,7 +179,7 @@ export function StudyChart() {
                 fontWeight="600"
                 className="fill-muted-foreground"
               >
-                {d.weekday}
+                {translateUI(d.weekday)}
               </text>
               <text
                 x={x(i)}
@@ -188,7 +188,7 @@ export function StudyChart() {
                 fontSize="10"
                 className="fill-muted-foreground tabular-nums"
               >
-                {d.dayNum}
+                {translateUI(d.dayNum)}
               </text>
             </g>
           ))}
@@ -198,7 +198,7 @@ export function StudyChart() {
       <p className="mt-1 text-[12px] text-muted-foreground">
         {latest
           ? `Latest: ${latest.title} · ${kindLabel(latest.kind)} · ${latest.uploadedBy}`
-          : "Notes, past papers, and assignments appear here on the day they are published."}
+          : translateUI("Notes, past papers, and assignments appear here on the day they are published.")}
       </p>
     </section>
   );

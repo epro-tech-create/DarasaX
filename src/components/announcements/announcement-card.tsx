@@ -1,3 +1,5 @@
+"use client";
+import { useTranslate } from "@/components/providers/language-provider";
 import type { Announcement } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { formatRelativeTime, cn } from "@/lib/utils";
@@ -46,6 +48,7 @@ export function AnnouncementCard({
   announcement: Announcement;
   className?: string;
 }) {
+  const translateUI = useTranslate();
   const meta = categoryMeta[announcement.category];
   const Icon = meta.icon;
   const module = announcement.moduleId
@@ -81,15 +84,14 @@ export function AnnouncementCard({
             {announcement.pinned ? (
               <Badge tone="primary" className="gap-1">
                 <Pin className="h-2.5 w-2.5" />
-                Pinned
-              </Badge>
+                {translateUI("Pinned")}</Badge>
             ) : null}
             <Badge tone={meta.tone} className="capitalize">
               {announcement.category}
             </Badge>
             {module ? (
               <span className="text-[10px] font-medium text-muted-foreground">
-                {module.code}
+                {translateUI(module.code)}
               </span>
             ) : null}
             <span className="ml-auto text-[10px] text-muted-foreground">

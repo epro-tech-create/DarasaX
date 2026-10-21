@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthShell } from "@/components/auth/auth-shell";
@@ -11,6 +12,7 @@ import { cn } from "@/lib/utils";
 import type { ClassStreamId } from "@/types";
 
 export default function LecturerSelectClassPage() {
+  const translateUI = useTranslate();
   const router = useRouter();
   const { session } = useStaffSession();
   const options = useMemo(() => {
@@ -32,25 +34,19 @@ export default function LecturerSelectClassPage() {
     <AuthShell
       title={
         <>
-          Which class
-          <br />
-          are you teaching?
-        </>
+          {translateUI("Which class")}<br />
+          {translateUI("are you teaching?")}</>
       }
       subtitle="You teach more than one stream. Pick the class desk to open for this session."
     >
       <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-        Lecturer setup · Step 2 of 2
-      </p>
+        {translateUI("Lecturer setup · Step 2 of 2")}</p>
       <h1 className="mt-1 font-heading text-xl font-semibold tracking-tight">
-        Choose a class
-      </h1>
+        {translateUI("Choose a class")}</h1>
       <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground sm:text-[13px]">
-        Uploads and topics in this session target the class you select. You can
-        switch later from the header.
-      </p>
+        {translateUI("Uploads and topics in this session target the class you select. You can switch later from the header.")}</p>
 
-      <div className="mt-5 space-y-2" role="radiogroup" aria-label="Choose a class">
+      <div className="mt-5 space-y-2" role="radiogroup" aria-label={translateUI("Choose a class")}>
         {options.map((s) => {
           const on = selected === s.id;
           return (
@@ -79,10 +75,10 @@ export default function LecturerSelectClassPage() {
                 ✓
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[13px] font-semibold">{s.label}</span>
+                <span className="block text-[13px] font-semibold">{translateUI(s.label)}</span>
                 <span className="mt-0.5 block text-[11px] text-muted-foreground">
-                  {s.description ?? s.id}
-                  {s.isEvening ? " · Evening" : ""}
+                  {translateUI(s.description ?? s.id)}
+                  {translateUI(s.isEvening ? " · Evening" : "")}
                 </span>
               </span>
             </button>
@@ -90,8 +86,7 @@ export default function LecturerSelectClassPage() {
         })}
         {options.length === 0 ? (
           <p className="rounded-xl border border-warning/30 bg-warning/10 px-3 py-2.5 text-[12px] text-warning">
-            No classes on your profile. Complete onboarding first.
-          </p>
+            {translateUI("No classes on your profile. Complete onboarding first.")}</p>
         ) : null}
       </div>
 
@@ -102,12 +97,11 @@ export default function LecturerSelectClassPage() {
           onClick={continueToDesk}
           disabled={options.length === 0 || (!selected && options.length > 1)}
         >
-          Enter teaching desk
-        </AuthSubmitButton>
+          {translateUI("Enter teaching desk")}</AuthSubmitButton>
         <p className="mt-2 text-center text-[11px] text-muted-foreground">
-          {options.length > 1 && !selected
+          {translateUI(options.length > 1 && !selected
             ? "Select a class above to continue."
-            : "Your desk opens with this class active."}
+            : "Your desk opens with this class active.")}
         </p>
       </div>
     </AuthShell>

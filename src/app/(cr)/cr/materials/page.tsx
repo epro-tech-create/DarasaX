@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslate } from "@/components/providers/language-provider";
 import { useCallback } from "react";
 import { PageHeader } from "@/components/layout/page-header";
 import { LibraryUploadButton } from "@/components/staff/library-upload-button";
@@ -8,6 +9,7 @@ import { useStaffSession } from "@/lib/staff-auth";
 import type { MaterialUpload } from "@/types";
 
 export default function ClassRepMaterialsPage() {
+  const translateUI = useTranslate();
   const { session } = useStaffSession();
   const streamId = session?.streamId ?? "BENG24COE-1";
   const filterItems = useCallback(
@@ -24,13 +26,13 @@ export default function ClassRepMaterialsPage() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Class library"
-        description="Browse class files — open, download, edit, or remove."
+        title={translateUI("Class library")}
+        description={translateUI("Browse class files — open, download, edit, or remove.")}
         actions={
           <LibraryUploadButton />
         }
       />
-      <MaterialsLibrary title="Published for your class" filterItems={filterItems} />
+      <MaterialsLibrary title={translateUI("Published for your class")} filterItems={filterItems} />
     </div>
   );
 }
