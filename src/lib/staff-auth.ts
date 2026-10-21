@@ -98,6 +98,13 @@ export async function loginStaff(input: {
 
   clearActiveLecturerStream();
 
+  if (input.role === "lecturer") {
+    const { error: registrationError } = await supabase.rpc("complete_lecturer_registration");
+    if (registrationError) {
+      await supabase.auth.signOut();
+      throw registrationError;
+    }
+  }
   const profile = await ensureStaffProfile(supabase, data.user, {
     role: input.role,
   });
@@ -140,23 +147,13 @@ export async function completeLecturerOnboarding(input: {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Not signed in.");
 
-  const { data, error } = await supabase
-    .from("staff_profiles")
-    .update({
-      stream_ids: input.streamIds,
-      module_ids: input.moduleIds,
-      stream_id: input.streamIds[0],
-      onboarding_completed: true,
-      email: user.email ?? undefined,
-      full_name:
-        (user.user_metadata?.full_name as string | undefined) ?? undefined,
-    })
-    .eq("id", user.id)
-    .eq("role", "lecturer")
-    .select("*")
-    .single();
+  const { error } = await supabase.rpc("complete_lecturer_setup", {
+    selected_classes: input.streamIds,
+    selected_modules: input.moduleIds,
+  });
 
   if (error) throw error;
+  const data = await ensureStaffProfile(supabase, user, { role: "lecturer" });
   if (!data) throw new Error("Could not save teaching profile.");
 
   clearActiveLecturerStream();

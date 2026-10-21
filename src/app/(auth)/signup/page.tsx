@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, Suspense, useState } from "react";
 import { AuthAlert } from "@/components/auth/auth-alert";
 import { AuthShell } from "@/components/auth/auth-shell";
-import { AuthSteps } from "@/components/auth/auth-steps";
 import { AuthSubmitButton } from "@/components/auth/auth-submit-button";
 import { GoogleButton } from "@/components/auth/google-button";
 import { PasswordField } from "@/components/auth/password-field";
@@ -16,10 +15,12 @@ import { isValidEmail, normalizeEmail } from "@/lib/auth/email";
 import { signInWithGoogle } from "@/lib/auth/oauth";
 import { isPasswordStrongEnough } from "@/lib/auth/password";
 import { createClient } from "@/lib/supabase/client";
+import { getAppRole } from "@/lib/app-role";
 
 function SignupForm() {
   const translateUI = useTranslate();
   const router = useRouter();
+  const lecturer = getAppRole() === "lecturer";
   const next = safeStudentReturnPath(useSearchParams().get("next"));
   const nextQuery = next ? `?next=${encodeURIComponent(next)}` : "";
   const [fullName, setFullName] = useState("");
@@ -74,7 +75,11 @@ function SignupForm() {
       }
 
       if (data.session) {
-        router.replace(`/onboarding${nextQuery}`);
+        if (lecturer) {
+          const { error: registrationError } = await supabase.rpc("complete_lecturer_registration");
+          if (registrationError) throw registrationError;
+        }
+        router.replace(lecturer ? "/lecturer/onboarding" : `/onboarding${nextQuery}`);
         router.refresh();
         return;
       }
@@ -113,11 +118,10 @@ function SignupForm() {
       }
       subtitle="Sign up in minutes, join your class, and keep every module organized from day one."
     >
-      <AuthSteps current="account" />
-      <h1 className="font-heading text-xl font-semibold tracking-tight">
-        {translateUI("Create account")}</h1>
-      <p className="mt-1 text-sm text-muted-foreground sm:mt-0.5 sm:text-[11px]">
-        {translateUI("Start with your student details.")}</p>
+      <h1 className="text-center font-heading text-xl font-semibold tracking-tight">
+        {translateUI(lecturer ? "Create lecturer account" : "Create account")}</h1>
+      <p className="mt-1 text-center text-sm text-muted-foreground sm:mt-0.5 sm:text-[11px]">
+        {translateUI(lecturer ? "Create your account and verify your email to start teaching." : "Start with your student details.")}</p>
 
       <form className="mt-5 space-y-3.5 sm:mt-3 sm:space-y-2.5" onSubmit={onSubmit} noValidate>
         {error ? <AuthAlert message={translateUI(error)} /> : null}
@@ -167,13 +171,13 @@ function SignupForm() {
           {translateUI("Create Account")}</AuthSubmitButton>
       </form>
 
-      <div className="my-5 flex items-center gap-3 sm:my-3">
+      {!lecturer && <><div className="my-5 flex items-center gap-3 sm:my-3">
         <span className="h-px flex-1 bg-border" />
         <span className="text-xs text-muted-foreground sm:text-[10px]">{translateUI("OR")}</span>
         <span className="h-px flex-1 bg-border" />
       </div>
 
-      <GoogleButton onClick={onGoogle} loading={googleLoading} />
+      <GoogleButton onClick={onGoogle} loading={googleLoading} /></>}
 
       <p className="mt-5 text-center text-sm text-muted-foreground sm:mt-3 sm:text-[11px]">
         {translateUI("Already have an account?")}{" "}

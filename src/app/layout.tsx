@@ -4,7 +4,6 @@ import Script from "next/script";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { LanguageProvider } from "@/components/providers/language-provider";
 import { SessionTimeout } from "@/components/auth/session-timeout";
-import { BootSplash } from "@/components/brand/boot-splash";
 import { SiteVisitorTracker } from "@/components/analytics/site-visitor-tracker";
 import "./globals.css";
 
@@ -63,7 +62,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <LanguageProvider>
           <ThemeProvider>
           <SessionTimeout />
-          <BootSplash />
           <SiteVisitorTracker />
           {children}
           </ThemeProvider>

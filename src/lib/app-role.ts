@@ -111,7 +111,7 @@ export function pathAllowedForRole(pathname: string, role: AppRole): boolean {
   }
 
   // lecturer
-  if (pathname === "/login" || isSharedAuth) {
+  if (pathname === "/login" || pathname === "/signup" || pathname === "/register" || isSharedAuth) {
     return true;
   }
   if (pathname.startsWith("/lecturer")) return true;

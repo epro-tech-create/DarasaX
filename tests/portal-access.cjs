@@ -77,8 +77,12 @@ async function check(host, path, member, expected, destination) {
     await check(domain, path, cr, 403);
     await check(domain, path, { role, status: 'active' }, 200);
     await check(domain, path, { role, status: 'inactive' }, 403);
-    await check(domain, '/register', undefined, 307, '/login');
+    await check(domain, '/register', undefined, 307, role === 'lecturer' ? '/signup' : '/login');
   }
+  await check('lecturer.darasax.com', '/signup', undefined, 200);
+  await check('lecturer.darasax.com', '/verify-email', null, 200);
+  await check('lecturer.darasax.com', '/login', null, 200);
+  await check('admin.darasax.com', '/signup', undefined, 307, '/login');
   await check('darasax-cr.eprotechtz.com', '/', undefined, 307, '/cr');
   assert.equal(new URL((await proxy({ nextUrl: new URL('https://cr.darasax.com/'), url: 'https://cr.darasax.com/', headers: new Headers({ host: 'cr.darasax.com' }) })).location).origin, 'https://darasax.com');
   failed = true;

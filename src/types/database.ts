@@ -443,6 +443,8 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      complete_lecturer_registration: { Args: Record<string, never>; Returns: undefined };
+      complete_lecturer_setup: { Args: { selected_classes: string[]; selected_modules: string[] }; Returns: undefined };
       list_staff_students: { Args: Record<string, never>; Returns: Json };
       resolve_class_invitation: { Args: { invite_code: string }; Returns: Json };
       manage_class_invitation: { Args: { invite_action: string }; Returns: Json };

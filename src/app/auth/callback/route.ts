@@ -31,8 +31,15 @@ export async function GET(request: Request) {
       } = await supabase.auth.getUser();
 
       if (user) {
-        const staff = await getStaffProfile(supabase, user.id);
         const portal = roleFromHost(new URL(request.url).host) ?? getAppRole();
+        if (portal === "lecturer") {
+          const { error: registrationError } = await supabase.rpc("complete_lecturer_registration");
+          if (registrationError) {
+            await supabase.auth.signOut();
+            return NextResponse.redirect(new URL("/login?error=Could%20not%20activate%20lecturer%20account", origin));
+          }
+        }
+        const staff = await getStaffProfile(supabase, user.id);
         if (staff || portal !== "student") {
           const allowed = staff?.status === "active" &&
             staff.role === (portal === "student" ? "class_rep" : portal);
@@ -41,7 +48,7 @@ export async function GET(request: Request) {
             return NextResponse.redirect(new URL("/login?error=Account%20not%20authorized%20for%20this%20portal", origin));
           }
           await supabase.rpc("record_sign_in");
-          return NextResponse.redirect(new URL(APP_HOME[staff!.role], origin));
+          return NextResponse.redirect(new URL(staff!.role === "lecturer" && !staff!.onboarding_completed ? "/lecturer/onboarding" : APP_HOME[staff!.role], origin));
         }
         const profile = await ensureProfile(supabase, user);
         const restriction = studentEnrollmentError(profile);

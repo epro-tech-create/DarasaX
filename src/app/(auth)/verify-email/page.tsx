@@ -54,8 +54,11 @@ function VerifyEmailForm() {
       );
       return;
     }
-    setEmail(normalizeEmail(stored));
-    cooldown.start(60);
+    const restore = window.setTimeout(() => {
+      setEmail(normalizeEmail(stored));
+      cooldown.start(60);
+    }, 0);
+    return () => window.clearTimeout(restore);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
@@ -92,20 +95,26 @@ function VerifyEmailForm() {
         }
       }
 
-      sessionStorage.removeItem("darasax_verify_email");
-      sessionStorage.removeItem("darasax_verify_name");
-
       const {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) throw new Error("No user");
       if (staffRole) {
-        await ensureStaffProfile(supabase, user, { role: staffRole });
+        if (staffRole === "lecturer") {
+          const { error: registrationError } = await supabase.rpc("complete_lecturer_registration");
+          if (registrationError) throw registrationError;
+        }
+        const staff = await ensureStaffProfile(supabase, user, { role: staffRole });
+        if (!staff || staff.status !== "active" || staff.role !== staffRole) throw new Error("Staff access required");
+        sessionStorage.removeItem("darasax_verify_email");
+        sessionStorage.removeItem("darasax_verify_name");
         setSuccess(true);
-        setContinueTo(APP_HOME[staffRole]);
+        setContinueTo(staffRole === "lecturer" && !staff.onboarding_completed ? "/lecturer/onboarding" : APP_HOME[staffRole]);
         return;
       }
       const profile = await ensureProfile(supabase, user);
+      sessionStorage.removeItem("darasax_verify_email");
+      sessionStorage.removeItem("darasax_verify_name");
       setSuccess(true);
       setContinueTo(studentPostAuthPath(profile.onboarding_completed, next, await getStudentAdmission(supabase, user.id)));
     } catch (err) {

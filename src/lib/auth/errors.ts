@@ -7,6 +7,8 @@ export function getAuthErrorMessage(error: unknown): string {
         : "";
 
   const lower = message.toLowerCase();
+  if (lower.includes("cannot register as a lecturer")) return "This account cannot register as a lecturer. Contact your administrator.";
+  if (lower.includes("using email and password")) return "Create a lecturer account using email and password.";
   if (lower.includes("invitation is invalid")) return "This invitation is invalid, expired or revoked.";
   if (lower.includes("administrator to change your class")) return "You already belong to another class. Contact your administrator to change it.";
   if (lower.includes("administrator to change a registered number")) return "Contact your administrator to change your registration number.";

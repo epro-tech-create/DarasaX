@@ -87,7 +87,7 @@ export async function proxy(request: NextRequest) {
   if (portal === "class_rep") {
     return redirect("https://darasax.com/cr");
   }
-  if (pathname === "/register") return redirect("/login");
+  if (pathname === "/register") return redirect(portal === "lecturer" ? "/signup" : "/login");
   if (!pathAllowedForRole(pathname, portal))
     return redirect(forbiddenRedirect(portal));
 
@@ -102,6 +102,11 @@ export async function proxy(request: NextRequest) {
     );
   }
   const active = staff?.status === "active";
+  // Verified users finish lecturer registration before entering the protected workspace.
+  if (portal === "lecturer" && !staff && ["/signup", "/verify-email", "/login"].includes(pathname)) {
+    supabaseResponse.headers.set("Cache-Control", "private, no-store");
+    return supabaseResponse;
+  }
   const requiredRole = crPath
     ? "class_rep"
     : adminPath

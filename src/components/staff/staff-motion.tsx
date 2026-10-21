@@ -11,12 +11,10 @@ export function StaffStagger({
   children: ReactNode;
   className?: string;
 }) {
-  const reduceMotion = useReducedMotion();
-
   return (
     <motion.div
       className={cn(className)}
-      initial={reduceMotion ? false : "hidden"}
+      initial={false}
       animate="show"
       variants={{
         hidden: {},

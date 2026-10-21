@@ -49,10 +49,11 @@ export function NextClassCard({
   return (
     <section className="relative overflow-hidden rounded-[22px] bg-[#1565C0] text-white">
       <Image
-        src="/next-class-students.jpg"
+        src="/next-class-students-v1.webp"
         alt={""}
         fill
-        priority
+        preload
+        unoptimized
         sizes="(max-width: 1280px) 100vw, 1152px"
         className="object-cover object-center"
       />

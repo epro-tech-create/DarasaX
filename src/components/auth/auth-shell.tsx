@@ -21,13 +21,12 @@ export function AuthShell({
     <div className="grid min-h-screen font-sans lg:grid-cols-2">
       <div className="relative hidden overflow-hidden p-8 text-white lg:flex lg:flex-col lg:justify-between xl:p-10">
         <Image
-          src="/auth-panel.jpg"
+          src="/auth-panel-v1.webp"
           alt={translateUI("Student studying with joy")}
           fill
-          priority
+          unoptimized
           className="object-cover object-center"
           sizes="50vw"
-          quality={90}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0B1B2B] via-[#0B1B2B]/55 to-[#1565C0]/25" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#0B1B2B]/70 via-transparent to-[#1E88E5]/35" />

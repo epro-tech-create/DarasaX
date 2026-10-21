@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getStaffProfile } from "@/lib/auth/staff-profile";
-import { studentDirectoryRows,studentDetailsCsv } from "@/lib/student-directory";
+import { studentDirectoryRows } from "@/lib/student-directory";
+import { studentDetailsPdf } from "@/lib/student-pdf";
+export const runtime="nodejs";
 export const dynamic="force-dynamic";
 const fail=(error:string,status:number)=>NextResponse.json({error},{status,headers:{"Cache-Control":"private, no-store"}});
 export async function GET(request:Request){
@@ -20,6 +22,7 @@ export async function GET(request:Request){
   // The RPC enforces scope; filter again so URL parameters can only narrow it.
   const rows=studentDirectoryRows(data).filter(row=>(staff.role==="admin" || allowed.includes(row.stream_id)) && (!requested || row.stream_id===requested));
   const name=(requested??(staff.role==="class_rep"?staff.stream_id:"all-students")??"students").replace(/[^A-Za-z0-9_-]/g,"_");
-  return new NextResponse(studentDetailsCsv(rows),{headers:{"Content-Type":"text/csv; charset=utf-8","Content-Disposition":`attachment; filename="DarasaX-${name}-students.csv"`,"Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff"}});
+  const pdf=await studentDetailsPdf(rows,requested??(staff.role==="class_rep"?staff.stream_id:"All assigned classes")??"Students");
+  return new NextResponse(new Uint8Array(pdf),{headers:{"Content-Type":"application/pdf","Content-Disposition":`attachment; filename="DarasaX-${name}-students.pdf"`,"Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff"}});
  }catch{return fail("Could not download student details. Please try again.",500);}
 }

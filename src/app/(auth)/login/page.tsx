@@ -123,9 +123,9 @@ function StudentLoginForm() {
 
   return (
     <>
-      <h1 className="font-heading text-xl font-semibold tracking-tight">
+      <h1 className="text-center font-heading text-xl font-semibold tracking-tight">
         {translateUI("Welcome back")}</h1>
-      <p className="mt-1 text-sm text-muted-foreground sm:mt-0.5 sm:text-xs">
+      <p className="mt-1 text-center text-sm text-muted-foreground sm:mt-0.5 sm:text-xs">
         {translateUI("Log in to continue your semester.")}</p>
 
       <form className="mt-5 space-y-3.5 sm:mt-4 sm:space-y-3" onSubmit={onSubmit} noValidate>
@@ -243,7 +243,12 @@ function StaffLoginForm({
       router.replace(dest);
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sign in failed.");
+      if (role === "lecturer" && err instanceof Error && err.message.toLowerCase().includes("email not confirmed")) {
+        sessionStorage.setItem("darasax_verify_email", normalized);
+        router.push("/verify-email");
+        return;
+      }
+      setError(getAuthErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -264,10 +269,10 @@ function StaffLoginForm({
 
   return (
     <>
-      <h1 className="font-heading text-xl font-semibold tracking-tight">
+      <h1 className="text-center font-heading text-xl font-semibold tracking-tight">
         {translateUI(title)}
       </h1>
-      <p className="mt-1 text-sm text-muted-foreground sm:mt-0.5 sm:text-xs">
+      <p className="mt-1 text-center text-sm text-muted-foreground sm:mt-0.5 sm:text-xs">
         {translateUI(blurb)}
       </p>
 
@@ -299,7 +304,7 @@ function StaffLoginForm({
       </form>
 
       <p className="mt-5 text-center text-sm text-muted-foreground">
-        {translateUI("Staff access is assigned by an administrator. Contact them for access.")}</p>
+        {role === "lecturer" ? <>{translateUI("New lecturer?")} <Link href="/signup" className="font-medium text-primary">{translateUI("Create account")}</Link></> : translateUI("Staff access is assigned by an administrator. Contact them for access.")}</p>
     </>
   );
 }

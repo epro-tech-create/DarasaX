@@ -25,7 +25,6 @@ import { Logo } from "@/components/brand/logo";
 import { NotificationPanel } from "@/components/layout/notification-panel";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { StaffPageMotion } from "@/components/staff/staff-page-motion";
-import { APP_PORTS } from "@/lib/app-role";
 import { clearActiveLecturerStream } from "@/lib/lecturer-context";
 import { useNotifications } from "@/lib/notifications-store";
 import { SignOutButton } from "@/components/auth/sign-out-button";
@@ -129,13 +128,6 @@ export function StaffShell({
   const home =
     role === "admin" ? "/admin" : role === "class_rep" ? "/cr" : "/lecturer";
   const nav = [...baseNav, { href: `${home}/profile`, label: "Personal Profile", icon: UserRound }];
-  const port =
-    role === "admin"
-      ? APP_PORTS.admin
-      : role === "class_rep"
-        ? APP_PORTS.class_rep
-        : APP_PORTS.lecturer;
-
   const isActive = (href: string) =>
     href === home ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
 
@@ -228,12 +220,6 @@ export function StaffShell({
           })}
         </nav>
 
-        <div className="space-y-1 border-t border-border p-2.5">
-          {!collapsed ? (
-            <p className="px-2.5 pb-1 text-[11px] text-muted-foreground">
-              {translateUI("Port ")}{translateUI(port)} {translateUI(" · isolated app")}</p>
-          ) : null}
-        </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
