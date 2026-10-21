@@ -2,4 +2,3 @@
 begin;
 update private.admin_security_policy set enabled=true where id;
 commit;
-

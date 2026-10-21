@@ -201,4 +201,3 @@ begin
 end; $$;
 -- Enable administrator enforcement only after the new UI is deployed.
 commit;
-
