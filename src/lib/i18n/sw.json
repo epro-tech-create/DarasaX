@@ -2252,5 +2252,11 @@
   "Could not load registration number. Please refresh.": "Imeshindikana kupakia namba ya usajili. Tafadhali pakia upya.",
   "Sign in with an approved account in this class to view or download this file.": "Ingia kwa akaunti iliyoidhinishwa ya darasa hili kutazama au kupakua faili hili.",
   "Enter a name, valid email, numbers-only registration number, class, and password of 8–128 characters.": "Weka jina, barua pepe halali, namba ya usajili yenye tarakimu pekee, darasa na nenosiri lenye herufi 8–128.",
-  "Student admission could not be created. Please try again.": "Imeshindikana kuunda idhini ya mwanafunzi. Tafadhali jaribu tena."
+  "Student admission could not be created. Please try again.": "Imeshindikana kuunda idhini ya mwanafunzi. Tafadhali jaribu tena.",
+  "Continue with GitHub": "Endelea kwa GitHub",
+  "Connecting to GitHub...": "Inaunganisha na GitHub...",
+  "This sign-in provider is not enabled yet. Please contact the administrator.": "Njia hii ya kuingia haijawezeshwa bado. Tafadhali wasiliana na msimamizi.",
+  "The sign-in callback URL is misconfigured. Please contact the administrator.": "Anwani ya kurudi baada ya kuingia haijawekwa vizuri. Tafadhali wasiliana na msimamizi.",
+  "Sign-in failed during callback. Please try again.": "Kuingia kumeshindikana wakati wa kurudi. Tafadhali jaribu tena.",
+  "Sign-in could not start. Please try again.": "Imeshindikana kuanza kuingia. Tafadhali jaribu tena."
 }

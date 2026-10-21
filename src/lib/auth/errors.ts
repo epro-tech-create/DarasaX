@@ -31,18 +31,20 @@ export function getAuthErrorMessage(error: unknown): string {
     lower.includes("provider is not enabled") ||
     lower.includes("unsupported provider")
   ) {
-    return "Google sign-in is not enabled yet. Check Supabase Auth → Google.";
+    return "This sign-in provider is not enabled yet. Please contact the administrator.";
   }
 
   if (
     lower.includes("redirect_uri") ||
     (lower.includes("redirect") && lower.includes("mismatch"))
   ) {
-    return "Google redirect URL is misconfigured. Check Google Cloud and Supabase redirect settings.";
+    return "The sign-in callback URL is misconfigured. Please contact the administrator.";
   }
 
+  if (lower.includes("did not return a redirect url")) return "Sign-in could not start. Please try again.";
+
   if (lower.includes("unable to exchange external code")) {
-    return "Google sign-in failed during callback. Please try again.";
+    return "Sign-in failed during callback. Please try again.";
   }
 
   if (lower.includes("error sending confirmation email") || lower.includes("error sending")) {
