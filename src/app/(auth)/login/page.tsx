@@ -309,7 +309,7 @@ function StaffLoginForm({
       </form>
 
       <p className="mt-5 text-center text-sm text-muted-foreground">
-        {role === "lecturer" ? <>{translateUI("New lecturer?")} <Link href="/signup" className="font-medium text-primary">{translateUI("Create account")}</Link></> : translateUI("Staff access is assigned by an administrator. Contact them for access.")}</p>
+        {role === "lecturer" || role === "admin" ? <>{translateUI(role === "admin" ? "Invited administrator?" : "New lecturer?")} <Link href="/signup" className="font-medium text-primary">{translateUI("Create account")}</Link></> : translateUI("Staff access is assigned by an administrator. Contact them for access.")}</p>
     </>
   );
 }

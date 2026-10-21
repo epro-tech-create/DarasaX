@@ -21,6 +21,7 @@ function SignupForm() {
   const translateUI = useTranslate();
   const router = useRouter();
   const lecturer = getAppRole() === "lecturer";
+  const administrator = getAppRole() === "admin";
   const next = safeStudentReturnPath(useSearchParams().get("next"));
   const nextQuery = next ? `?next=${encodeURIComponent(next)}` : "";
   const [fullName, setFullName] = useState("");
@@ -79,7 +80,10 @@ function SignupForm() {
           const { error: registrationError } = await supabase.rpc("complete_lecturer_registration");
           if (registrationError) throw registrationError;
         }
-        router.replace(lecturer ? "/lecturer-approval" : `/onboarding${nextQuery}`);
+        if (administrator) {
+          await supabase.auth.signOut({ scope: "local" });
+          router.replace("/login");
+        } else router.replace(lecturer ? "/lecturer-approval" : `/onboarding${nextQuery}`);
         router.refresh();
         return;
       }
@@ -116,12 +120,12 @@ function SignupForm() {
           {translateUI("Create your")}<br />
           {translateUI("academic home.")}</>
       }
-      subtitle={lecturer ? "Verify your email, then wait for administrator approval before opening your workspace." : "Sign up in minutes, join your class, and keep every module organized from day one."}
+      subtitle={administrator ? "Choose your password and verify your email. Administrator access is limited to invited email addresses." : lecturer ? "Verify your email, then wait for administrator approval before opening your workspace." : "Sign up in minutes, join your class, and keep every module organized from day one."}
     >
       <h1 className="text-center font-heading text-xl font-semibold tracking-tight">
-        {translateUI(lecturer ? "Create lecturer account" : "Create account")}</h1>
+        {translateUI(administrator ? "Create administrator account" : lecturer ? "Create lecturer account" : "Create account")}</h1>
       <p className="mt-1 text-center text-sm text-muted-foreground sm:mt-0.5 sm:text-[11px]">
-        {translateUI(lecturer ? "Create your account, verify your email, and request administrator approval." : "Start with your student details.")}</p>
+        {translateUI(administrator ? "Use your invited email address and choose your own password." : lecturer ? "Create your account, verify your email, and request administrator approval." : "Start with your student details.")}</p>
 
       <form className="mt-5 space-y-3.5 sm:mt-3 sm:space-y-2.5" onSubmit={onSubmit} noValidate>
         {error ? <AuthAlert message={translateUI(error)} /> : null}
@@ -171,7 +175,7 @@ function SignupForm() {
           {translateUI("Create Account")}</AuthSubmitButton>
       </form>
 
-      {!lecturer && <><div className="my-5 flex items-center gap-3 sm:my-3">
+      {!lecturer && !administrator && <><div className="my-5 flex items-center gap-3 sm:my-3">
         <span className="h-px flex-1 bg-border" />
         <span className="text-xs text-muted-foreground sm:text-[10px]">{translateUI("OR")}</span>
         <span className="h-px flex-1 bg-border" />

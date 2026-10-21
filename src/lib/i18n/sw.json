@@ -2336,5 +2336,9 @@
   "Too many attempts or verification expired. Sign in again.": "Majaribio ni mengi sana au muda wa uthibitishaji umeisha. Ingia tena.",
   "Verification code is incorrect or expired.": "Msimbo wa uthibitishaji si sahihi au muda wake umeisha.",
   "Account changed. Sign in again.": "Akaunti imebadilika. Ingia tena.",
-  "Verification could not be completed. Sign in again.": "Uthibitishaji haukukamilika. Ingia tena."
+  "Verification could not be completed. Sign in again.": "Uthibitishaji haukukamilika. Ingia tena.",
+  "Invited administrator?": "Umealikwa kuwa msimamizi?",
+  "Create administrator account": "Fungua akaunti ya msimamizi",
+  "Use your invited email address and choose your own password.": "Tumia barua pepe uliyoalikwa nayo na uchague nenosiri lako.",
+  "Choose your password and verify your email. Administrator access is limited to invited email addresses.": "Chagua nenosiri lako na uthibitishe barua pepe yako. Wasimamizi wanaweza kutumia barua pepe zilizoalikwa pekee."
 }

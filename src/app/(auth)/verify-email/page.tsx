@@ -118,6 +118,13 @@ function VerifyEmailForm() {
         if (!staff || staff.status !== "active" || staff.role !== staffRole) throw new Error("Staff access required");
         sessionStorage.removeItem("darasax_verify_email");
         sessionStorage.removeItem("darasax_verify_name");
+        if (staffRole === "admin") {
+          // Signup verification does not replace the password + email sign-in check.
+          await supabase.auth.signOut({ scope: "local" });
+          router.replace("/login");
+          router.refresh();
+          return;
+        }
         setSuccess(true);
         setContinueTo(staffRole === "lecturer" && !staff.onboarding_completed ? "/lecturer/onboarding" : APP_HOME[staffRole]);
         return;

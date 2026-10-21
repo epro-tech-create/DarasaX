@@ -83,7 +83,7 @@ async function check(host, path, member, expected, destination) {
   await check('lecturer.darasax.com', '/signup', undefined, 200);
   await check('lecturer.darasax.com', '/verify-email', null, 200);
   await check('lecturer.darasax.com', '/login', null, 200);
-  await check('admin.darasax.com', '/signup', undefined, 307, '/login');
+  await check('admin.darasax.com', '/signup', undefined, 200);
   adminVerified=false;
   await check('admin.darasax.com','/admin',{role:'admin',status:'active'},307,'/admin-verify-email');
   await check('admin.darasax.com','/admin-verify-email',{role:'admin',status:'active'},200);

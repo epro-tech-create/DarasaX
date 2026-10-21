@@ -97,6 +97,7 @@ export function pathAllowedForRole(pathname: string, role: AppRole): boolean {
   }
 
   if (role === "admin") {
+    if (pathname === "/signup") return true;
     if (pathname === "/admin-verify-email") return true;
     if (pathname === "/login" || isSharedAuth) return true;
     if (pathname.startsWith("/admin") || pathname === "/api/admin/class-reps") return true;
