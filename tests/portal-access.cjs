@@ -48,6 +48,8 @@ async function check(host, path, member, expected, destination) {
 (async () => {
   const host = 'darasax.com';
   const cr = { role: 'class_rep', status: 'active' };
+  // The export handler authenticates/scopes the caller itself on every portal.
+  for (const domain of ['darasax.com','admin.darasax.com','lecturer.darasax.com']) await check(domain,'/api/students/export',undefined,200);
   await check(host, '/cr', undefined, 307, '/login');
   await check(host, '/cr', null, 403);
   await check(host, '/cr/file.pdf', null, 403);

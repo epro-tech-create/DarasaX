@@ -187,6 +187,7 @@ export const monitoredStudents: StudentMonitor[] = [
   {
     id: "st-1",
     name: "Ezekiel M.",
+    registrationNumber: null,
     email: "ezekiel@student.dit.ac.tz",
     streamId: "BENG24COE-1",
     year: 3,
@@ -198,6 +199,7 @@ export const monitoredStudents: StudentMonitor[] = [
   {
     id: "st-2",
     name: "Neema S.",
+    registrationNumber: null,
     email: "neema@student.dit.ac.tz",
     streamId: "BENG24COE-1",
     year: 3,
@@ -209,6 +211,7 @@ export const monitoredStudents: StudentMonitor[] = [
   {
     id: "st-3",
     name: "Joseph K.",
+    registrationNumber: null,
     email: "joseph@student.dit.ac.tz",
     streamId: "BENG24COE-1",
     year: 3,
@@ -220,6 +223,7 @@ export const monitoredStudents: StudentMonitor[] = [
   {
     id: "st-4",
     name: "Fatuma A.",
+    registrationNumber: null,
     email: "fatuma@student.dit.ac.tz",
     streamId: "BENG24COE-2",
     year: 3,
@@ -231,6 +235,7 @@ export const monitoredStudents: StudentMonitor[] = [
   {
     id: "st-5",
     name: "Brian O.",
+    registrationNumber: null,
     email: "brian@student.dit.ac.tz",
     streamId: "BENG24COE-3",
     year: 3,
@@ -242,6 +247,7 @@ export const monitoredStudents: StudentMonitor[] = [
   {
     id: "st-6",
     name: "Grace L.",
+    registrationNumber: null,
     email: "grace@student.dit.ac.tz",
     streamId: "BENG24COE-4",
     year: 3,
@@ -253,6 +259,7 @@ export const monitoredStudents: StudentMonitor[] = [
   {
     id: "st-7",
     name: "Daniel T.",
+    registrationNumber: null,
     email: "daniel@student.dit.ac.tz",
     streamId: "BENG24COE-2",
     year: 3,
@@ -264,6 +271,7 @@ export const monitoredStudents: StudentMonitor[] = [
   {
     id: "st-8",
     name: "Sarah N.",
+    registrationNumber: null,
     email: "sarah@student.dit.ac.tz",
     streamId: "BENG24COE-3",
     year: 3,

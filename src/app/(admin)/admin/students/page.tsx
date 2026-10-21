@@ -1,5 +1,6 @@
 "use client";
 
+import { StudentExportButton } from "@/components/staff/student-export-button";
 import { StudentApprovals } from "@/components/staff/student-approvals";
 import { useTranslate } from "@/components/providers/language-provider";
 import { useMemo, useState } from "react";
@@ -122,10 +123,11 @@ export default function AdminStudentsPage() {
         title={translateUI("Students")}
         description={translateUI("Add, edit, or remove students. Changes sync across Admin and Class Rep.")}
         actions={
+          <div className="flex flex-wrap items-start gap-2"><StudentExportButton streamId={stream === "all" ? undefined : stream} />
           <Button size="sm" type="button" onClick={openAdd}>
             <Plus className="h-3.5 w-3.5" />
             Add student
-          </Button>
+          </Button></div>
         }
       />
 
@@ -161,11 +163,12 @@ export default function AdminStudentsPage() {
 
       <StaffSection title={translateUI("Roster")} description={translateUI(`${filtered.length} students`)}>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[520px] text-left text-[12px]">
+          <table className="w-full min-w-[680px] text-left text-[12px]">
             <thead>
               <tr className="border-b border-border text-[10px] uppercase tracking-wide text-muted-foreground">
                 <th className="pb-2 pr-3 font-medium">{translateUI("Student")}</th>
                 <th className="pb-2 pr-3 font-medium">{translateUI("Stream")}</th>
+                <th className="pb-2 pr-3 font-medium">{translateUI("Registration number")}</th>
                 <th className="pb-2 pr-3 font-medium">{translateUI("Year")}</th>
                 <th className="pb-2 text-right font-medium"> </th>
               </tr>
@@ -187,6 +190,7 @@ export default function AdminStudentsPage() {
                     </div>
                   </td>
                   <td className="py-3 pr-3 text-muted-foreground">{translateUI(s.streamId)}</td>
+                  <td className="py-3 pr-3 font-mono text-xs">{s.registrationNumber || translateUI("Not provided")}</td>
                   <td className="py-3 pr-3 tabular-nums">{translateUI(s.year)}</td>
                   <td className="py-3">
                     <div className="flex justify-end gap-0.5">

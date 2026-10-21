@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { cachedQuery, invalidateQueries } from "@/lib/supabase/query-cache";
 import { createClient } from "@/lib/supabase/client";
+import { studentDirectoryRows } from "@/lib/student-directory";
 import { useClassRegistry } from "@/lib/class-registry";
 import type {
   AuditLogRow,
@@ -26,9 +27,10 @@ function isConfigured() {
   );
 }
 
-function toStudent(row: MonitoredStudentRow): StudentMonitor {
+function toStudent(row: MonitoredStudentRow & {registration_number?:string|null}): StudentMonitor {
   return {
     id: row.id,
+    registrationNumber: row.registration_number ?? null,
     name: row.name,
     email: row.email,
     streamId: row.stream_id as ClassStreamId,
@@ -89,6 +91,7 @@ export function useAdminPeopleStore({ rosterOnly = false }: { rosterOnly?: boole
   const [classReps, setClassReps] = useState<ClassRepAccount[]>([]);
   const [audit, setAudit] = useState<AuditLogEntry[]>([]);
   const [ready, setReady] = useState(false);
+  const [error,setError] = useState("");
 
   const refresh = useCallback(async () => {
     try {
@@ -100,10 +103,7 @@ export function useAdminPeopleStore({ rosterOnly = false }: { rosterOnly?: boole
       }
       const supabase = createClient();
       const [studentsRes, crsRes, auditRes] = await cachedQuery(rosterOnly ? "people:roster" : "people:all", async () => await Promise.all([
-        supabase
-          .from("monitored_students")
-          .select("*")
-          .order("name"),
+        supabase.rpc("list_staff_students"),
         rosterOnly ? { data: [], error: null } : supabase
           .from("staff_profiles")
           .select("*")
@@ -118,10 +118,12 @@ export function useAdminPeopleStore({ rosterOnly = false }: { rosterOnly?: boole
       if (studentsRes.error) throw studentsRes.error;
       if (crsRes.error) throw crsRes.error;
       if (auditRes.error) throw auditRes.error;
-      setStudents((studentsRes.data ?? []).map(toStudent));
+      setStudents(studentDirectoryRows(studentsRes.data).map(toStudent));
+      setError("");
       setClassReps((crsRes.data ?? []).map(toClassRep));
       setAudit((auditRes.data ?? []).map(toAudit));
     } catch {
+      setError("Could not load student details. Please refresh and try again.");
       // Keep previously loaded data on transient failures.
     } finally {
       setReady(true);
@@ -214,7 +216,7 @@ export function useAdminPeopleStore({ rosterOnly = false }: { rosterOnly?: boole
       }
       if (!data?.student) throw new Error("Student account creation failed.");
       invalidateQueries("people");
-      const student = toStudent(data.student);
+      const student = toStudent({...data.student,registration_number:input.registrationNumber});
       setStudents((prev) => [student, ...prev]);
       await log({
         actor: meta?.actor,
@@ -258,7 +260,7 @@ export function useAdminPeopleStore({ rosterOnly = false }: { rosterOnly?: boole
       if (error) throw error;
       invalidateQueries("people");
       const updated = toStudent(data);
-      setStudents((prev) => prev.map((s) => (s.id === id ? updated : s)));
+      setStudents((prev) => prev.map((s) => (s.id === id ? {...updated,registrationNumber:s.registrationNumber} : s)));
       await log({
         actor: meta?.actor,
         role: meta?.role,
@@ -402,6 +404,7 @@ export function useAdminPeopleStore({ rosterOnly = false }: { rosterOnly?: boole
 
   return {
     ready,
+    error,
     students,
     classReps,
     audit,

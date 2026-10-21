@@ -42,6 +42,7 @@ export async function proxy(request: NextRequest) {
   if (pathname.startsWith("/share/")) return NextResponse.next();
   // This endpoint verifies the session and database permissions itself.
   if (pathname === "/api/material-files") return NextResponse.next();
+  if (pathname === "/api/students/export") return NextResponse.next();
   if (pathname === "/api/site-visits") return NextResponse.next();
   if (/^\/(assignments|past-papers)\/[^/]+\.[a-z0-9]+$/i.test(pathname))
     return new NextResponse("Use the private class library to access files.", {

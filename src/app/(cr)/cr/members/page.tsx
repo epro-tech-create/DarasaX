@@ -1,5 +1,6 @@
 "use client";
 
+import { StudentExportButton } from "@/components/staff/student-export-button";
 import { ClassInvitation } from "@/components/staff/class-invitation";
 import { StudentApprovals } from "@/components/staff/student-approvals";
 import { useTranslate } from "@/components/providers/language-provider";
@@ -126,10 +127,11 @@ export default function ClassRepMembersPage() {
         title={translateUI("Class members")}
         description={translateUI(`Add, edit, or remove students in ${streamId}.`)}
         actions={
+          <div className="flex flex-wrap items-start gap-2"><StudentExportButton streamId={streamId} />
           <Button size="sm" type="button" onClick={openAdd}>
             <Plus className="h-3.5 w-3.5" />
             Add student
-          </Button>
+          </Button></div>
         }
       />
 
@@ -154,6 +156,7 @@ export default function ClassRepMembersPage() {
             <thead>
               <tr className="border-b border-border text-[10px] uppercase tracking-wide text-muted-foreground">
                 <th className="pb-2 pr-3 font-medium">{translateUI("Student")}</th>
+                <th className="pb-2 pr-3 font-medium">{translateUI("Registration number")}</th>
                 <th className="pb-2 pr-3 font-medium">{translateUI("Year")}</th>
                 <th className="pb-2 text-right font-medium"> </th>
               </tr>
@@ -183,6 +186,7 @@ export default function ClassRepMembersPage() {
                       </div>
                     </div>
                   </td>
+                  <td className="py-3 pr-3 font-mono text-xs">{s.registrationNumber || translateUI("Not provided")}</td>
                   <td className="py-3 pr-3 tabular-nums">{translateUI(s.year)}</td>
                   <td className="py-3">
                     <div className="flex justify-end gap-0.5">

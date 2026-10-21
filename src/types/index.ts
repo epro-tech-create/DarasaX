@@ -264,6 +264,7 @@ export interface MaterialUpload {
 }
 
 export interface StudentMonitor {
+  registrationNumber: string | null;
   id: string;
   name: string;
   email: string;

@@ -2280,5 +2280,12 @@
   "This invitation is invalid, expired or revoked.": "Mwaliko huu si halali, umeisha muda au umebatilishwa.",
   "You already belong to another class. Contact your administrator to change it.": "Tayari uko katika darasa lingine. Wasiliana na msimamizi kulibadilisha.",
   "Enter invitation code": "Weka msimbo wa mwaliko",
-  "Expires": "Unaisha muda"
+  "Expires": "Unaisha muda",
+  "Not provided": "Haijawekwa",
+  "Download students (CSV)": "Pakua wanafunzi (CSV)",
+  "Downloading...": "Inapakua...",
+  "Could not download student details. Please try again.": "Imeshindikana kupakua taarifa za wanafunzi. Tafadhali jaribu tena.",
+  "Student details for your assigned classes.": "Taarifa za wanafunzi wa madarasa uliyopangiwa.",
+  "No students in this class yet.": "Hakuna wanafunzi katika darasa hili bado.",
+  "Could not load student details. Please refresh and try again.": "Imeshindikana kupakia taarifa za wanafunzi. Tafadhali pakia upya na ujaribu tena."
 }

@@ -60,6 +60,7 @@ const crNav: StaffNavItem[] = [
 
 const lecturerNav: StaffNavItem[] = [
   { href: "/lecturer", label: "Overview", icon: Home },
+  { href: "/lecturer/students", label: "Students", icon: Users },
   { href: "/lecturer/topics", label: "Topics", icon: ListOrdered },
   { href: "/lecturer/materials", label: "Library", icon: BookOpen },
   { href: "/lecturer/past-papers", label: "Past papers", icon: ClipboardList },
