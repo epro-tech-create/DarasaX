@@ -19,4 +19,4 @@ New file uploads and replacements check the entire material catalog before reque
 
 Content fingerprints use versioned, fixed 4 MB SHA-256 chunk digests followed by a SHA-256 digest of the concatenated chunk digests. This avoids buffering a 500 MB file in memory. Existing material filenames are protected immediately. Pre-migration files have no fingerprint until replaced: detecting a renamed copy of these older files requires a privileged storage backfill. Production sensitive credentials cannot be pulled by Vercel CLI, so that backfill has not been run. Fingerprints are computed by the upload client, not independently attested by storage.
 
-CR learning pages live under `/cr/modules`, including module topics and related assignments. They reuse student learning components within the existing CR authorization and shell. `/cr/materials` remains the separate management Library. Existing row-level permissions still govern the materials returned.
+CR learning pages were removed from navigation. Legacy `/cr/modules` and related learning URLs redirect to the CR overview. `/cr/materials` remains the management Library.

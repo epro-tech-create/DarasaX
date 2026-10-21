@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { cachedQuery, invalidateQueries } from "@/lib/supabase/query-cache";
 import { createClient } from "@/lib/supabase/client";
+import { getAuthErrorMessage } from "@/lib/auth/errors";
+import { validRegistrationNumber } from "@/lib/auth/admission";
 import { studentDirectoryRows } from "@/lib/student-directory";
 import { useClassRegistry } from "@/lib/class-registry";
 import type {
@@ -251,16 +253,19 @@ export function useAdminPeopleStore({ rosterOnly = false }: { rosterOnly?: boole
       if (patch.assignmentsTotal !== undefined)
         dbPatch.assignments_total = patch.assignmentsTotal;
       if (patch.lastActive !== undefined) dbPatch.last_active = patch.lastActive;
-      const { data, error } = await supabase
-        .from("monitored_students")
-        .update(dbPatch)
-        .eq("id", id)
-        .select("*")
-        .single();
-      if (error) throw error;
+      let updated: StudentMonitor;
+      if (patch.registrationNumber !== undefined) {
+        if (!patch.registrationNumber || !validRegistrationNumber(patch.registrationNumber)) throw new Error("Registration number must contain numbers only.");
+        const { data, error } = await supabase.rpc("admin_edit_student_registration", { roster_id: id, reg_number: patch.registrationNumber, roster_patch: dbPatch });
+        if (error) throw new Error(getAuthErrorMessage(error));
+        updated = toStudent(data as unknown as MonitoredStudentRow & {registration_number: string});
+      } else {
+        const { data, error } = await supabase.from("monitored_students").update(dbPatch).eq("id", id).select("*").single();
+        if (error) throw error;
+        updated = toStudent(data);
+      }
       invalidateQueries("people");
-      const updated = toStudent(data);
-      setStudents((prev) => prev.map((s) => (s.id === id ? {...updated,registrationNumber:s.registrationNumber} : s)));
+      setStudents((prev) => prev.map((s) => s.id === id ? {...updated,registrationNumber: patch.registrationNumber ?? s.registrationNumber} : s));
       await log({
         actor: meta?.actor,
         role: meta?.role,

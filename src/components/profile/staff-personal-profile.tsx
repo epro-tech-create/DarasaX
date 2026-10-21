@@ -5,6 +5,7 @@ import { useStaffSession } from "@/lib/staff-auth";
 import { PageHeader } from "@/components/layout/page-header";
 import { LanguageSettings } from "@/components/profile/language-settings";
 import { ChangePasswordForm } from "@/components/auth/change-password-form";
+import { RegistrationNumber } from "./registration-number";
 import { AdminBrowserSecurity } from "./admin-browser-security";
 
 export function StaffPersonalProfile() {
@@ -17,6 +18,7 @@ export function StaffPersonalProfile() {
       <p className="mt-3 text-sm font-medium">{session?.name}</p>
       <p className="mt-1 break-all text-sm text-muted-foreground">{session?.email}</p>
     </section>
+    {session?.role === "class_rep" && <RegistrationNumber key={session.id} userId={session.id} />}
     <LanguageSettings />
     <ChangePasswordForm />
     {session?.role === "admin" && <AdminBrowserSecurity />}

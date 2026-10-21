@@ -63,7 +63,7 @@ export default function AdminStudentsPage() {
     setEditing(s);
     setForm({
       temporaryPassword: "",
-      registrationNumber: "",
+      registrationNumber: s.registrationNumber ?? "",
       name: s.name,
       email: s.email,
       streamId: s.streamId,
@@ -86,6 +86,7 @@ export default function AdminStudentsPage() {
     try {
       if (editing) {
         await updateStudent(editing.id, {
+          registrationNumber: form.registrationNumber,
           name: form.name,
           email: form.email,
           streamId: form.streamId,
@@ -236,8 +237,8 @@ export default function AdminStudentsPage() {
       >
         <form onSubmit={onSubmit} className="space-y-3">
           {message && <p role="status" className="text-sm">{translateUI(message)}</p>}
-          {!editing && <label className="block space-y-1 text-sm">{translateUI("Registration number")}<input required inputMode="numeric" pattern="[0-9]+" maxLength={64} placeholder="240242400506" value={form.registrationNumber}
-            onChange={e => setForm(f => ({ ...f, registrationNumber: e.target.value }))} className="h-11 w-full rounded-xl border border-border bg-background px-3" /></label>}
+          <label className="block space-y-1 text-sm">{translateUI("Registration number")}<input required inputMode="numeric" pattern="[0-9]+" maxLength={64} placeholder="240242400506" value={form.registrationNumber}
+            onChange={e => setForm(f => ({ ...f, registrationNumber: e.target.value }))} className="h-11 w-full rounded-xl border border-border bg-background px-3" /></label>
           {!editing && <label className="block space-y-1 text-sm">{translateUI("Temporary password")}<input required type="password" minLength={8} autoComplete="new-password" value={form.temporaryPassword}
               onChange={e => setForm(f => ({ ...f, temporaryPassword: e.target.value }))}
               className="h-11 w-full rounded-xl border border-border bg-background px-3" />

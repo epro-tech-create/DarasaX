@@ -1,1 +1,3 @@
-export { default } from "@/app/(dashboard)/modules/[id]/topics/[topicId]/page";
+import { redirect } from "next/navigation";
+
+export default function RetiredLearningPage() { redirect("/cr"); }

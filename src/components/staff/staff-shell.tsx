@@ -52,7 +52,6 @@ const adminNav: StaffNavItem[] = [
 
 const crNav: StaffNavItem[] = [
   { href: "/cr", label: "Overview", icon: Home },
-  { href: "/cr/modules", label: "Modules", icon: GraduationCap },
   { href: "/cr/topics", label: "Topics", icon: ListOrdered },
   { href: "/cr/materials", label: "Library", icon: BookOpen },
   { href: "/cr/timetable", label: "Timetable", icon: CalendarDays },
@@ -93,7 +92,6 @@ function staffNotificationHref(href: string, role: StaffRole): string {
     return role === "lecturer" ? "/lecturer/assignments" : `${base}/materials`;
   }
   if (href.startsWith("/modules")) {
-    if (role === "class_rep") return `/cr${href}`;
     if (href.includes("/topics") || role === "lecturer") {
       return `${base}/topics`;
     }

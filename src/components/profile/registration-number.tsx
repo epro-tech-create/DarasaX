@@ -5,34 +5,40 @@ import { getStudentAdmission, validRegistrationNumber } from "@/lib/auth/admissi
 import { getAuthErrorMessage } from "@/lib/auth/errors";
 import { useTranslate } from "@/components/providers/language-provider";
 import { Button } from "@/components/ui/button";
-export function RegistrationNumber({ userId, className }: {userId: string; className: string | null}) {
+export function RegistrationNumber({ userId }: {userId: string; className?: string | null}) {
   const t = useTranslate();
   const [number,setNumber] = useState("");
   const [registered,setRegistered] = useState<string | null>(null);
-  const [ready,setReady] = useState(false);
+  const [loadedUserId,setLoadedUserId] = useState<string | null>(null);
+  const ready = loadedUserId === userId;
   const [busy,setBusy] = useState(false);
   const [error,setError] = useState("");
+  const [message,setMessage] = useState("");
   useEffect(() => {
     let active = true;
     getStudentAdmission(createClient(),userId).then(a => {
-      if(active) { setRegistered(a?.registration_number ?? null); setNumber(a?.registration_number ?? ""); setReady(true); }
+      if(active) { setRegistered(a?.registration_number ?? null); setNumber(a?.registration_number ?? ""); setLoadedUserId(userId); }
     }).catch(() => { if(active) setError("Could not load registration number. Please refresh."); });
     return () => {active=false;};
   },[userId]);
   async function save(e: React.FormEvent) {
-    e.preventDefault(); if(busy || registered || !className) return;
+    e.preventDefault(); if(busy || !ready || number === registered) return;
     if(!validRegistrationNumber(number)) {setError("Registration number must contain numbers only.");return;}
-    setBusy(true);setError("");
-    const {error} = await createClient().rpc("submit_student_registration",{reg_number:number,target_class:className});
-    if(error) setError(getAuthErrorMessage(error)); else setRegistered(number);
-    setBusy(false);
+    setBusy(true);setError("");setMessage("");
+    try {
+      const {error} = await createClient().rpc("update_my_registration_number",{reg_number:number});
+      if(error) throw error;
+      setRegistered(number);setMessage("Registration number saved.");
+    } catch(error) {setError(getAuthErrorMessage(error));}
+    finally {setBusy(false);}
   }
   return <section className="surface rounded-2xl p-5"><h2 className="font-heading font-semibold">{t("Registration number")}</h2>
     <form onSubmit={e => void save(e)} className="mt-3 space-y-3">
-      <input aria-label={t("Registration number")} required inputMode="numeric" pattern="[0-9]+" maxLength={64} placeholder="240242400506" value={number} disabled={!ready || !!registered || busy} onChange={e => setNumber(e.target.value)} className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm disabled:opacity-60" />
-      <p className="text-xs text-muted-foreground">{t(registered ? "Contact your administrator to change your registration number." : "Numbers only. Example: 240242400506")}</p>
+      <input aria-label={t("Registration number")} required inputMode="numeric" pattern="[0-9]+" maxLength={64} placeholder="240242400506" value={number} disabled={!ready || busy} onChange={e => {setNumber(e.target.value);setMessage("");setError("");}} className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm disabled:opacity-60" />
+      <p className="text-xs text-muted-foreground">{t("Numbers only. Example: 240242400506")}</p>
       {error && <p role="alert" className="text-sm text-danger">{t(error)}</p>}
-      {!registered && <Button disabled={!ready || busy} type="submit">{t(busy ? "Saving..." : "Save registration number")}</Button>}
+      {message && <p role="status" className="text-sm text-success">{t(message)}</p>}
+      <Button disabled={!ready || busy || number === registered} type="submit">{t(busy ? "Saving..." : "Save registration number")}</Button>
     </form>
   </section>;
 }
