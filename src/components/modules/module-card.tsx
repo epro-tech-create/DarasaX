@@ -1,4 +1,5 @@
 "use client";
+import { useLearningPrefix } from "@/lib/module-links";
 import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
 import {
@@ -43,12 +44,13 @@ export function ModuleCard({
   compact?: boolean;
 }) {
   const translateUI = useTranslate();
+  const learningPrefix = useLearningPrefix();
   const Icon = iconMap[module.icon] || BookFallback;
 
   if (compact) {
     return (
       <Link
-        href={`/modules/${module.id}`}
+        href={`${learningPrefix}/modules/${module.id}`}
         className={cn(
           "surface group grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-[16px] p-3.5 transition duration-200",
           "hover:border-primary/30 hover:shadow-md hover:shadow-primary/10 sm:grid-cols-[auto_minmax(0,1fr)_auto_auto] sm:gap-4 sm:p-4",
@@ -116,7 +118,7 @@ export function ModuleCard({
 
   return (
     <Link
-      href={`/modules/${module.id}`}
+      href={`${learningPrefix}/modules/${module.id}`}
       className={cn(
         "surface group block rounded-[20px] p-5 transition duration-200 hover:-translate-y-0.5 hover:border-primary/25",
         className,

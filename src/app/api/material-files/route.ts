@@ -23,7 +23,7 @@ export async function POST(request: Request) {
   if (!body || typeof body !== "object") return json({ error: "Invalid request." }, 400);
   try {
     if (body.action === "upload") {
-      const { streamId, materialId, fileName, size, mimeType, moduleId } = body;
+      const { streamId, materialId, fileName, size, mimeType, moduleId, fingerprint } = body;
       if ((streamId !== null && (typeof streamId !== "string" || !/^[A-Za-z0-9_-]{1,100}$/.test(streamId))) ||
           typeof materialId !== "string" || !/^[A-Za-z0-9_-]{1,100}$/.test(materialId) ||
           typeof fileName !== "string" || !fileName || fileName.length > 255 ||
@@ -33,8 +33,30 @@ export async function POST(request: Request) {
         return json({ error: "Choose a valid file no larger than 500 MB and a class." }, 400);
       const { data: allowed, error } = await supabase.rpc("can_publish_material", { target_stream: streamId, target_module: moduleId ?? null });
       if (error || !allowed) return json({ error: "You cannot upload to this class or module." }, 403);
+      if (typeof fingerprint !== "string" || !/^v1:[0-9a-f]{64}$/.test(fingerprint)) return json({ error: "File fingerprint required. Refresh and try again." }, 400);
+      // Excluding the row being replaced requires permission to manage that row.
+      const { data: existing, error: existingError } = await supabase.from("materials").select("id,uploaded_by_id,stream_id,module_id").eq("id", materialId).maybeSingle();
+      if (existingError) return json({ error: "File checks are unavailable." }, 503);
+      if (existing) {
+        const { data: manage } = await supabase.rpc("can_manage_material", { owner_id: existing.uploaded_by_id, target_stream: existing.stream_id, target_module: existing.module_id });
+        if (!manage) return json({ error: "You cannot replace this material." }, 403);
+      }
+      const { data: duplicate, error: duplicateError } = await supabase.rpc("material_file_exists", { candidate_name: fileName, candidate_fingerprint: fingerprint, exclude_id: existing?.id ?? null });
+      if (duplicateError) return json({ error: "File checks are unavailable. Please try again." }, 503);
+      if (duplicate) return json({ error: "This filename or file has already been uploaded. Check the Library before uploading again." }, 409);
       const key = `${streamId ?? "__all__"}/${materialId}/${user.id}/${randomUUID()}/${fileName.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 120)}`;
       return json({ path: `r2:${key}`, url: await uploadUrl(key, mimeType, size) });
+    }
+    if (body.action === "discard") {
+      if (typeof body.path !== "string" || typeof body.materialId !== "string") return json({ error: "Invalid file." }, 400);
+      const key = materialKey(body.path, body.path.slice(3).split("/")[0], body.materialId);
+      if (key.split("/")[2] !== user.id) return json({ error: "Access denied." }, 403);
+      const { data: current, error } = await supabase.from("materials").select("file_path").eq("id", body.materialId).maybeSingle();
+      if (error || current?.file_path === body.path) return json({ error: "File is still in use." }, 409);
+      const { data: allowed } = await supabase.rpc("can_publish_material", { target_stream: null, target_module: null });
+      if (!allowed) return json({ error: "Access denied." }, 403);
+      await removeObject(key);
+      return json({ ok: true });
     }
     if (body.action === "read" || body.action === "delete" || body.action === "cleanup") {
       if (typeof body.materialId !== "string") return json({ error: "Invalid material." }, 400);

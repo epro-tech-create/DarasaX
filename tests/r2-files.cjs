@@ -14,11 +14,11 @@ assert.equal(r2.materialKey('r2:class/id/user/uuid/file.pdf', 'class', 'id'), 'c
 for (const path of ['r2:other/id/user/file', 'r2:class/other/user/file', 'r2:class/id/../file', 'class/id/file']) {
   assert.throws(() => r2.materialKey(path, 'class', 'id'));
 }
-let user = { id: 'u1' }, allowed = true, item = null, removed = [], signed = [], deleted = false;
+let user = { id: 'u1' }, allowed = true, duplicate = false, item = null, removed = [], signed = [], deleted = false;
 const checks = [];
 const supabase = {
   auth: { getUser: async () => ({ data: { user } }) },
-  rpc: async (name, input) => { checks.push({ name, input }); return { data: allowed }; },
+  rpc: async (name, input) => { checks.push({ name, input }); return { data: name === "material_file_exists" ? duplicate : allowed }; },
   from: () => ({ select() { return this; }, eq() { return this; }, delete() { deleted = true; return this; }, maybeSingle: async () => ({ data: item }) })
 };
 const { POST } = load('src/app/api/material-files/route.ts', {
@@ -30,7 +30,7 @@ const { POST } = load('src/app/api/material-files/route.ts', {
   '@/lib/r2': { materialKey: r2.materialKey, uploadUrl: async (...args) => { signed.push(args); return 'https://r2.invalid/upload'; },
     readUrl: async (...args) => { signed.push(args); return 'https://r2.invalid/read'; }, removeObject: async key => removed.push(key) }
 });
-const upload = { action: 'upload', streamId: 'class', materialId: 'id', fileName: 'notes.pdf', size: 1024, mimeType: 'application/pdf' };
+const upload = { action: 'upload', fingerprint: 'v1:' + 'a'.repeat(64), streamId: 'class', materialId: 'id', fileName: 'notes.pdf', size: 1024, mimeType: 'application/pdf' };
 const call = (body, origin = 'https://darasax.com') => POST({ url: 'https://darasax.com/api/material-files', headers: new Headers({ origin }), json: async () => body });
 (async () => {
   assert.equal((await call(upload, 'https://evil.invalid')).status, 403);
@@ -49,8 +49,12 @@ const call = (body, origin = 'https://darasax.com') => POST({ url: 'https://dara
   const global = await call({ ...upload, streamId: null });
   assert.equal(global.status, 200);
   assert.match(global.body.path, /^r2:__all__\/id\/u1\//);
-  assert.equal(checks.at(-1).name, 'can_publish_material');
-  assert.equal(checks.at(-1).input.target_stream, null);
+  assert.equal(checks.at(-1).name, 'material_file_exists');
+  assert.equal(checks.at(-1).input.exclude_id, null);
+  duplicate = true; const beforeDuplicate = signed.length;
+  assert.equal((await call(upload)).status, 409);
+  assert.equal(signed.length, beforeDuplicate); duplicate = false;
+  assert.equal((await call({...upload, fingerprint: null})).status, 400);
   item = { id: 'id', stream_id: null, uploaded_by_id: 'u1', module_id: null, file_path: global.body.path, file_name: 'notes.pdf' };
   assert.equal((await call({ action: 'read', materialId: 'id' })).status, 200);
   allowed = false;
@@ -73,6 +77,11 @@ const call = (body, origin = 'https://darasax.com') => POST({ url: 'https://dara
   assert.equal(removed.pop(), 'class/id/u1/old/file.pdf');
   assert.equal((await call({ action: 'delete', materialId: 'id' })).status, 200);
   assert.equal(removed[0], result.body.path.slice(3));
+  item = null;
+  assert.equal((await call({ action: 'discard', materialId: 'id', path: result.body.path })).status, 200);
+  assert.equal((await call({ action: 'discard', materialId: 'id', path: 'r2:class/id/other/uuid/file.pdf' })).status, 403);
+  item = { file_path: result.body.path };
+  assert.equal((await call({ action: 'discard', materialId: 'id', path: result.body.path })).status, 409);
   // Actual SDK signing, using synthetic credentials and no network access.
   process.env.R2_ENDPOINT = 'https://example.r2.cloudflarestorage.com';
   process.env.R2_BUCKET_NAME = 'notes'; process.env.R2_ACCESS_KEY_ID = 'test'; process.env.R2_SECRET_ACCESS_KEY = 'test';

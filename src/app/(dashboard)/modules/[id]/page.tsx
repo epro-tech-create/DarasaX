@@ -1,5 +1,6 @@
 "use client";
 
+import { useLearningPrefix } from "@/lib/module-links";
 import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -35,6 +36,7 @@ const tabs = ["Overview", "Notes", "Assignments", "Past Papers", "Resources"] as
 
 export default function ModuleDetailPage() {
   const translateUI = useTranslate();
+  const learningPrefix = useLearningPrefix();
   const params = useParams<{ id: string }>();
   const base = getModule(params.id);
   const [tab, setTab] = useState<(typeof tabs)[number]>("Overview");
@@ -46,7 +48,7 @@ export default function ModuleDetailPage() {
     () => (base ? forModule(base.id) : []),
     [base, forModule],
   );
-  const module = useMemo(
+  const courseModule = useMemo(
     () => (base ? enrichModule(base, published, topics) : null),
     [base, published, topics],
   );
@@ -69,14 +71,14 @@ export default function ModuleDetailPage() {
     return allAssignments.filter((a) => ids.has(a.id) || a.moduleId === base.id);
   }, [base, allAssignments]);
 
-  if (!module || !base) notFound();
+  if (!courseModule || !base) notFound();
 
   return (
     <div>
       <PageHeader
-        title={module.name}
-        description={translateUI(`${module.code} · ${module.lecturer} · Semester ${module.semester}`)}
-        actions={<Badge tone="primary">{module.progress}% complete</Badge>}
+        title={courseModule.name}
+        description={translateUI(`${courseModule.code} · ${courseModule.lecturer} · Semester ${courseModule.semester}`)}
+        actions={<Badge tone="primary">{courseModule.progress}% complete</Badge>}
       />
 
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -84,7 +86,7 @@ export default function ModuleDetailPage() {
           ["Notes", liveNotes.length, "Notes"],
           ["Assignments", moduleAssignments.length, "Assignments"],
           ["Past Papers", livePapers.length, "Past Papers"],
-          ["Topics", module.topicsTotal, "Overview"],
+          ["Topics", courseModule.topicsTotal, "Overview"],
         ].map(([label, value, target]) => (
           <button
             key={String(label)}
@@ -140,7 +142,7 @@ export default function ModuleDetailPage() {
                 className="surface flex items-center justify-between gap-3 rounded-[18px] p-4"
               >
                 <Link
-                  href={`/modules/${module.id}/topics/${topic.id}`}
+                  href={`${learningPrefix}/modules/${courseModule.id}/topics/${topic.id}`}
                   className="group flex min-w-0 flex-1 items-center gap-3"
                 >
                   {topic.completed ? (

@@ -1,4 +1,5 @@
 "use client";
+import { useLearningPrefix } from "@/lib/module-links";
 import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
 import type { Assignment, Module } from "@/types";
@@ -26,9 +27,10 @@ export function AssignmentCard({
   className?: string;
 }) {
   const translateUI = useTranslate();
+  const learningPrefix = useLearningPrefix();
   return (
     <Link
-      href={`/assignments/${assignment.id}`}
+      href={`${learningPrefix}${learningPrefix ? "/study-assignments" : "/assignments"}/${assignment.id}`}
       className={cn(
         "surface group relative flex flex-col gap-3 overflow-hidden rounded-[16px] p-3.5 transition duration-200 sm:flex-row sm:items-center sm:justify-between sm:p-4",
         "hover:scale-[1.01] hover:border-primary hover:shadow-lg hover:shadow-primary/20",

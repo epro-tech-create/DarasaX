@@ -11,3 +11,12 @@ A global publication uses `materials.stream_id = NULL` and one private R2 object
 Material RLS, shared links and download counting use the same global-aware read predicate. Pending students, anonymous users and inactive lecturers do not gain access. There were no existing published global records when this migration was applied.
 
 Verification includes `tests/upload-batch.cjs`, `tests/r2-files.cjs` and `tests/private-sharing.cjs`. For database checks, clone the isolated security fixture, apply `tests/global-materials-fixture.sql`, then the global-material migration and `tests/global-materials.sql`. These fixtures use only synthetic identities/files and send no emails or R2 uploads. Actual large-file transfer throughput depends on the uploader's connection and must be checked with their own signed-in session.
+
+
+## Duplicate files
+
+New file uploads and replacements check the entire material catalog before requesting an R2 upload URL. Matching filenames (case-insensitive, ignoring outer spaces) or matching content fingerprints fail with an actionable error. Unique database indexes also prevent simultaneous requests from publishing duplicates. Failed publication attempts clean up their own unattached R2 objects; existing attachments are protected.
+
+Content fingerprints use versioned, fixed 4 MB SHA-256 chunk digests followed by a SHA-256 digest of the concatenated chunk digests. This avoids buffering a 500 MB file in memory. Existing material filenames are protected immediately. Pre-migration files have no fingerprint until replaced: detecting a renamed copy of these older files requires a privileged storage backfill. Production sensitive credentials cannot be pulled by Vercel CLI, so that backfill has not been run. Fingerprints are computed by the upload client, not independently attested by storage.
+
+CR learning pages live under `/cr/modules`, including module topics and related assignments. They reuse student learning components within the existing CR authorization and shell. `/cr/materials` remains the separate management Library. Existing row-level permissions still govern the materials returned.

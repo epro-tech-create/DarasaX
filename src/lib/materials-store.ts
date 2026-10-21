@@ -1,6 +1,7 @@
 "use client";
 import { translateBrowserMessage } from "@/lib/i18n/translate";
 
+import { fileFingerprint } from "@/lib/file-fingerprint";
 import { downloadFile } from "@/lib/download";
 
 import { useCallback, useEffect, useState } from "react";
@@ -75,11 +76,15 @@ async function fileAction(body: Record<string, unknown>) {
 
 async function uploadFile(file: File, streamId: string | null, materialId: string, moduleId?: string | null) {
   const mimeType = file.type || "application/octet-stream";
-  const result = await fileAction({ action: "upload", fileName: file.name,
+  const fingerprint = await fileFingerprint(file);
+  const result = await fileAction({ action: "upload", fileName: file.name, fingerprint,
     size: file.size, mimeType, streamId, materialId, moduleId });
   const response = await fetch(result.url, { method: "PUT", headers: { "Content-Type": mimeType }, body: file });
-  if (!response.ok) throw new Error("Upload failed. Check your connection and the bucket CORS settings.");
-  return result.path as string;
+  if (!response.ok) {
+    await fileAction({ action: "discard", materialId, path: result.path }).catch(() => null);
+    throw new Error("Upload failed. Check your connection and the bucket CORS settings.");
+  }
+  return { path: result.path as string, fingerprint };
 }
 
 export async function resolveMaterialObjectUrl(
@@ -255,7 +260,7 @@ export function useMaterialsStore() {
     const id = `up-${crypto.randomUUID()}`;
     const streamId = input.streamId === "all" ? null : (input.streamId ?? null);
     if (!user) throw new Error("Sign in to upload files.");
-    const path = await uploadFile(input.file, streamId, id, input.moduleId);
+    const { path, fingerprint } = await uploadFile(input.file, streamId, id, input.moduleId);
 
     const { data, error } = await supabase
       .from("materials")
@@ -272,6 +277,7 @@ export function useMaterialsStore() {
         role: input.role,
         file_path: path,
         file_name: input.file.name,
+        file_fingerprint: fingerprint,
         mime_type: input.file.type || "application/octet-stream",
         size_bytes: input.file.size,
         size_label: formatFileSize(input.file.size),
@@ -280,7 +286,11 @@ export function useMaterialsStore() {
       .select("*")
       .single();
 
-    if (error) throw error;
+    if (error) {
+      await fileAction({ action: "discard", materialId: id, path }).catch(() => null);
+      if (error.code === "23505") throw new Error("This filename or file has already been uploaded. Check the Library before uploading again.");
+      throw error;
+    }
     if (!options?.deferRefresh) window.dispatchEvent(new Event("darasax:materials"));
     const entry = toUpload(data);
     invalidateQueries("materials");
@@ -311,6 +321,7 @@ export function useMaterialsStore() {
 
       let filePath = existing.file_path;
       let fileName = existing.file_name;
+      let fingerprint = existing.file_fingerprint;
       let mimeType = existing.mime_type;
       let sizeBytes = existing.size_bytes;
       let sizeLabel = existing.size_label;
@@ -324,7 +335,8 @@ export function useMaterialsStore() {
               ? null
               : patch.streamId;
         const nextPath = await uploadFile(patch.file, streamForPath, id, patch.moduleId ?? existing.module_id);
-        filePath = nextPath;
+        filePath = nextPath.path;
+        fingerprint = nextPath.fingerprint;
         fileName = patch.file.name;
         mimeType = patch.file.type || "application/octet-stream";
         sizeBytes = patch.file.size;
@@ -348,6 +360,7 @@ export function useMaterialsStore() {
           file_path: filePath,
           file_url: fileUrl,
           file_name: fileName,
+          file_fingerprint: fingerprint,
           mime_type: mimeType,
           size_bytes: sizeBytes,
           size_label: sizeLabel,
@@ -355,7 +368,11 @@ export function useMaterialsStore() {
         .eq("id", id)
         .select("*")
         .single();
-      if (error) throw error;
+      if (error) {
+        if (patch.file && filePath !== existing.file_path) await fileAction({ action: "discard", materialId: id, path: filePath }).catch(() => null);
+        if (error.code === "23505") throw new Error("This filename or file has already been uploaded. Check the Library before uploading again.");
+        throw error;
+      }
       if (patch.file && existing.file_path && !existing.file_path.startsWith("r2:") && existing.file_path !== filePath) {
         await supabase.storage.from(BUCKET).remove([existing.file_path]).catch(() => null);
       }

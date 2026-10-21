@@ -1,0 +1,7 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript'),React=require('react'),{renderToStaticMarkup}=require('react-dom/server');
+let prefix='';function load(file,deps){const exports={};vm.runInNewContext(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText,{exports,require:n=>deps[n]??require(n),process,console});return exports;}
+const deps={'next/link':({href,children,...props})=>React.createElement('a',{href,...props},children),'@/lib/module-links':{useLearningPrefix:()=>prefix},'@/components/providers/language-provider':{useTranslate:()=>x=>x},'@/lib/utils':{cn:(...v)=>v.filter(Boolean).join(' ')}};
+const {ModuleCard}=load('src/components/modules/module-card.tsx',deps);const fixture={id:'test',name:'Test module',code:'TEST',icon:'BookOpen',accent:'#39a6f6',semester:1,credits:3,progress:0,topicsTotal:1,topicsCompleted:0};
+for(prefix of ['', '/cr']) for(const compact of [true,false]) assert.match(renderToStaticMarkup(React.createElement(ModuleCard,{module:fixture,compact})),new RegExp(`href="${prefix}/modules/test"`));
+for(const route of ['modules/page.tsx','modules/[id]/page.tsx','modules/[id]/topics/[topicId]/page.tsx','study-assignments/[id]/page.tsx']) assert.match(fs.readFileSync('src/app/(cr)/cr/'+route,'utf8'),/export \{ default \}/);
+console.log('Passed student and CR module links in grid/list views and shared learning route coverage.');

@@ -1,5 +1,6 @@
 "use client";
 
+import { useLearningPrefix } from "@/lib/module-links";
 import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
 import { useMemo } from "react";
@@ -24,6 +25,7 @@ import { cn } from "@/lib/utils";
 
 export default function TopicDetailPage() {
   const translateUI = useTranslate();
+  const learningPrefix = useLearningPrefix();
   const params = useParams<{ id: string; topicId: string }>();
   const courseModule = getModule(params.id);
   const { topics, setCompleted, ready, error, refresh } = useTopicProgress();
@@ -60,7 +62,7 @@ export default function TopicDetailPage() {
         <p>{translateUI(error)}</p>
         <Button onClick={() => void refresh()}>{translateUI("Try again")}</Button>
         <Link
-          href={`/modules/${courseModule.id}`}
+          href={`${learningPrefix}/modules/${courseModule.id}`}
           className="ml-3 text-sm text-primary"
         >
           {translateUI("Back to module")}</Link>
@@ -77,7 +79,7 @@ export default function TopicDetailPage() {
     <div className="space-y-6">
       <div>
         <Link
-          href={`/modules/${courseModule.id}`}
+          href={`${learningPrefix}/modules/${courseModule.id}`}
           className="inline-flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground transition hover:text-primary"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -175,7 +177,7 @@ export default function TopicDetailPage() {
       <nav className="grid gap-3 sm:grid-cols-2">
         {prev ? (
           <Link
-            href={`/modules/${courseModule.id}/topics/${prev.id}`}
+            href={`${learningPrefix}/modules/${courseModule.id}/topics/${prev.id}`}
             className="surface group flex items-center gap-3 rounded-[16px] p-4 transition hover:border-primary/30"
           >
             <ArrowLeft className="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-primary" />
@@ -192,7 +194,7 @@ export default function TopicDetailPage() {
         )}
         {next ? (
           <Link
-            href={`/modules/${courseModule.id}/topics/${next.id}`}
+            href={`${learningPrefix}/modules/${courseModule.id}/topics/${next.id}`}
             className={cn(
               "surface group flex items-center justify-end gap-3 rounded-[16px] p-4 text-right transition hover:border-primary/30",
             )}
