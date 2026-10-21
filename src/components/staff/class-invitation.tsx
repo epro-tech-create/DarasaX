@@ -43,7 +43,7 @@ export function ClassInvitation() {
   }
   return <StaffSection title={t("Invite students")} description={t("Share a code or QR to admit students directly into your class. Invitations last 7 days.")}>
     {invite ? <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-      <div className="self-start rounded-xl bg-white p-3"><QRCodeCanvas ref={qr} value={url} size={144} title={t("Class invitation QR code")} /></div>
+      <div className="self-start rounded-xl bg-white p-3"><QRCodeCanvas ref={qr} value={url} size={144} marginSize={4} title={t("Class invitation QR code")} /></div>
       <div className="min-w-0 flex-1 space-y-3 text-sm"><p className="font-semibold">{invite.class_name}</p>
         <p className="text-muted-foreground">{t("Expires")}: {new Date(invite.expires_at).toLocaleString(t.locale,{timeZone:"Africa/Dar_es_Salaam"})}</p>
         <label className="block">{t("Invitation code")}<input readOnly value={invite.code} onFocus={e=>e.target.select()} className="mt-1 h-10 w-full rounded-xl border border-border bg-background px-3 font-mono text-xs" /></label>
