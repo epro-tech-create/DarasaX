@@ -3,7 +3,7 @@ import type { StudentDirectoryRow } from "./student-directory";
 
 /** Server-only report generation; authorization remains in the export handler. */
 export async function studentDetailsPdf(rows: StudentDirectoryRow[], scope: string): Promise<Buffer> {
-  const doc = new PDFDocument({ size: "A4", layout: "landscape", margin: 36, bufferPages: true,
+  const doc = new PDFDocument({ size: "A4", margin: 36, bufferPages: true,
     info: { Title: "DarasaX Student Register", Author: "DarasaX", Subject: scope } });
   const chunks: Buffer[] = [];
   const complete = new Promise<Buffer>((resolve, reject) => {
@@ -12,47 +12,39 @@ export async function studentDetailsPdf(rows: StudentDirectoryRow[], scope: stri
     doc.on("error", reject);
   });
   const left = 36, width = doc.page.width - 72;
-  const widths = [170, 125, 210, 110, 45, width - 660];
-  const labels = ["Full name", "Registration number", "Email", "Class", "Year", "Status"];
-  const generated = new Intl.DateTimeFormat("en-GB", { timeZone: "Africa/Dar_es_Salaam", dateStyle: "medium", timeStyle: "short" }).format(new Date());
+  const widths = [34, width - 34 - 125 - 104, 125, 104];
+  const labels = ["S/N", "Full name", "Reg. NO", "Class"];
   let y = 0;
-  function header() {
-    doc.font("Helvetica-Bold").fontSize(22).fillColor("#132338").text("Darasa", left, 29, { continued: true }).fillColor("#38a3f5").text("X");
-    doc.font("Helvetica").fontSize(8).fillColor("#64748b").text(`Generated ${generated} EAT`, 470, 38, { width: width - 434, align: "right" });
-    doc.font("Helvetica-Bold").fontSize(17).fillColor("#132338").text("Student register", left, 67);
-    doc.font("Helvetica").fontSize(9).fillColor("#475569").text(`${scope}  |  ${rows.length} student${rows.length === 1 ? "" : "s"}`, left, 92, { width });
-    y = 118;
-    doc.rect(left, y, width, 30).fill("#1678bd");
+  function cells(values: string[], height: number, bold = false) {
     let x = left;
-    labels.forEach((label, i) => {
-      doc.font("Helvetica-Bold").fontSize(8).fillColor("#ffffff").text(label, x + 8, y + 9, { width: widths[i] - 16, lineBreak: false });
+    values.forEach((value, i) => {
+      doc.rect(x, y, widths[i], height).lineWidth(0.6).strokeColor("black").stroke();
+      doc.font(bold ? "Helvetica-Bold" : "Helvetica").fontSize(10).fillColor("black")
+        .text(value, x + 5, y + 5, { width: widths[i] - 10, align: i === 0 ? "center" : "left" });
       x += widths[i];
     });
-    y += 30;
+    y += height;
+  }
+  function header() {
+    doc.font("Helvetica-Bold").fontSize(14).fillColor("black")
+      .text(scope === "All assigned classes" ? "STUDENT REGISTER" : `${scope} - STUDENT REGISTER`, left, 36, { width, align: "center" });
+    y = 36 + doc.heightOfString(scope === "All assigned classes" ? "STUDENT REGISTER" : `${scope} - STUDENT REGISTER`, { width }) + 12;
+    cells(labels, 24, true);
   }
   header();
   const ordered = [...rows].sort((a, b) => a.name.localeCompare(b.name) || a.email.localeCompare(b.email));
   for (const [index, row] of ordered.entries()) {
-    const values = [row.name, row.registration_number || "Not provided", row.email, row.stream_id, String(row.year), row.admission_status || "Not provided"];
-    doc.font("Helvetica").fontSize(8);
-    const height = Math.max(32, ...values.map((value, i) => doc.heightOfString(value, { width: widths[i] - 16 }) + 18));
+    const values = [String(index + 1), row.name, row.registration_number || "", row.stream_id];
+    doc.font("Helvetica").fontSize(10);
+    const height = Math.max(23, ...values.map((value, i) => doc.heightOfString(value, { width: widths[i] - 10 }) + 10));
     if (y + height > doc.page.height - 56) { doc.addPage(); header(); }
-    if (index % 2 === 0) doc.rect(left, y, width, height).fill("#f0f6fb");
-    let x = left;
-    values.forEach((value, i) => {
-      doc.font("Helvetica").fontSize(8).fillColor("#24364b").text(value, x + 8, y + 9, { width: widths[i] - 16 });
-      x += widths[i];
-    });
-    y += height;
-    doc.moveTo(left, y).lineTo(left + width, y).strokeColor("#dce5ee").lineWidth(0.4).stroke();
+    cells(values, height);
   }
-  if (!rows.length) doc.font("Helvetica").fontSize(10).fillColor("#64748b").text("No students found for this class.", left + 8, y + 20);
+  if (!rows.length) doc.font("Helvetica").fontSize(10).fillColor("black").text("No students found for this class.", left + 5, y + 12);
   const pages = doc.bufferedPageRange();
   for (let page = pages.start; page < pages.start + pages.count; page++) {
     doc.switchToPage(page);
-    const footer = doc.page.height - 48;
-    doc.font("Helvetica").fontSize(8).fillColor("#64748b").text("Confidential - student details | DarasaX", left, footer, { lineBreak: false });
-    doc.text(`Page ${page + 1} of ${pages.count}`, left, footer, { width, align: "right", lineBreak: false });
+    doc.font("Helvetica").fontSize(8).fillColor("black").text(`Page ${page + 1} of ${pages.count}`, left, doc.page.height - 48, { width, align: "center", lineBreak: false });
   }
   doc.end();
   return complete;
