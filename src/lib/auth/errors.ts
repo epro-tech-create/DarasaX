@@ -56,6 +56,10 @@ export function getAuthErrorMessage(error: unknown): string {
     return "We couldn't send the verification email. Check SMTP settings and try again.";
   }
 
+  if (lower.includes("captcha") || lower.includes("turnstile") || lower.includes("security check")) {
+    return "Security check could not be completed. Please try again.";
+  }
+
   if (lower.includes("token") && (lower.includes("expired") || lower.includes("otp_expired"))) {
     return "Verification code has expired.";
   }

@@ -47,7 +47,7 @@ async function check(host, path, member, expected, destination) {
   const url = new URL(`https://${host}${path}`);
   const result = await proxy({ nextUrl: url, url: url.href, headers: new Headers({ host }), cookies: {} });
   assert.equal(result.status, expected, `${host}${path} role ${member?.role}`);
-  if (destination) assert.equal(new URL(result.location).pathname, destination);
+  if (destination) assert.equal(destination.startsWith('https://') ? new URL(result.location).href : new URL(result.location).pathname, destination);
 }
 (async () => {
   const host = 'darasax.com';
@@ -56,8 +56,8 @@ async function check(host, path, member, expected, destination) {
   }
   await check(host, '/', undefined, 200);
   const cr = { role: 'class_rep', status: 'active' };
-  await check(host, '/login', {role:'admin',status:'active'},307,'/login');
-  await check(host, '/dashboard', {role:'admin',status:'active'},307,'/login');
+  await check(host, '/login', {role:'admin',status:'active'},307,'https://admin.darasax.com/login');
+  await check(host, '/dashboard', {role:'admin',status:'active'},307,'https://admin.darasax.com/login');
   // The export handler authenticates/scopes the caller itself on every portal.
   for (const domain of ['darasax.com','admin.darasax.com','lecturer.darasax.com']) await check(domain,'/api/students/export',undefined,200);
   await check(host, '/cr', undefined, 307, '/login');

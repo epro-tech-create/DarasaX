@@ -60,7 +60,7 @@ export default function ForgotPasswordPage() {
     } catch (err) {
       // Privacy-preserving fallback: still route unless rate limited
       const msg = getAuthErrorMessage(err);
-      if (msg.includes("Too many")) {
+      if (msg.includes("Too many") || msg.includes("Security check") || msg.includes("Network error")) {
         setError(msg);
       } else {
         sessionStorage.setItem("darasax_recovery_email", normalizeEmail(email));
