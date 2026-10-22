@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
+import { createRequire } from 'node:module';
 import { validEndpoint, notificationPayload, deliveryOutcome, sendBatch } from '../supabase/functions/deliver-web-push/push-core.mjs';
 
 for (const url of ['https://fcm.googleapis.com/fcm/send/token','https://web.push.apple.com/Qtoken','https://updates.push.services.mozilla.com/wpush/v2/token']) assert.equal(validEndpoint(url), true, url);
@@ -28,4 +29,13 @@ vm.runInNewContext(fs.readFileSync('public/sw.js','utf8'),{self:scope,URL,Date})
 let pending; handlers.push({data:{json:()=>({title:'DarasaX · New assignment',body:'Numerical Methods · Due Friday',href:'/assignments',tag:'assignment:1'})},waitUntil:p=>pending=p});await pending;
 assert.equal(shown[0][0],'DarasaX · New assignment');assert.equal(shown[0][1].icon,'/apple-touch-icon.png');assert.equal(shown[0][1].data.href,'https://www.darasax.com/assignments');
 handlers.notificationclick({notification:{data:{href:'https://evil.com'},close(){}},waitUntil:p=>pending=p});await pending;assert.equal(opened[0],'https://www.darasax.com/dashboard');
+const ts=createRequire(import.meta.url)('typescript');
+const clientExports={};let timeoutCallback;let timerCleared=false;
+const fakeNotification={requestPermission:()=>Promise.resolve('granted')};
+vm.runInNewContext(ts.transpileModule(fs.readFileSync('src/lib/push-client.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}}).outputText,
+ {exports:clientExports,Notification:fakeNotification,setTimeout:callback=>{timeoutCallback=callback;return 1;},clearTimeout:()=>{timerCleared=true;}});
+assert.equal(await clientExports.requestPhonePermission(),'granted');assert.equal(timerCleared,true);
+fakeNotification.requestPermission=()=>new Promise(()=>{});
+const stalledPermission=clientExports.requestPhonePermission();timeoutCallback();
+await assert.rejects(stalledPermission,/main browser/);
 console.log('Passed endpoint security, content formatting, staff routes, retry/expiry handling, 300-device batching, service-worker display, and safe notification click tests.');

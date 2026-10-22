@@ -20,7 +20,7 @@ The device receives announcements, assignments, published notes/slides/past pape
 
 ## Operations
 
-Deploy the two migrations, provision `darasax_push_public_key`, `darasax_push_private_key`, and `darasax_push_worker_secret` in Vault, and deploy `deliver-web-push` using `supabase/config.toml`. These are already configured for `psrtifnhstkujmschwem`. Deployment scripts and migration history contain no secret values.
+Deploy the three migrations, provision `darasax_push_public_key`, `darasax_push_private_key`, and `darasax_push_worker_secret` in Vault, and deploy `deliver-web-push` using `supabase/config.toml`. These are already configured for `psrtifnhstkujmschwem`. Deployment scripts and migration history contain no secret values.
 
 Check Supabase Edge Function logs for `push_delivery` counts. Inspect `cron.job` / `cron.job_run_details` and `net._http_response` for scheduler or HTTP errors. Inspect only delivery counts/status/error codes when troubleshooting; do not log subscription URLs or private keys. Pausing the `darasax-web-push` cron job stops background delivery while leaving the in-app inbox available.
 

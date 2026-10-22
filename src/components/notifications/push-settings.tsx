@@ -5,7 +5,7 @@ import { BellRing, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNotifications } from "@/lib/notifications-store";
 import { createClient } from "@/lib/supabase/client";
-import { detachPhoneNotifications, pushRegistration, pushSupported } from "@/lib/push-client";
+import { detachPhoneNotifications, pushRegistration, pushSupported, requestPhonePermission } from "@/lib/push-client";
 
 type Device = { id: string; updates: boolean; lessons: boolean };
 
@@ -44,10 +44,10 @@ export function PushSettings() {
 
   async function enable() {
     if (busy) return;
-    setBusy(true); setMessage("");
+    setBusy(true); setMessage("Choose Allow in your browser’s notification prompt.");
     try {
       // Request directly from this click, before any network awaits (required on iOS).
-      const permission = await Notification.requestPermission();
+      const permission = await requestPhonePermission();
       if (permission !== "granted") throw new Error("Notifications are blocked. Allow notifications for DarasaX in your browser or phone settings, then try again.");
       const client = createClient();
       const { data: publicKey, error: keyError } = await client.rpc("get_push_public_key");
