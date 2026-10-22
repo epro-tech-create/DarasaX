@@ -24,6 +24,7 @@ import { createClient } from "@/lib/supabase/client";
 import { studentEnrollmentError } from "@/lib/auth/enrollment";
 import { getStaffProfile } from "@/lib/auth/staff-profile";
 import { APP_HOME, getAppRole } from "@/lib/app-role";
+import { idleTimeoutMessage } from "@/lib/auth/idle-policy";
 import { ADMIN_EMAIL_PATH } from "@/lib/auth/admin-security";
 import {
   getLecturerEntryPath,
@@ -39,7 +40,7 @@ function StudentLoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(() => searchParams.get("error") ?? "");
-  const [info, setInfo] = useState(() => searchParams.get("expired") === "1" ? "You were signed out after 10 minutes of inactivity." : "");
+  const [info, setInfo] = useState(() => searchParams.get("expired") === "1" ? idleTimeoutMessage(getAppRole()) : "");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
@@ -199,7 +200,7 @@ function StaffLoginForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(() => searchParams.get("error") ?? "");
-  const [info] = useState(() => searchParams.get("expired") === "1" ? "You were signed out after 10 minutes of inactivity." : "");
+  const [info] = useState(() => searchParams.get("expired") === "1" ? idleTimeoutMessage(getAppRole()) : "");
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: FormEvent) {

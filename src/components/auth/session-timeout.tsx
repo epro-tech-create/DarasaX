@@ -3,9 +3,9 @@
 import { useEffect } from "react";
 import { signOutAndForget } from "@/lib/auth/sign-out";
 import { createClient } from "@/lib/supabase/client";
+import { getAppRole } from "@/lib/app-role";
+import { idleTimeoutMs } from "@/lib/auth/idle-policy";
 
-/** Idle limit. Any click, key, or scroll starts another 10 minutes. */
-const IDLE_MS = 10 * 60 * 1000;
 const KEY = "darasax_last_active_at";
 const FRESH_LOGIN_MS = 20 * 1000;
 
@@ -21,6 +21,7 @@ async function endSession() {
 
 export function SessionTimeout() {
   useEffect(() => {
+    const idleMs = idleTimeoutMs(getAppRole());
     let lastWrite = 0;
 
     async function check() {
@@ -39,7 +40,7 @@ export function SessionTimeout() {
         localStorage.setItem(KEY, String(Date.now()));
         return;
       }
-      if (!stamp || Date.now() - stamp > IDLE_MS) {
+      if (!stamp || Date.now() - stamp >= idleMs) {
         await endSession();
       }
     }
@@ -47,7 +48,7 @@ export function SessionTimeout() {
     function onActivity() {
       const now = Date.now();
       const stamp = Number(localStorage.getItem(KEY) || 0);
-      if (stamp && now - stamp > IDLE_MS) {
+      if (stamp && now - stamp >= idleMs) {
         void check();
         return;
       }
