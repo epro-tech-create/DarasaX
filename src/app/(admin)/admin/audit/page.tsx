@@ -1,13 +1,14 @@
 "use client";
 
 import { useTranslate } from "@/components/providers/language-provider";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { ScrollText, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StaffSection, StaffStatCard } from "@/components/staff/staff-ui";
-import { useAdminPeopleStore } from "@/lib/admin-people-store";
+import { useAuditLog } from "@/lib/audit-log-store";
+import { AUDIT_PAGE_SIZE } from "@/lib/audit-log-query";
 import type { AuditAction } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -30,27 +31,10 @@ const actionTone: Record<AuditAction, "default" | "primary" | "success" | "warni
 
 export default function AdminAuditPage() {
   const translateUI = useTranslate();
-  const { audit, deleteLog, clearLogs } = useAdminPeopleStore();
-  const [action, setAction] = useState<"all" | AuditAction>("all");
-  const [query, setQuery] = useState("");
+  const { audit: filtered, totalCount, todayCount, matchingCount, page, setPage, query, setQuery, action, setAction,
+    loading, error: loadError, refresh, deleteLog, clearLogs } = useAuditLog();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState("");
-
-  const filtered = useMemo(() => {
-    return audit.filter((row) => {
-      const hay = `${row.summary} ${row.actor} ${row.detail ?? ""}`.toLowerCase();
-      return (
-        (action === "all" || row.action === action) &&
-        (!query || hay.includes(query.toLowerCase()))
-      );
-    });
-  }, [audit, action, query]);
-
-  const todayCount = audit.filter((a) => {
-    const d = new Date(a.at);
-    const now = new Date();
-    return d.toDateString() === now.toDateString();
-  }).length;
 
   return (
     <div className="space-y-5">
@@ -62,18 +46,18 @@ export default function AdminAuditPage() {
       <div className="grid gap-2.5 sm:grid-cols-3">
         <StaffStatCard
           label={translateUI("Events today")}
-          value={String(todayCount)}
+          value={todayCount === null ? "…" : String(todayCount)}
           icon={ScrollText}
         />
         <StaffStatCard
           label={translateUI("Total logged")}
-          value={String(audit.length)}
+          value={totalCount === null ? "…" : String(totalCount)}
           icon={ScrollText}
           tone="success"
         />
         <StaffStatCard
-          label={translateUI("Showing")}
-          value={String(filtered.length)}
+          label={translateUI("Matching events")}
+          value={loading ? "…" : String(matchingCount)}
           icon={ScrollText}
         />
       </div>
@@ -81,12 +65,15 @@ export default function AdminAuditPage() {
       <div className="flex flex-col gap-2 sm:flex-row">
         <input
           value={query}
+          aria-label={translateUI("Search audit logs")}
+          maxLength={200}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={translateUI("Search actor or action…")}
           className="h-10 min-w-0 flex-1 rounded-xl border border-border bg-background px-3 text-[13px] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
         />
         <select
           value={action}
+          aria-label={translateUI("Filter audit action")}
           onChange={(e) => setAction(e.target.value as "all" | AuditAction)}
           className="h-10 rounded-xl border border-border bg-background px-3 text-[13px]"
         >
@@ -100,9 +87,11 @@ export default function AdminAuditPage() {
           <option value="other">{translateUI("Deletes and student activity")}</option>
           <option value="login">{translateUI("Sign in")}</option>
         </select>
+        <Button type="button" variant="outline" disabled={loading || busyId !== null} onClick={refresh}>{translateUI("Refresh")}</Button>
         <Button
           type="button"
           variant="outline"
+          disabled={loading || busyId !== null || filtered.length === 0}
           onClick={() => {
             if (filtered.length === 0) return;
             if (
@@ -113,11 +102,12 @@ export default function AdminAuditPage() {
               return;
             }
             setError("");
+            setBusyId("all");
             void clearLogs(filtered.map((row) => row.id)).catch(() => {
               setError(
                 "Could not delete logs. Run the latest Supabase migration, then try again.",
               );
-            });
+            }).finally(() => setBusyId(null));
           }}
         >
           <Trash2 className="h-3.5 w-3.5" />
@@ -126,8 +116,9 @@ export default function AdminAuditPage() {
       {error ? (
         <p className="text-[12px] font-medium text-danger">{translateUI(error)}</p>
       ) : null}
+      {loadError ? <div role="alert" className="flex items-center gap-3 text-sm text-danger"><p>{translateUI(loadError)}</p><Button variant="outline" onClick={refresh}>{translateUI("Try again")}</Button></div> : null}
 
-      <StaffSection title={translateUI("Activity trail")} description={translateUI("Newest first")}>
+      <StaffSection title={translateUI("Activity trail")} description={translateUI("All history · newest first · 50 per page")}>
         <div className="relative space-y-0">
           <div className="absolute bottom-2 left-[11px] top-2 w-px bg-border" />
           {filtered.map((row) => (
@@ -155,6 +146,7 @@ export default function AdminAuditPage() {
                       month: "short",
                       hour: "2-digit",
                       minute: "2-digit",
+                      timeZone: "Africa/Dar_es_Salaam",
                     }))}
                   </span>
                 </div>
@@ -170,7 +162,7 @@ export default function AdminAuditPage() {
                   size="sm"
                   variant="outline"
                   className="mt-2"
-                  disabled={busyId === row.id}
+                  disabled={busyId !== null || loading}
                   onClick={() => {
                     if (!window.confirm(translateUI("Delete this audit event?"))) return;
                     setBusyId(row.id);
@@ -189,12 +181,20 @@ export default function AdminAuditPage() {
               </div>
             </div>
           ))}
-          {filtered.length === 0 ? (
+          {loading ? <p role="status" className="py-8 text-center text-sm text-muted-foreground">{translateUI("Loading audit events…")}</p> : null}
+          {!loading && !loadError && filtered.length === 0 ? (
             <p className="py-8 text-center text-[12px] text-muted-foreground">
               {translateUI("No matching audit events.")}</p>
           ) : null}
         </div>
       </StaffSection>
+      <nav aria-label={translateUI("Audit log pages")} className="flex flex-wrap items-center justify-between gap-3">
+        <p role="status" className="text-xs text-muted-foreground">{loading ? translateUI("Loading…") : translateUI(`Showing ${matchingCount ? page * AUDIT_PAGE_SIZE + 1 : 0}–${Math.min((page + 1) * AUDIT_PAGE_SIZE, matchingCount)} of ${matchingCount} events`)}</p>
+        <div className="flex gap-2">
+          <Button variant="outline" disabled={loading || !!loadError || busyId !== null || page === 0} onClick={() => setPage(value => value - 1)}>{translateUI("Previous")}</Button>
+          <Button variant="outline" disabled={loading || !!loadError || busyId !== null || (page + 1) * AUDIT_PAGE_SIZE >= matchingCount} onClick={() => setPage(value => value + 1)}>{translateUI("Next")}</Button>
+        </div>
+      </nav>
     </div>
   );
 }

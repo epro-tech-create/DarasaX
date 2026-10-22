@@ -1,0 +1,49 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import type { AuditAction, AuditLogEntry } from "@/types";
+import { createClient } from "@/lib/supabase/client";
+import { invalidateQueries } from "@/lib/supabase/query-cache";
+import { AUDIT_PAGE_SIZE, loadAuditPage } from "@/lib/audit-log-query";
+
+export function useAuditLog() {
+  const [page, setPage] = useState(0);
+  const [query, updateQuery] = useState("");
+  const [action, updateAction] = useState<"all" | AuditAction>("all");
+  const [version, setVersion] = useState(0);
+  const key = JSON.stringify([page, query, action, version]);
+  const [result, setResult] = useState<{ key: string; audit: AuditLogEntry[]; totalCount: number | null; todayCount: number | null; matchingCount: number; error: string }>({
+    key: "", audit: [], totalCount: null, todayCount: null, matchingCount: 0, error: "",
+  });
+  const refresh = useCallback(() => setVersion(value => value + 1), []);
+  useEffect(() => {
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      try {
+        const data = await loadAuditPage(createClient(), { page, query, action });
+        if (cancelled) return;
+        const lastPage = Math.max(0, Math.ceil(data.matchingCount / AUDIT_PAGE_SIZE) - 1);
+        if (page > lastPage) { setPage(lastPage); return; }
+        setResult({ ...data, key, error: "" });
+      } catch {
+        if (!cancelled) setResult(previous => ({ ...previous, key, audit: [], error: "Could not load audit logs. Please try again." }));
+      }
+    }, 250);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [page, query, action, key]);
+  useEffect(() => {
+    window.addEventListener("focus", refresh);
+    return () => window.removeEventListener("focus", refresh);
+  }, [refresh]);
+  const setQuery = (value: string) => { updateQuery(value); setPage(0); };
+  const setAction = (value: "all" | AuditAction) => { updateAction(value); setPage(0); };
+  const clearLogs = async (ids: string[]) => {
+    if (!ids.length) return;
+    const { error } = await createClient().from("audit_log").delete().in("id", ids.map(Number));
+    if (error) throw error;
+    invalidateQueries("people"); refresh();
+  };
+  const loading = result.key !== key;
+  return { ...result, audit: loading ? [] : result.audit, loading, page, setPage, query, setQuery, action, setAction, refresh,
+    clearLogs, deleteLog: (id: string) => clearLogs([id]) };
+}
