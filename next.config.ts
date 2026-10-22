@@ -12,7 +12,11 @@ const nextConfig: NextConfig = {
     }));
     const noindex = (appRole === "student" ? privatePages.map(path => `/${path}/:path*`) : ["/:path*"])
       .map(source => ({ source, headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] }));
-    return [...images, ...noindex];
+    return [...images, ...noindex, { source: "/sw.js", headers: [
+      { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+      { key: "Service-Worker-Allowed", value: "/" },
+      { key: "Content-Security-Policy", value: "default-src 'self'; script-src 'self'" },
+    ] }];
   },
   env: {
     NEXT_PUBLIC_APP_ROLE: appRole,

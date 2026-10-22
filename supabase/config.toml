@@ -1,0 +1,7 @@
+project_id = "DarasaX"
+
+[functions.deliver-web-push]
+# Authentication is checked inside the handler: private scheduler secret or a
+# verified user JWT restricted to a rate-limited test of their own device.
+verify_jwt = false
+entrypoint = "./functions/deliver-web-push/index.js"

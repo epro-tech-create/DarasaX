@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+import { validEndpoint, notificationPayload, deliveryOutcome, sendBatch } from '../supabase/functions/deliver-web-push/push-core.mjs';
+
+for (const url of ['https://fcm.googleapis.com/fcm/send/token','https://web.push.apple.com/Qtoken','https://updates.push.services.mozilla.com/wpush/v2/token']) assert.equal(validEndpoint(url), true, url);
+for (const url of ['http://fcm.googleapis.com/x','https://localhost/x','https://169.254.169.254/x','https://fcm.googleapis.com.evil.com/x','https://user:pass@fcm.googleapis.com/x','https://fcm.googleapis.com:444/x']) assert.equal(validEndpoint(url), false, url);
+assert.equal(deliveryOutcome(201),'sent'); assert.equal(deliveryOutcome(410),'expired'); assert.equal(deliveryOutcome(429),'retry'); assert.equal(deliveryOutcome(503),'retry'); assert.equal(deliveryOutcome(403),'failed');
+const now = Date.now();
+const base = { endpoint:'https://fcm.googleapis.com/fcm/send/token', origin:'https://www.darasax.com', expiresAt:new Date(now+60000).toISOString(),payload:{title:'DarasaX · Class in 10 minutes',body:'mod-numerical · 09:00–12:00 EAT · B14',href:'/timetable'} };
+assert.match(notificationPayload(base).body,/Numerical Methods and Matrices/);
+assert.equal(notificationPayload({...base,origin:'https://cr.darasax.com'}).href,'/cr/timetable');
+assert.equal(notificationPayload({...base,portal:'class_rep'}).href,'/cr/timetable');
+assert.equal(notificationPayload({...base,portal:'class_rep',payload:{href:'/announcements'}}).href,'/cr/announcements');
+assert.equal(notificationPayload({...base,portal:'lecturer',payload:{href:'/assignments'}}).href,'/lecturer/assignments');
+assert.equal(notificationPayload({...base,payload:{href:'https://evil.com'}}).href,'/dashboard');
+const finished=[]; let active=0,maxActive=0;
+const jobs=Array.from({length:300},(_,id)=>({...base,id,attempts:1}));
+const stats=await sendBatch(jobs,{now:()=>now,send:async()=>{active++;maxActive=Math.max(maxActive,active);await new Promise(r=>setTimeout(r,1));active--;return {status:201};},finish:async(...args)=>finished.push(args)});
+assert.equal(stats.sent,300); assert.equal(finished.length,300); assert.ok(maxActive<=8);
+const outcomes=[];
+await sendBatch([{...base,id:1},{...base,id:2,endpoint:'https://localhost/private'},{...base,id:3,expiresAt:new Date(now-1).toISOString()}],{now:()=>now,send:async()=>{throw new Error('offline')},finish:async(j,result)=>outcomes.push([j.id,result])});
+assert.deepEqual(outcomes.sort(),[[1,'retry'],[2,'failed'],[3,'failed']]);
+
+const handlers={}, shown=[], opened=[];
+const scope={location:{origin:'https://www.darasax.com'},addEventListener:(type,cb)=>handlers[type]=cb,registration:{showNotification:async(...args)=>shown.push(args)},clients:{matchAll:async()=>[],openWindow:async url=>opened.push(url)}};
+vm.runInNewContext(fs.readFileSync('public/sw.js','utf8'),{self:scope,URL,Date});
+let pending; handlers.push({data:{json:()=>({title:'DarasaX · New assignment',body:'Numerical Methods · Due Friday',href:'/assignments',tag:'assignment:1'})},waitUntil:p=>pending=p});await pending;
+assert.equal(shown[0][0],'DarasaX · New assignment');assert.equal(shown[0][1].icon,'/apple-touch-icon.png');assert.equal(shown[0][1].data.href,'https://www.darasax.com/assignments');
+handlers.notificationclick({notification:{data:{href:'https://evil.com'},close(){}},waitUntil:p=>pending=p});await pending;assert.equal(opened[0],'https://www.darasax.com/dashboard');
+console.log('Passed endpoint security, content formatting, staff routes, retry/expiry handling, 300-device batching, service-worker display, and safe notification click tests.');

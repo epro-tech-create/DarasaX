@@ -7,6 +7,7 @@ import { formatRelativeTime } from "@/lib/utils";
 import { useNotifications } from "@/lib/notifications-store";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { PushSettings } from "@/components/notifications/push-settings";
 
 export function NotificationPanel({
   open,
@@ -32,7 +33,7 @@ export function NotificationPanel({
         aria-label={translateUI("Close notifications")}
         onClick={onClose}
       />
-      <div className="absolute right-3 top-16 w-[min(100vw-1.5rem,380px)] overflow-hidden rounded-[20px] border border-border bg-card shadow-2xl sm:right-6">
+      <div className="absolute right-3 top-16 flex max-h-[calc(100dvh-5rem)] w-[min(100vw-1.5rem,380px)] flex-col overflow-hidden rounded-[20px] border border-border bg-card shadow-2xl sm:right-6">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <div className="flex items-center gap-2">
             <Bell className="h-4 w-4 text-primary" />
@@ -48,6 +49,8 @@ export function NotificationPanel({
             <CheckCheck className="h-4 w-4" />
             {translateUI("Mark all read")}</Button>
         </div>
+        <div className="min-h-0 overflow-y-auto">
+        <PushSettings />
         {error ? <div role="alert" className="space-y-2 px-4 py-4 text-sm">
           <p>{translateUI(error)}</p><Button variant="outline" size="sm" onClick={refresh}>{translateUI("Try again")}</Button>
         </div> : null}
@@ -64,7 +67,7 @@ export function NotificationPanel({
             />
           </div>
         ) : (
-          <ul className="max-h-[70vh] overflow-y-auto">
+          <ul>
             {items.map((n) => {
               const href = resolveHref
                 ? resolveHref(n.href || "#")
@@ -99,6 +102,7 @@ export function NotificationPanel({
             })}
           </ul>
         )}
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,11 @@
 "use client";
 import { createClient } from "@/lib/supabase/client";
 import { invalidateQueries } from "@/lib/supabase/query-cache";
+import { detachPhoneNotifications } from "@/lib/push-client";
 export async function signOutAndForget(destination: "/login" | "/login?expired=1" = "/login") {
+  if (destination === "/login") {
+    try { await detachPhoneNotifications(); } catch { /* Expired endpoints are removed by the delivery worker. */ }
+  }
   const response = await fetch("/auth/signout",{method:"POST",credentials:"same-origin",cache:"no-store"});
   if (!response.ok) throw new Error("Could not sign out. Please try again.");
   try { await createClient().auth.signOut({scope:"local"}); } catch { /* Server already expired the session cookies. */ }

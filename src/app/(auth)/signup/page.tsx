@@ -8,6 +8,7 @@ import { AuthAlert } from "@/components/auth/auth-alert";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { AuthSubmitButton } from "@/components/auth/auth-submit-button";
 import { GoogleButton } from "@/components/auth/google-button";
+import { GitHubButton } from "@/components/auth/github-button";
 import { PasswordField } from "@/components/auth/password-field";
 import { getAuthErrorMessage } from "@/lib/auth/errors";
 import { safeStudentReturnPath } from "@/lib/auth/redirect";
@@ -181,7 +182,10 @@ function SignupForm() {
         <span className="h-px flex-1 bg-border" />
       </div>
 
-      <GoogleButton onClick={onGoogle} loading={googleLoading} /></>}
+      <div className="space-y-3">
+        <GoogleButton onClick={onGoogle} loading={googleLoading} />
+        <GitHubButton next={next} disabled={loading || googleLoading} onError={setError} />
+      </div></>}
 
       <p className="mt-5 text-center text-sm text-muted-foreground sm:mt-3 sm:text-[11px]">
         {translateUI("Already have an account?")}{" "}

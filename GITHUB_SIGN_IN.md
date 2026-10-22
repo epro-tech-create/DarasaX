@@ -1,4 +1,4 @@
-GitHub buttons are intentionally hidden from every frontend entry screen at the user's request until they confirm the provider is enabled. The helper and unused component are retained for later activation.
+GitHub buttons are enabled on student login/signup and assigned staff login screens after the user confirmed the Supabase provider is enabled. Staff signup retains its email verification flow.
 
 # GitHub sign-in
 

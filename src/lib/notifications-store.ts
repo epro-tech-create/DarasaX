@@ -3,6 +3,7 @@
 import { createContext, createElement, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { NotificationItem, NotificationType } from "@/types";
+import { PushAccountLifecycle } from "@/components/notifications/push-account-lifecycle";
 
 const UPDATE_EVENT = "darasax:notifications";
 type Inbox = { userId: string | null; items: NotificationItem[]; unreadCount: number; ready: boolean; error: string };
@@ -84,7 +85,7 @@ const NotificationsContext = createContext<ReturnType<typeof useNotificationInbo
 /** One inbox/poller per workspace, shared by desktop/mobile badges and panels. */
 export function NotificationsProvider({ userId, children }: { userId: string | null; children: ReactNode }) {
   const inbox = useNotificationInbox(userId);
-  return createElement(NotificationsContext.Provider, { value: inbox }, children);
+  return createElement(NotificationsContext.Provider, { value: inbox }, createElement(PushAccountLifecycle, { userId }), children);
 }
 
 export function useNotifications() {

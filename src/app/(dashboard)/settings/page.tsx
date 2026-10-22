@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { AuthAlert } from "@/components/auth/auth-alert";
 import { cn } from "@/lib/utils";
 import { LanguageSettings } from "@/components/profile/language-settings";
+import { PushSettings } from "@/components/notifications/push-settings";
 import { createClient } from "@/lib/supabase/client";
 import { getAuthErrorMessage } from "@/lib/auth/errors";
 
@@ -45,12 +46,14 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [emailNotifs, setEmailNotifs] = useState(true);
-  const [pushNotifs, setPushNotifs] = useState(true);
   const [email, setEmail] = useState("");
   const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const supabase = createClient();
@@ -121,14 +124,7 @@ export default function SettingsPage() {
                     className="h-4 w-4 accent-[var(--primary)]"
                   />
                 </label>
-                <label className="flex items-center justify-between gap-3 text-sm">
-                  {translateUI("Push notifications")}<input
-                    type="checkbox"
-                    checked={pushNotifs}
-                    onChange={(e) => setPushNotifs(e.target.checked)}
-                    className="h-4 w-4 accent-[var(--primary)]"
-                  />
-                </label>
+                <PushSettings />
               </div>
             ) : null}
 

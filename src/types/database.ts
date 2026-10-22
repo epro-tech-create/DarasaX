@@ -446,6 +446,11 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      get_push_public_key: { Args: Record<string, never>; Returns: string };
+      get_push_device: { Args: { push_endpoint: string }; Returns: Json };
+      register_push_subscription: { Args: { push_endpoint: string; push_p256dh: string; push_auth: string; push_origin: string }; Returns: Json };
+      remove_push_subscription: { Args: { push_endpoint: string }; Returns: undefined };
+      set_push_preferences: { Args: { device_id: string; receive_updates: boolean; lesson_reminders: boolean }; Returns: undefined };
       admin_email_verified: { Args: Record<string, never>; Returns: boolean };
       start_admin_email_check: { Args: { challenge_token: string; browser_token: string }; Returns: Json };
       admin_email_attempt: { Args: { challenge_token: string }; Returns: boolean };
