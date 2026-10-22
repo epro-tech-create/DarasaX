@@ -1,6 +1,7 @@
 import { createBrowserClient } from "@supabase/ssr";
 import { invalidateQueries } from "./query-cache";
 import type { Database } from "@/types/database";
+import { captchaFetch } from "@/lib/auth/captcha";
 
 let listening = false;
 
@@ -12,7 +13,7 @@ export function createClient() {
       "Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY (names must include NEXT_PUBLIC_).",
     );
   }
-  const client = createBrowserClient<Database>(url, key);
+  const client = createBrowserClient<Database>(url, key, { global: { fetch: captchaFetch } });
   if (typeof window !== "undefined" && !listening) {
     listening = true;
     client.auth.onAuthStateChange((event) => {

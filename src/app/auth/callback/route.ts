@@ -41,6 +41,10 @@ export async function GET(request: Request) {
           }
         }
         const staff = await getStaffProfile(supabase, user.id);
+        if (portal === "student" && staff?.status === "active" && staff.role === "admin") {
+          // Move to the fixed administrator origin; never transfer tokens in a URL.
+          return NextResponse.redirect(new URL("https://admin.darasax.com/login"));
+        }
         if (portal === "lecturer" && staff?.role === "lecturer" && staff.status !== "active") {
           const { data } = await supabase.rpc("lecturer_application_status");
           const status = (data as { status?: string } | null)?.status;

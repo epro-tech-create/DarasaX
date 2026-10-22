@@ -65,7 +65,8 @@ export async function POST(request: Request) {
       if (result?.verified) { await client.rpc("record_sign_in"); return json({ verified: true }); }
       if (result?.sent !== true) throw new Error("Invalid verification response");
       // The recipient is always the authenticated administrator's own email.
-      const { error: sendError } = await client.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
+      if (body.captchaToken !== undefined && (typeof body.captchaToken !== "string" || body.captchaToken.length > 4096)) return json({ error: "Invalid security check." }, 400);
+      const { error: sendError } = await client.auth.signInWithOtp({ email, options: { shouldCreateUser: false, captchaToken: body.captchaToken } });
       store.set(names.challenge, token, adminCookieOptions(secure, 600));
       if (sendError) return json({ error: "Could not send the verification email. Please wait and try again." }, 503);
       return json({ sent: true, verified: false, email: maskEmail(email) });

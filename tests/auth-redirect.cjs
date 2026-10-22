@@ -40,6 +40,8 @@ const callback = load('src/app/auth/callback/route.ts', {
   assert.equal(new URL((await callback.GET(request)).location).pathname, '/dashboard');
   staff = {role:'class_rep',status:'active'};
   assert.equal(new URL((await callback.GET(request)).location).pathname, '/cr');
+  staff = {role:'admin',status:'active'};
+  assert.equal((await callback.GET(request)).location, 'https://admin.darasax.com/login');
   staff.status = 'inactive';
   assert.equal(new URL((await callback.GET(request)).location).pathname, '/login');
   assert.deepEqual(signIns.map(x => x.role), ['student','student','class_rep']);

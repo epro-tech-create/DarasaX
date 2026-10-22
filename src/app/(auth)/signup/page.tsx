@@ -14,7 +14,7 @@ import { getAuthErrorMessage } from "@/lib/auth/errors";
 import { safeStudentReturnPath } from "@/lib/auth/redirect";
 import { isValidEmail, normalizeEmail } from "@/lib/auth/email";
 import { signInWithGoogle } from "@/lib/auth/oauth";
-import { isPasswordStrongEnough } from "@/lib/auth/password";
+import { isPasswordStrongEnough, PASSWORD_REQUIREMENT } from "@/lib/auth/password";
 import { createClient } from "@/lib/supabase/client";
 import { getAppRole } from "@/lib/app-role";
 
@@ -49,7 +49,7 @@ function SignupForm() {
       return;
     }
     if (!isPasswordStrongEnough(password)) {
-      setError("Password must be at least 8 characters.");
+      setError(PASSWORD_REQUIREMENT);
       return;
     }
     if (password !== confirm) {
@@ -71,11 +71,7 @@ function SignupForm() {
       });
       if (signUpError) throw signUpError;
 
-      if (data.user && (data.user.identities?.length ?? 0) === 0) {
-        setError("An account with this email already exists. Try signing in.");
-        return;
-      }
-
+      // Existing accounts receive the same verification-screen response.
       if (data.session) {
         if (lecturer) {
           const { error: registrationError } = await supabase.rpc("complete_lecturer_registration");

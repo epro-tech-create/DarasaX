@@ -4,6 +4,7 @@ import { useTranslate } from "@/components/providers/language-provider";
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { isPasswordStrongEnough, PASSWORD_REQUIREMENT, MIN_PASSWORD_LENGTH } from "@/lib/auth/password";
 
 export function ChangePasswordForm() {
   const translateUI = useTranslate();
@@ -15,9 +16,10 @@ export function ChangePasswordForm() {
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (busy) return;
-    if (password.length < 8 || password !== confirmation) {
-      setMessage("Use at least 8 characters and ensure the new passwords match."); return;
+    if (!isPasswordStrongEnough(password)) {
+      setMessage(PASSWORD_REQUIREMENT); return;
     }
+    if (password !== confirmation) { setMessage("Passwords do not match."); return; }
     setBusy(true); setMessage("");
     try {
       const supabase = createClient();
@@ -37,8 +39,8 @@ export function ChangePasswordForm() {
     <p className="mt-1 text-sm text-muted-foreground">{translateUI("Replace the temporary password provided by your administrator or class representative.")}</p>
     <form onSubmit={submit} className="mt-4 max-w-lg space-y-3">
       <label className="block text-sm">{translateUI("Current or temporary password")}<input required type="password" autoComplete="current-password" value={current} onChange={e => setCurrent(e.target.value)} className={input} /></label>
-      <label className="block text-sm">{translateUI("New password")}<input required minLength={8} type="password" autoComplete="new-password" value={password} onChange={e => setPassword(e.target.value)} className={input} /></label>
-      <label className="block text-sm">{translateUI("Confirm new password")}<input required minLength={8} type="password" autoComplete="new-password" value={confirmation} onChange={e => setConfirmation(e.target.value)} className={input} /></label>
+      <label className="block text-sm">{translateUI("New password")}<input required minLength={MIN_PASSWORD_LENGTH} type="password" autoComplete="new-password" value={password} onChange={e => setPassword(e.target.value)} className={input} /></label>
+      <label className="block text-sm">{translateUI("Confirm new password")}<input required minLength={MIN_PASSWORD_LENGTH} type="password" autoComplete="new-password" value={confirmation} onChange={e => setConfirmation(e.target.value)} className={input} /></label>
       {message && <p role="status" className="text-sm">{translateUI(message)}</p>}
       <Button type="submit" disabled={busy}>{translateUI(busy ? "Updating…" : "Change password")}</Button>
     </form>

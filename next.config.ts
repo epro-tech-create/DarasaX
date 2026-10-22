@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { browserSecurityHeaders, contentSecurityPolicy } from "./src/lib/security-headers";
 
 const appRole =
   process.env.APP_ROLE || process.env.NEXT_PUBLIC_APP_ROLE || "student";
@@ -12,7 +13,7 @@ const nextConfig: NextConfig = {
     }));
     const noindex = (appRole === "student" ? privatePages.map(path => `/${path}/:path*`) : ["/:path*"])
       .map(source => ({ source, headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] }));
-    return [...images, ...noindex, { source: "/sw.js", headers: [
+    return [{ source: "/:path*", headers: [...browserSecurityHeaders, { key: "Content-Security-Policy", value: contentSecurityPolicy(undefined, process.env.NODE_ENV === "development") }] }, ...images, ...noindex, { source: "/sw.js", headers: [
       { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
       { key: "Service-Worker-Allowed", value: "/" },
       { key: "Content-Security-Policy", value: "default-src 'self'; script-src 'self'" },

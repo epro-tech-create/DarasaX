@@ -11,7 +11,7 @@ import { AuthSubmitButton } from "@/components/auth/auth-submit-button";
 import { PasswordField } from "@/components/auth/password-field";
 import { Button } from "@/components/ui/button";
 import { getAuthErrorMessage } from "@/lib/auth/errors";
-import { isPasswordStrongEnough } from "@/lib/auth/password";
+import { isPasswordStrongEnough, PASSWORD_REQUIREMENT } from "@/lib/auth/password";
 import { createClient } from "@/lib/supabase/client";
 
 export default function ResetPasswordPage() {
@@ -49,7 +49,7 @@ export default function ResetPasswordPage() {
     setError("");
 
     if (!isPasswordStrongEnough(password)) {
-      setError("Password must be at least 8 characters.");
+      setError(PASSWORD_REQUIREMENT);
       return;
     }
     if (password !== confirm) {

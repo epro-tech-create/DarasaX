@@ -9,6 +9,7 @@ import { SignOutButton } from "@/components/auth/sign-out-button";
 import { useTranslate } from "@/components/providers/language-provider";
 import { useResendCooldown } from "@/hooks/use-resend-cooldown";
 import { AUTH_OTP_LENGTH } from "@/lib/auth/constants";
+import { getCaptchaToken } from "@/lib/auth/captcha";
 
 export default function AdminVerifyEmailPage() {
   const t = useTranslate();
@@ -40,7 +41,8 @@ export default function AdminVerifyEmailPage() {
     if (busy || (action === "start" && sent && !cooldown.canResend)) return;
     setBusy(true); setError("");
     try {
-      const response = await fetch("/api/admin-security", { method: "POST", credentials: "same-origin", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, code, remember }) });
+      const captchaToken = action === "start" ? await getCaptchaToken() : undefined;
+      const response = await fetch("/api/admin-security", { method: "POST", credentials: "same-origin", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, code, remember, captchaToken }) });
       const data = await response.json();
       if (!response.ok) { setRestart(data.restart === true); throw new Error(data.error); }
       if (data.verified) { window.location.replace("/admin"); return; }

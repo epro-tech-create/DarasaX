@@ -88,7 +88,7 @@ export function PasswordField({
           </div>
           <ul className="grid grid-cols-2 gap-0.5 text-[11px] text-muted-foreground sm:text-[9px]">
             <li className={checks.minLength ? "text-success" : undefined}>
-              {translateUI("8+ characters")}</li>
+              {translateUI("12+ characters")}</li>
             <li className={checks.hasUpper ? "text-success" : undefined}>
               {translateUI("Uppercase")}</li>
             <li className={checks.hasLower ? "text-success" : undefined}>

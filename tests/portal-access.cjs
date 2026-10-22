@@ -6,7 +6,7 @@ function load(file, dependencies) {
   const exports = {};
   vm.runInNewContext(ts.transpileModule(fs.readFileSync(file, 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 }
-  }).outputText, { exports, require: name => dependencies[name], process, URL });
+  }).outputText, { exports, require: name => dependencies[name], process, URL, Headers });
   return exports;
 }
 const roles = load('src/lib/app-role.ts', {});
@@ -24,7 +24,10 @@ class Response {
 }
 const redirects = load('src/lib/auth/redirect.ts', {});
 let admission = {status:'approved',welcome_seen_at:'2026-10-21'};
+const securityHeaders = load('src/lib/security-headers.ts', {});
 const { proxy } = load('src/proxy.ts', {
+  'node:crypto': require('node:crypto'),
+  '@/lib/security-headers': securityHeaders,
   '@/lib/auth/redirect': redirects,
   '@/lib/auth/admission': {getStudentAdmission: async () => admission},
   'next/server': { NextResponse: Response },
@@ -53,6 +56,8 @@ async function check(host, path, member, expected, destination) {
   }
   await check(host, '/', undefined, 200);
   const cr = { role: 'class_rep', status: 'active' };
+  await check(host, '/login', {role:'admin',status:'active'},307,'/login');
+  await check(host, '/dashboard', {role:'admin',status:'active'},307,'/login');
   // The export handler authenticates/scopes the caller itself on every portal.
   for (const domain of ['darasax.com','admin.darasax.com','lecturer.darasax.com']) await check(domain,'/api/students/export',undefined,200);
   await check(host, '/cr', undefined, 307, '/login');

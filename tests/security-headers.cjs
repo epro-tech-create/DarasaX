@@ -1,0 +1,11 @@
+const fs=require('fs'),ts=require('typescript'),vm=require('vm'),assert=require('node:assert/strict');
+const e={};vm.runInNewContext(ts.transpileModule(fs.readFileSync('src/lib/security-headers.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText,{exports:e});
+const policy=e.contentSecurityPolicy('test-nonce');
+assert.match(policy,/script-src 'self' 'nonce-test-nonce' 'strict-dynamic'/);
+assert.ok(!policy.split(';').find(x=>x.trim().startsWith('script-src')).includes('unsafe-inline'));
+assert.ok(!policy.includes('unsafe-eval'));
+for(const directive of ["frame-ancestors 'none'","object-src 'none'","base-uri 'self'","form-action 'self'","worker-src 'self' blob:"])assert.ok(policy.includes(directive));
+assert.ok(policy.includes('wss://*.supabase.co'));assert.ok(policy.includes('https://*.r2.cloudflarestorage.com'));
+assert.ok(e.contentSecurityPolicy('dev',true).includes('unsafe-eval'));
+const h=Object.fromEntries(e.browserSecurityHeaders.map(x=>[x.key,x.value]));assert.equal(h['X-Frame-Options'],'DENY');assert.equal(h['X-Content-Type-Options'],'nosniff');assert.match(h['Strict-Transport-Security'],/includeSubDomains/);
+console.log('Passed nonce-only scripts, production eval ban, framing/plugin restrictions, required upload/push connections and baseline headers.');

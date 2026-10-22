@@ -1,4 +1,6 @@
 import { getStudentAdmission } from "@/lib/auth/admission";
+import { randomBytes } from "node:crypto";
+import { contentSecurityPolicy } from "@/lib/security-headers";
 import { studentPostAuthPath, safeStudentReturnPath } from "@/lib/auth/redirect";
 import { studentEnrollmentError } from "@/lib/auth/enrollment";
 import { type NextRequest, NextResponse } from "next/server";
@@ -36,7 +38,7 @@ function isStudentProtected(pathname: string) {
   );
 }
 
-export async function proxy(request: NextRequest) {
+async function authorizeRequest(request: NextRequest) {
   const { pathname } = request.nextUrl;
   if (pathname === "/sw.js" || pathname === "/manifest.webmanifest") return NextResponse.next();
   if (pathname === "/auth/signout") return NextResponse.next();
@@ -171,6 +173,7 @@ export async function proxy(request: NextRequest) {
     (!active || staff.role !== "class_rep") &&
     (protectedPath || pathname === "/login")
   ) {
+    if (active && staff.role === "admin") return redirect("https://admin.darasax.com/login");
     return new NextResponse(
       "Use your assigned staff portal or contact your administrator.",
       { status: 403 },
@@ -226,6 +229,28 @@ export async function proxy(request: NextRequest) {
   }
   supabaseResponse.headers.set("Cache-Control", "private, no-store");
   return supabaseResponse;
+}
+
+export async function proxy(request: NextRequest) {
+  const nonce = randomBytes(18).toString("base64");
+  const policy = contentSecurityPolicy(nonce, process.env.NODE_ENV === "development");
+  // Overwrite caller-supplied nonces. Next uses these forwarded headers to
+  // nonce its own runtime and inline hydration scripts during dynamic rendering.
+  request.headers.set("x-nonce", nonce);
+  request.headers.set("Content-Security-Policy", policy);
+  const response = await authorizeRequest(request);
+  if (response.headers.get("x-middleware-next") === "1") {
+    const forwarded = NextResponse.next({ request: { headers: request.headers } });
+    forwarded.headers.forEach((value, key) => {
+      if (key.startsWith("x-middleware-request-") || key === "x-middleware-override-headers") response.headers.set(key, value);
+    });
+  }
+  if (request.nextUrl.pathname !== "/sw.js") response.headers.set("Content-Security-Policy", policy);
+  // Nonce-bearing responses must not be shared between visitors or reused.
+  if (!/\.(?:svg|png|jpg|jpeg|webp|ico|webmanifest|js)$/.test(request.nextUrl.pathname)) {
+    response.headers.set("Cache-Control", "private, no-store");
+  }
+  return response;
 }
 
 export const config = {

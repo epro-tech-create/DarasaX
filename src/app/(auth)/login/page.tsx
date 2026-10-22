@@ -75,6 +75,10 @@ function StudentLoginForm() {
         getStudentAdmission(supabase, data.user.id),
       ]);
       if (staff) {
+        if (staff.status === "active" && staff.role === "admin") {
+          window.location.assign("https://admin.darasax.com/login");
+          return;
+        }
         if (staff.status !== "active" || staff.role !== "class_rep") {
           await supabase.auth.signOut();
           throw new Error("Use your assigned portal or contact your administrator.");
