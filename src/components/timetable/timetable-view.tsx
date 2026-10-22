@@ -33,7 +33,7 @@ const dayFull = [
   "Friday",
   "Saturday",
 ];
-const weekDays = [1, 2, 3, 4, 5, 6, 0] as const;
+const weekDays = [1, 2, 3, 4, 5] as const;
 
 const GRID_START = 7; // 07:00
 const GRID_END = 21; // 21:00
@@ -138,7 +138,7 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
   const [view, setView] = useState<"today" | "week">("week");
   const [selectedDate, setSelectedDate] = useState(tanzaniaDate);
   const fromDate = weekStart(selectedDate);
-  const toDate = addDateDays(fromDate, 6);
+  const toDate = addDateDays(fromDate, 4);
   const [browsingStream, setBrowsingStream] = useState<ClassStreamId | null>(
     null,
   );
