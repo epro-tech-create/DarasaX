@@ -1,0 +1,15 @@
+# Dated sessions and lesson alerts
+
+Timetable editors use **This session only** or **This and future weekly sessions**. Choose the original occurrence date, replacement date/time, room, lecturer, and optional reason. The confirmation summary states exactly what changes. A postponement with no confirmed time or a cancellation leaves a labelled occurrence on the original date and suppresses its lesson reminders. Rescheduling moves the occurrence to the replacement date. Later edits use its stable original occurrence identity.
+
+Future changes take effect from the selected original date; the first new weekly session takes place on the selected replacement date, then repeats on that weekday. Earlier dates are resolved using the preceding weekly version. Other explicit dated exceptions retain precedence; the selected occurrence's prior exception is superseded when changing that occurrence and future weeks. Revisions and exceptions are append-only history with superseded markers, not destructive rewrites of original timetable entries.
+
+CRs can change sessions in their assigned class. Lecturers can change only their assigned classes/modules; administrators retain their verified access requirements. The server checks authorization and dates/times, serializes changes per series, and uses a request UUID to prevent a retried save from duplicating notices. Direct browser writes to the new scheduling tables are not granted.
+
+Affected students receive a timetable change in their inbox and, when enabled, a phone alert with the subject, original date, replacement date/time/room or postponement/cancellation, reason, and weekly scope. The actor does not receive their own change notice. Existing source publications and account data are untouched.
+
+Lesson alerts are queued approximately **30 minutes before** the resolved session and **at its start**, using Africa/Dar_es_Salaam time. The scheduler polls each minute; OS/network delivery is best-effort. The start alert expires two minutes after the start to avoid stale “starts now” messages. Unsent old reminders are invalidated on schedule changes; sent delivery history remains. No reminders are sent for cancelled/postponed occurrences. Restoring a session re-enables applicable reminders. The existing per-device lesson-alert preference controls both stages.
+
+The timetable, next-class banner, Coming up, and What Did I Miss use the same dated occurrence resolver. Week navigation includes weekends and historical dates. Original timetable rows remain as the baseline. Existing timetables and all user/content records are preserved by the additive migration.
+
+Validation: `node tests/dated-sessions.cjs` checks client date/next-class behavior. `tests/dated-sessions.sql` and `tests/web-push.sql` run in rollback-only transactions and do not send HTTP requests or physical notifications. Deploy the migration before the frontend. The existing `deliver-web-push` worker and cron job consume the updated queue without replacing credentials or requiring devices to opt in again.

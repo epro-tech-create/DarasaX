@@ -10,7 +10,6 @@ import { EmptyState } from "@/components/ui/empty-state";
 import {
   DEFAULT_CLASS_STREAM,
   getModule,
-  timetable as seedTimetable,
 } from "@/data/mock";
 import { useAssignments } from "@/lib/assignment-progress-store";
 import { useMaterialsStore } from "@/lib/materials-store";
@@ -33,12 +32,12 @@ export default function MissedPage() {
   const { profile } = useStudentProfile();
   const streamId = profile?.class_name ?? DEFAULT_CLASS_STREAM;
   const [date, setDate] = useState(todayIso);
-  const { entries, ready: timetableReady } = useTimetableStore();
+  const { entries, ready: timetableReady } = useTimetableStore({ from: date, to: date });
   const { published, ready: materialsReady } = useMaterialsStore();
   const { items: assignments } = useAssignments();
   const { topics } = useTopicProgress();
 
-  const timetable = entries.length > 0 ? entries : seedTimetable;
+  const timetable = entries;
 
   const summary = useMemo(
     () =>

@@ -64,7 +64,7 @@ export function PushSettings() {
         push_origin: window.location.origin,
       });
       if (error) throw new Error("Could not enable notifications. Make sure your account has workspace access, then try again.");
-      setDevice(data as Device); setMessage("Notifications enabled on this device. You’ll receive new updates and a reminder 10 minutes before class.");
+      setDevice(data as Device); setMessage("Notifications enabled on this device. You’ll receive new updates and a reminder 30 minutes before and at the start of class.");
     } catch (error) { setMessage(error instanceof Error ? error.message : "Could not enable phone notifications."); }
     finally { setBusy(false); }
   }
@@ -106,7 +106,7 @@ export function PushSettings() {
       : !supported ? <p className="mt-2 text-xs">This browser does not support phone notifications. Try an up-to-date Chrome, Safari, Firefox, or Edge browser.</p>
       : device ? <div className="mt-3 space-y-2">
         <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={device.updates} disabled={busy} onChange={e => void preferences(e.target.checked, device.lessons)} />Announcements, assignments, and learning updates</label>
-        <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={device.lessons} disabled={busy} onChange={e => void preferences(device.updates, e.target.checked)} />Lesson reminder · 10 minutes before (Tanzania time)</label>
+        <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={device.lessons} disabled={busy} onChange={e => void preferences(device.updates, e.target.checked)} />Lesson alerts · 30 minutes before and at the start (Tanzania time)</label>
         <div className="flex flex-wrap gap-2 pt-1"><Button size="sm" variant="outline" disabled={busy} onClick={() => void test()}>Send test</Button><Button size="sm" variant="ghost" disabled={busy} onClick={() => void disable()}>Turn off on this device</Button></div>
       </div>
       : <Button className="mt-3" size="sm" disabled={busy || !userId} onClick={() => void enable()}><BellRing className="h-4 w-4" aria-hidden />{busy ? "Enabling…" : "Enable notifications"}</Button>}

@@ -37,9 +37,9 @@ begin
  perform public.finish_push_delivery((jobs->0->>'id')::bigint,1,'sent');
  if exists(select 1 from private.push_deliveries where subscription_id=device and state='sent') then raise exception 'Stale lease accepted'; end if;
  perform public.finish_push_delivery((jobs->0->>'id')::bigint,2,'sent');
- if extract(isodow from now() at time zone 'Africa/Dar_es_Salaam')<=5 then
+ if extract(dow from now() at time zone 'Africa/Dar_es_Salaam')<=5 then
  insert into public.timetable_entries(id,stream_id,module_id,day,start_time,end_time,room,lecturer)
- values(lesson,'BENG24COE-1','mod-numerical',extract(isodow from now() at time zone 'Africa/Dar_es_Salaam'),to_char((now()+interval '9 minutes') at time zone 'Africa/Dar_es_Salaam','HH24:MI'),to_char((now()+interval '69 minutes') at time zone 'Africa/Dar_es_Salaam','HH24:MI'),'Test room','Test lecturer');
+ values(lesson,'BENG24COE-1','mod-numerical',extract(dow from now() at time zone 'Africa/Dar_es_Salaam'),to_char((now()+interval '29 minutes') at time zone 'Africa/Dar_es_Salaam','HH24:MI'),to_char((now()+interval '89 minutes') at time zone 'Africa/Dar_es_Salaam','HH24:MI'),'Test room','Test lecturer');
  perform public.enqueue_lesson_push(); perform public.enqueue_lesson_push();
  if (select count(*) from private.push_deliveries where subscription_id=device and lesson_id=lesson)<>1 then raise exception 'Lesson not queued exactly once'; end if;
  update public.profiles set class_name='BENG24COE-2' where id=u;

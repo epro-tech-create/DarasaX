@@ -14,6 +14,8 @@ import {
 import type { Module, TimetableEntry } from "@/types";
 import { Button } from "@/components/ui/button";
 import { formatTime, minutesUntil } from "@/lib/utils";
+import { occurrenceTime } from "@/lib/timetable-dates";
+import { useEffect, useState } from "react";
 
 export function NextClassCard({
   entry,
@@ -31,7 +33,9 @@ export function NextClassCard({
   moduleLabel?: string;
 }) {
   const translateUI = useTranslate();
-  const mins = minutesUntil(entry.startTime, dayOffset);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 30000); return () => clearInterval(timer); }, []);
+  const mins = entry.sessionDate ? Math.round((occurrenceTime(entry.sessionDate, entry.startTime) - now) / 60000) : minutesUntil(entry.startTime, dayOffset);
   const days = Math.floor(mins / (60 * 24));
   const hours = Math.floor((mins % (60 * 24)) / 60);
   const remainingMinutes = mins % 60;
@@ -42,7 +46,7 @@ export function NextClassCard({
         ? `Starts in ${hours} hr${remainingMinutes ? ` ${remainingMinutes} min` : ""}`
         : mins > 0
           ? `Starts in ${mins} min`
-          : mins > -120
+          : entry.sessionDate || mins > -120
             ? "Happening now"
             : "Coming up";
 

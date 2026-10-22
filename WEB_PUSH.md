@@ -2,7 +2,7 @@
 
 Open the notification bell or student Settings → Notifications. Choose **Enable notifications** and approve the browser prompt. On iPhone/iPad (iOS 16.4+), first add DarasaX to the Home Screen and open its icon. Permissions and subscriptions are specific to each device and site origin.
 
-The device receives announcements, assignments, published notes/slides/past papers, and new topics from the existing personal inbox. A separate preference controls recurring timetable reminders approximately ten minutes before class, in Africa/Dar_es_Salaam time. The existing next-class banner is unchanged. Phone layout, sound, visibility, and timing are controlled by the OS; delivery is best-effort. There is no SMS or email sending in this feature.
+The device receives announcements, assignments, published notes/slides/past papers, and new topics from the existing personal inbox. A separate preference controls recurring timetable reminders approximately thirty minutes before class and at the scheduled start, in Africa/Dar_es_Salaam time. The existing next-class banner is unchanged. Phone layout, sound, visibility, and timing are controlled by the OS; delivery is best-effort. There is no SMS or email sending in this feature.
 
 **Send test** performs an actual encrypted Web Push request, not a local demo notification. It is limited to once per minute per owned device. A successful response means the push service accepted it; verify appearance on the physical phone. New opt-ins do not receive historical notifications. Updates already read in the inbox are skipped if they have not been dispatched yet.
 
@@ -20,7 +20,7 @@ The device receives announcements, assignments, published notes/slides/past pape
 
 ## Operations
 
-Deploy the three migrations, provision `darasax_push_public_key`, `darasax_push_private_key`, and `darasax_push_worker_secret` in Vault, and deploy `deliver-web-push` using `supabase/config.toml`. These are already configured for `psrtifnhstkujmschwem`. Deployment scripts and migration history contain no secret values.
+Deploy the scheduling and Web Push migrations, provision `darasax_push_public_key`, `darasax_push_private_key`, and `darasax_push_worker_secret` in Vault, and deploy `deliver-web-push` using `supabase/config.toml`. These are already configured for `psrtifnhstkujmschwem`. Deployment scripts and migration history contain no secret values.
 
 Check Supabase Edge Function logs for `push_delivery` counts. Inspect `cron.job` / `cron.job_run_details` and `net._http_response` for scheduler or HTTP errors. Inspect only delivery counts/status/error codes when troubleshooting; do not log subscription URLs or private keys. Pausing the `darasax-web-push` cron job stops background delivery while leaving the in-app inbox available.
 

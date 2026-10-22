@@ -142,6 +142,11 @@ export interface ClassStream {
 }
 
 export interface TimetableEntry {
+  seriesId?: string;
+  originalDate?: string;
+  sessionDate?: string;
+  status?: "scheduled" | "rescheduled" | "postponed" | "cancelled";
+  reason?: string;
   id: string;
   moduleId: string;
   streamId: ClassStreamId;

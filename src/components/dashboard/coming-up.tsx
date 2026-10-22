@@ -9,6 +9,7 @@ import { useAssignments } from "@/lib/assignment-progress-store";
 import { useTimetableStore } from "@/lib/timetable-store";
 import { getModule } from "@/data/mock";
 import { formatTime } from "@/lib/utils";
+import { tanzaniaDate, occurrenceTime, sessionActive } from "@/lib/timetable-dates";
 
 export function ComingUp() {
   const translateUI = useTranslate();
@@ -24,11 +25,10 @@ export function ComingUp() {
   }, []);
   const ready = timetableReady && assignmentsReady && now && profile;
   const classes = !ready ? [] : entries
-    .filter((entry) => entry.streamId === profile.class_name && entry.day === now.getDay())
+    .filter((entry) => entry.streamId === profile.class_name && entry.sessionDate === tanzaniaDate(now) && sessionActive(entry))
     .map((entry) => {
       const time = (value: string) => {
-        const [hour, minute] = value.split(":").map(Number);
-        const date = new Date(now); date.setHours(hour, minute, 0, 0); return date.getTime();
+        return occurrenceTime(entry.sessionDate!, value);
       };
       return { id: `class-${entry.id}`, title: getModule(entry.moduleId)?.name || "Class session", detail: `${formatTime(entry.startTime)} – ${formatTime(entry.endTime)} · ${entry.room} · ${entry.lecturer}`, time: time(entry.startTime), ends: time(entry.endTime), href: "/timetable", kind: "class" as const };
     }).filter((entry) => entry.ends > now.getTime());

@@ -29,12 +29,7 @@ export function buildMissedSummary(input: {
   topics?: Topic[];
 }): MissedDaySummary {
   const day = timetableDayFromDate(input.date);
-  const classes =
-    day === 0
-      ? []
-      : input.timetable.filter(
-          (e) => e.streamId === input.streamId && e.day === day,
-        );
+  const classes = input.timetable.filter(e => e.streamId === input.streamId && e.status !== "cancelled" && e.status !== "postponed" && (e.sessionDate ? e.sessionDate === input.date : e.day === day));
 
   const items = classes.map((entry) => {
     const moduleTopics =

@@ -20,6 +20,8 @@ import { useTimetableStore } from "@/lib/timetable-store";
 import { useClassRegistry } from "@/lib/class-registry";
 import { cn, formatTime } from "@/lib/utils";
 import type { ClassStreamId, TimetableEntry } from "@/types";
+import { addDateDays, dateDay, tanzaniaDate, weekStart } from "@/lib/timetable-dates";
+import { Button } from "@/components/ui/button";
 
 const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const dayFull = [
@@ -31,7 +33,7 @@ const dayFull = [
   "Friday",
   "Saturday",
 ];
-const weekDays = [1, 2, 3, 4, 5] as const;
+const weekDays = [1, 2, 3, 4, 5, 6, 0] as const;
 
 const GRID_START = 7; // 07:00
 const GRID_END = 21; // 21:00
@@ -50,10 +52,10 @@ function durationLabel(start: string, end: string) {
   return m ? `${h}h ${m}m` : `${h}h`;
 }
 
-function blockStyle(entry: TimetableEntry) {
+function blockStyle(entry: TimetableEntry, startHour = GRID_START) {
   const start = toMinutes(entry.startTime);
   const end = toMinutes(entry.endTime);
-  const gridStart = GRID_START * 60;
+  const gridStart = startHour * 60;
   const top = ((start - gridStart) / 60) * HOUR_HEIGHT;
   const height = Math.max(((end - start) / 60) * HOUR_HEIGHT - 4, 36);
   return { top, height };
@@ -102,6 +104,7 @@ function ClassBlock({
           >
             {courseModule?.name}
           </p>
+          {entry.status && entry.status !== "scheduled" ? <span className="rounded bg-background/80 px-1 py-0.5 text-[9px] font-semibold capitalize">{entry.status}</span> : null}
           {isNext ? (
             <span className="shrink-0 rounded-md bg-primary/15 px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-primary">
               {translateUI("Next")}</span>
@@ -133,26 +136,26 @@ function ClassBlock({
 export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStream, onEdit, actions }: { initialStream?: ClassStreamId; lockedStream?: ClassStreamId; onEdit?: (entry: TimetableEntry) => void; actions?: ReactNode }) {
   const translateUI = useTranslate();
   const [view, setView] = useState<"today" | "week">("week");
+  const [selectedDate, setSelectedDate] = useState(tanzaniaDate);
+  const fromDate = weekStart(selectedDate);
+  const toDate = addDateDays(fromDate, 6);
   const [browsingStream, setBrowsingStream] = useState<ClassStreamId | null>(
     null,
   );
   const { streams: classStreams } = useClassRegistry();
   const streamId =
     lockedStream ?? browsingStream ?? initialStream;
-  const today = new Date().getDay();
+  const today = dateDay(selectedDate);
+  const actualToday = tanzaniaDate();
+  const isCurrentWeek = weekStart(actualToday) === fromDate;
   const selectedStream = classStreams.find((s) => s.id === streamId) ?? {
     id: streamId,
     label: streamId,
     description: "Class timetable",
     isEvening: false,
   };
-  const { forStream, entries: allEntries } = useTimetableStore();
+  const { forStream, entries: allEntries, error: scheduleError } = useTimetableStore({ from: fromDate, to: toDate });
   const next = getNextClass(new Date(), streamId, allEntries);
-  const hours = useMemo(
-    () =>
-      Array.from({ length: GRID_END - GRID_START }, (_, i) => GRID_START + i),
-    [],
-  );
 
   const streamTimetable = useMemo(
     () => forStream(streamId),
@@ -162,28 +165,31 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
   const todayEntries = useMemo(
     () =>
       streamTimetable
-        .filter((t) => t.day === today)
+        .filter((t) => t.sessionDate === selectedDate)
         .sort((a, b) => a.startTime.localeCompare(b.startTime)),
-    [streamTimetable, today],
+    [streamTimetable, selectedDate],
   );
 
   const weekEntries = useMemo(
     () =>
       streamTimetable.filter((t) =>
-        weekDays.includes(t.day as 1 | 2 | 3 | 4 | 5),
+        weekDays.includes(t.day as (typeof weekDays)[number]),
       ),
     [streamTimetable],
   );
+  const gridStart = Math.min(GRID_START, ...weekEntries.map(entry => Math.floor(toMinutes(entry.startTime) / 60)));
+  const gridEnd = Math.max(GRID_END, ...weekEntries.map(entry => Math.ceil(toMinutes(entry.endTime) / 60)));
+  const hours = Array.from({ length: gridEnd - gridStart }, (_, index) => gridStart + index);
 
   const nowMinutes = useMemo(() => {
-    const n = new Date();
-    return n.getHours() * 60 + n.getMinutes();
+    const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Africa/Dar_es_Salaam", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date()).split(":").map(Number);
+    return parts[0] * 60 + parts[1];
   }, []);
 
-  const isWeekday = weekDays.includes(today as 1 | 2 | 3 | 4 | 5);
+  const isWeekday = isCurrentWeek;
   const showNowLine =
-    isWeekday && nowMinutes >= GRID_START * 60 && nowMinutes <= GRID_END * 60;
-  const nowTop = ((nowMinutes - GRID_START * 60) / 60) * HOUR_HEIGHT;
+    isWeekday && nowMinutes >= gridStart * 60 && nowMinutes <= gridEnd * 60;
+  const nowTop = ((nowMinutes - gridStart * 60) / 60) * HOUR_HEIGHT;
   const gridHeight = hours.length * HOUR_HEIGHT;
 
   return (
@@ -197,7 +203,7 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
             <div className="inline-flex rounded-xl border border-border/80 bg-muted/40 p-0.5">
             {(["today", "week"] as const).map((item) => (
               <button
-                key={item}
+                key={item === "today" ? "Day" : "Week"}
                 type="button"
                 onClick={() => setView(item)}
                 className={cn(
@@ -207,13 +213,21 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                {item}
+                {item === "today" ? "Day" : "Week"}
               </button>
             ))}
             </div>
           </div>
         }
       />
+      <div className="surface flex flex-wrap items-center gap-3 rounded-2xl p-3">
+        <label className="text-xs font-medium">Date (Tanzania)<input type="date" aria-label="Timetable date" value={selectedDate} onChange={e => { if (e.target.value) setSelectedDate(e.target.value); }} className="ml-2 h-10 rounded-xl border border-border bg-background px-2" /></label>
+        <Button size="sm" variant="outline" onClick={() => setSelectedDate(addDateDays(selectedDate, -7))}>Previous week</Button>
+        <Button size="sm" variant="outline" onClick={() => setSelectedDate(tanzaniaDate())}>Today</Button>
+        <Button size="sm" variant="outline" onClick={() => setSelectedDate(addDateDays(selectedDate, 7))}>Next week</Button>
+        <p className="text-xs text-muted-foreground">{fromDate} – {toDate} · EAT</p>
+      </div>
+      {scheduleError ? <p role="alert" className="text-sm text-danger">{scheduleError}</p> : null}
 
       <div className="surface flex flex-col gap-3 rounded-2xl p-3.5 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
@@ -256,17 +270,17 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
       <div className="grid gap-2.5 sm:grid-cols-3">
         {[
           {
-            label: "Classes today",
+            label: "Classes on selected date",
             value: String(todayEntries.length),
             hint: dayFull[today],
             icon: CalendarDays,
           },
           {
-            label: "This week",
+            label: "Selected week",
             value: String(weekEntries.length),
             hint: selectedStream.isEvening
               ? translateUI("Evening sessions")
-              : translateUI("Mon – Fri sessions"),
+              : translateUI("Weekly sessions"),
             icon: Clock3,
           },
           {
@@ -326,7 +340,7 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
             {todayEntries.length === 0 ? (
               <div className="surface rounded-[20px] px-5 py-12 text-center">
                 <CalendarDays className="mx-auto h-8 w-8 text-muted-foreground/45" />
-                <p className="mt-3 text-[13px] font-medium">{translateUI("No classes today")}</p>
+                <p className="mt-3 text-[13px] font-medium">{translateUI("No classes on this date")}</p>
                 <p className="mt-1 text-[12px] text-muted-foreground">
                   {translateUI("Nothing scheduled for ")}{translateUI(selectedStream.label)} {translateUI(" today.")}</p>
               </div>
@@ -368,6 +382,7 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
                             <p className="truncate text-[13px] font-semibold">
                               {courseModule?.name}
                             </p>
+                            {entry.status && entry.status !== "scheduled" ? <p className="mt-1 text-xs font-semibold capitalize text-primary">{entry.status}{entry.reason ? ` · ${entry.reason}` : ""}</p> : null}
                             <p className="mt-0.5 text-[11px] text-muted-foreground">
                               {translateUI(courseModule?.code)} ·{" "}
                               {translateUI(durationLabel(entry.startTime, entry.endTime))}
@@ -412,7 +427,7 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
                 const entries = weekEntries
                   .filter((t) => t.day === day)
                   .sort((a, b) => a.startTime.localeCompare(b.startTime));
-                const isToday = day === today;
+                const isToday = isCurrentWeek && day === dateDay(actualToday);
                 return (
                   <section
                     key={day}
@@ -453,11 +468,13 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
                                 <p className="text-[12px] font-semibold">
                                   {courseModule?.name}
                                 </p>
+                                {entry.status && entry.status !== "scheduled" ? <p className="mt-1 text-xs font-semibold capitalize text-primary">{entry.status}{entry.reason ? ` · ${entry.reason}` : ""}</p> : null}
                                 <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
                                   {translateUI(formatTime(entry.startTime))} –{" "}
                                   {translateUI(formatTime(entry.endTime))} · {entry.room}
                                 </p>
                               </div>
+                              {onEdit ? <Button type="button" size="sm" variant="outline" onClick={() => onEdit(entry)}>Edit session</Button> : null}
                             </div>
                           );
                         })}
@@ -474,7 +491,7 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
                   <p className="font-heading text-[13px] font-semibold">
                     {translateUI("Weekly schedule")}</p>
                   <p className="text-[11px] text-muted-foreground">
-                    07:00 – 21:00 · {translateUI(weekEntries.length)} {translateUI(" sessions ·")}{" "}
+                    {String(gridStart).padStart(2, "0")}:00 – {String(gridEnd).padStart(2, "0")}:00 · {translateUI(weekEntries.length)} {translateUI(" sessions ·")}{" "}
                     {translateUI(selectedStream.label)}
                   </p>
                 </div>
@@ -497,7 +514,7 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
                 >
                   <div className="sticky left-0 top-0 z-30 border-b border-r border-border/70 bg-background/95 px-2 py-3 backdrop-blur" />
                   {weekDays.map((day) => {
-                    const isToday = day === today;
+                    const isToday = isCurrentWeek && day === dateDay(actualToday);
                     const count = weekEntries.filter(
                       (e) => e.day === day,
                     ).length;
@@ -531,12 +548,12 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
                   <div className="sticky left-0 z-10 border-r border-border/70 bg-background/95 backdrop-blur">
                     <div className="relative" style={{ height: gridHeight }}>
                       {hours.map((hour) => {
-                        const isFirst = hour === GRID_START;
+                        const isFirst = hour === gridStart;
                         return (
                           <div
                             key={hour}
                             className="absolute right-0 left-0 flex justify-end pr-2"
-                            style={{ top: (hour - GRID_START) * HOUR_HEIGHT }}
+                            style={{ top: (hour - gridStart) * HOUR_HEIGHT }}
                           >
                             <span
                               className={cn(
@@ -551,7 +568,7 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
                       })}
                       <div className="absolute right-0 bottom-0 left-0 flex justify-end pr-2 pb-1">
                         <span className="text-[10px] font-medium tabular-nums text-muted-foreground">
-                          21:00
+                          {String(gridEnd).padStart(2, "0")}:00
                         </span>
                       </div>
                     </div>
@@ -559,7 +576,7 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
 
                   {weekDays.map((day) => {
                     const entries = weekEntries.filter((t) => t.day === day);
-                    const isToday = day === today;
+                    const isToday = isCurrentWeek && day === dateDay(actualToday);
                     return (
                       <div
                         key={day}
@@ -577,7 +594,7 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
                               key={hour}
                               className="absolute inset-x-0 border-t border-border/40"
                               style={{
-                                top: (hour - GRID_START) * HOUR_HEIGHT,
+                                top: (hour - gridStart) * HOUR_HEIGHT,
                                 height: HOUR_HEIGHT,
                               }}
                             >
@@ -597,7 +614,7 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
                           ) : null}
 
                           {entries.map((entry) => {
-                            const { top, height } = blockStyle(entry);
+                            const { top, height } = blockStyle(entry, gridStart);
                             return (
                               <div
                                 key={entry.id}
