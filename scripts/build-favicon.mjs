@@ -9,7 +9,7 @@ const inner = src
 
 const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="560 140 950 950">
-  <rect x="560" y="140" width="950" height="950" rx="180" fill="#0B0D12"/>
+  <rect x="560" y="140" width="950" height="950" fill="#0B0D12"/>
   ${inner}
 </svg>`;
 
@@ -54,5 +54,23 @@ fs.writeFileSync(
   "public/apple-touch-icon.png",
   await sharp(Buffer.from(svg)).resize(180, 180).png().toBuffer(),
 );
+
+// One source for browser, Apple and Android icons. Versioned install URLs
+// prevent browsers from reusing the previous white-background assets.
+for (const size of [192, 512]) {
+  fs.writeFileSync(
+    `public/app-icon-v2-${size}.png`,
+    await sharp(Buffer.from(svg)).resize(size, size).png().toBuffer(),
+  );
+}
+fs.writeFileSync("src/app/icon.png", fs.readFileSync("public/app-icon-v2-512.png"));
+fs.writeFileSync("src/app/apple-icon.png", fs.readFileSync("public/apple-touch-icon.png"));
+fs.writeFileSync("public/apple-touch-icon-v2.png", fs.readFileSync("public/apple-touch-icon.png"));
+
+// Keep the complete mark inside Android's circular mask safe area.
+const maskableMark = await sharp(Buffer.from(svg)).resize(410, 410).png().toBuffer();
+fs.writeFileSync("public/app-icon-v2-maskable-512.png", await sharp({
+  create: { width: 512, height: 512, channels: 4, background: "#0B0D12" },
+}).composite([{ input: maskableMark, left: 51, top: 51 }]).png().toBuffer());
 
 console.log("favicon ready");
