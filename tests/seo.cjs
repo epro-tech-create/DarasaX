@@ -24,7 +24,9 @@ const landing = load('src/components/landing/landing-page.tsx', {
 });
 const html = renderToStaticMarkup(React.createElement(landing.default));
 assert.equal((html.match(/<h1\b/g) ?? []).length, 1);
-assert.match(html, /DIT BENG24COE/);
+assert.doesNotMatch(html, /DIT|BENG24COE|Year 3|Semester 1/);
+assert.match(html, /built for universities/);
+assert.match(html, /student activities/);
 assert.match(html, /Who can use DarasaX/);
 assert.match(html, /approved class access/);
 assert.doesNotMatch(html, /opacity:0(?:;|")/, 'Marketing copy must be visible before hydration');
@@ -36,10 +38,11 @@ assert.doesNotMatch(html, /opacity:0(?:;|")/, 'Marketing copy must be visible be
       process.env.APP_ROLE = role;
       const robots = load('src/app/robots.ts', { '@/lib/seo': seo }).default();
       const sitemap = load('src/app/sitemap.ts', { '@/lib/seo': seo }).default();
-      const home = load('src/app/page.tsx', { '@/lib/seo': seo, '@/components/landing/landing-page': { __esModule: true, default: () => null } });
-      const config = load('next.config.ts').default;
+      const home = load('src/app/page.tsx', { 'next/headers': {headers:async()=>new Map([['x-nonce','test-nonce']])}, '@/lib/seo': seo, '@/components/landing/landing-page': { __esModule: true, default: () => null } });
+      const security = load('src/lib/security-headers.ts');
+      const config = load('next.config.ts', {'./src/lib/security-headers':security}).default;
       const headers = await config.headers();
-      const rendered = renderToStaticMarkup(React.createElement(home.default));
+      const rendered = renderToStaticMarkup(await home.default());
       assert.equal(home.metadata.robots.index, role === 'student');
       assert.equal(home.metadata.alternates.canonical, 'https://www.darasax.com/');
       if (role === 'student') {
@@ -48,7 +51,7 @@ assert.doesNotMatch(html, /opacity:0(?:;|")/, 'Marketing copy must be visible be
         assert.equal(sitemap[0].url, home.metadata.alternates.canonical);
         assert.match(rendered, /application\/ld\+json/);
         assert.doesNotMatch(JSON.stringify(sitemap), /login|dashboard|share|token/);
-        assert(!headers.some(entry => entry.source === '/:path*'));
+        assert(!headers.some(entry => entry.source === '/:path*' && entry.headers.some(header=>header.key==='X-Robots-Tag')));
         assert(headers.some(entry => entry.source === '/login/:path*' && entry.headers.some(header => header.key === 'X-Robots-Tag')));
       } else {
         assert.equal(robots.rules.disallow, '/');

@@ -79,7 +79,7 @@ export default async function SharedPage({
             <LocalizedText>Keep your class in one place.</LocalizedText>
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            <LocalizedText>Explore DarasaX for notes, timetables and coursework. Student workspace registration is currently available for DIT BENG24COE, Year 3, Semester 1.</LocalizedText>
+            <LocalizedText>Explore DarasaX, a university platform for student activities, learning materials, timetables and academic communication.</LocalizedText>
           </p>
           <Button href="/signup" className="mt-5">
             <LocalizedText>Join DarasaX</LocalizedText>

@@ -1,9 +1,10 @@
 import type { MetadataRoute } from "next";
+import { SITE_DESCRIPTION } from "@/lib/seo";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/", name: "DarasaX", short_name: "DarasaX",
-    description: "Your classes, learning resources, and updates in one place.",
+    description: SITE_DESCRIPTION,
     start_url: "/dashboard", scope: "/", display: "standalone",
     background_color: "#ffffff", theme_color: "#1565c0",
     icons: [

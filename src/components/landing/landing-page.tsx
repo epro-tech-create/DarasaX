@@ -51,7 +51,7 @@ const steps = [
   },
   {
     title: "Find your class",
-    text: "Complete your profile and select your DIT BENG24COE stream.",
+    text: "Complete your profile and connect with your academic community.",
   },
   {
     title: "Make yourself at home",
@@ -120,10 +120,10 @@ export default function LandingPage() {
                     {translateUI("Darasa")}<span className="text-white">{translateUI("X")}</span>
                   </p>
                   <h1 className="font-heading text-[2.6rem] font-semibold leading-[1.1] tracking-tight text-white sm:text-[3.25rem] lg:text-[3.85rem]">
-                    {translateUI("Everything for class.")}<br />
-                    {translateUI("One place.")}</h1>
+                    {translateUI("University learning.")}<br />
+                    {translateUI("Connected by DarasaX.")}</h1>
                   <p className="mt-4 max-w-md text-base leading-relaxed text-white/80">
-                    {translateUI("DarasaX keeps your DIT BENG24COE notes, assignments, timetable and past papers together, so you can focus on learning.")}</p>
+                    {translateUI("DarasaX is built for universities to manage student activities, share learning materials and keep students, lecturers and administrators connected.")}</p>
                   <div className="mt-7 flex flex-wrap gap-3">
                     <Button href="/signup" className="h-11 px-5 text-sm">
                       {translateUI("Get Started ")}<ArrowRight className="h-4 w-4" aria-hidden />
@@ -148,9 +148,9 @@ export default function LandingPage() {
             <div className="border-t border-white/10">
               <div className="mx-auto flex max-w-6xl flex-wrap gap-x-8 gap-y-3 px-5 py-5 text-xs text-white/65 sm:px-8">
                 <span className="font-medium text-white">
-                  {translateUI("Built for your class")}</span>
+                  {translateUI("Built for universities")}</span>
                 <span>{translateUI("Notes in one place")}</span>
-                <span>{translateUI("Class-specific resources")}</span>
+                <span>{translateUI("Organized learning resources")}</span>
                 <span>{translateUI("Your schedule, at a glance")}</span>
               </div>
             </div>
@@ -172,7 +172,7 @@ export default function LandingPage() {
                   {translateUI("More together.")}</h2>
               </div>
               <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
-                {translateUI("No digging through chat groups or switching between folders. Your class has a place of its own.")}</p>
+                {translateUI("Bring learning materials, academic schedules, assignments and announcements into one connected university workspace.")}</p>
             </motion.div>
             <div className="mt-10 grid gap-px overflow-hidden rounded-3xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
               {tools.map(({ title, text, icon: Icon }, i) => (
@@ -261,7 +261,7 @@ export default function LandingPage() {
             <div className="mt-10 grid gap-8 md:grid-cols-3">
               {steps.map((step, i) => (
                 <motion.div
-                  key={step.title}
+                  key={translateUI(step.title)}
                   {...reveal}
                   transition={{ duration: 0.25, delay: i * 0.06 }}
                   className="border-t border-border pt-5"
@@ -270,7 +270,7 @@ export default function LandingPage() {
                     0{translateUI(i + 1)}
                   </span>
                   <h3 className="mt-5 font-heading text-xl font-semibold">
-                    {step.title}
+                    {translateUI(step.title)}
                   </h3>
                   <p className="mt-2 max-w-xs text-sm leading-relaxed text-muted-foreground">
                     {translateUI(step.text)}
@@ -281,10 +281,10 @@ export default function LandingPage() {
           </section>
 
           <section aria-labelledby="questions-title" className="mx-auto max-w-6xl px-5 pb-16 sm:px-8 sm:pb-24">
-            <h2 id="questions-title" className="font-heading text-2xl font-semibold sm:text-3xl">{translateUI("DarasaX for DIT students")}</h2>
+            <h2 id="questions-title" className="font-heading text-2xl font-semibold sm:text-3xl">{translateUI("DarasaX for university communities")}</h2>
             <div className="mt-6 grid gap-5 md:grid-cols-3">
               {[
-                { question: "Who can use DarasaX?", answer: "DarasaX currently supports DIT BENG24COE students in Year 3, Semester 1, together with their class representatives and lecturers." },
+                { question: "Who can use DarasaX?", answer: "DarasaX is designed for university students, lecturers, class representatives and administrators. Access to academic workspaces is managed by the institution or its authorized representatives." },
                 { question: "Are lecture notes and past papers public?", answer: "Students sign in and need approved class access to view or download shared files." },
                 { question: "Does DarasaX support Kiswahili?", answer: "Yes. Choose English or Kiswahili in Personal Profile settings." },
               ].map(item => <div key={item.question} className="rounded-2xl border border-border p-5"><h3 className="font-semibold">{translateUI(item.question)}</h3><p className="mt-2 text-sm leading-relaxed text-muted-foreground">{translateUI(item.answer)}</p></div>)}
@@ -326,7 +326,7 @@ export default function LandingPage() {
               />
               <div className="absolute inset-0 -z-10 bg-[#0B1B2B]/90" />
               <p className="mb-4 text-xs font-medium uppercase tracking-[0.15em] text-[#4FC3F7]">
-                {translateUI("Your class. Your space.")}</p>
+                {translateUI("Your university. Your academic space.")}</p>
               <h2 className="font-heading text-3xl font-semibold tracking-tight text-white sm:text-4xl">
                 {translateUI("Make room for better studying.")}</h2>
               <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-white/65">
@@ -344,7 +344,7 @@ export default function LandingPage() {
               <div className="max-w-sm shrink-0">
                 <Logo />
                 <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                  {translateUI("Everything for class. One place. Your modules, deadlines, notes and study tools in a modern academic workspace.")}</p>
+                  {translateUI("DarasaX helps universities bring student activities, learning materials and academic communication into one connected platform.")}</p>
                 <Button href="/signup" className="mt-5 h-9 px-4 text-sm">
                   {translateUI("Get Started")}</Button>
               </div>
