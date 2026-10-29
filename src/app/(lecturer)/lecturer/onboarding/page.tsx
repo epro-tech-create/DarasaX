@@ -1,13 +1,13 @@
 "use client";
 
 import { useTranslate } from "@/components/providers/language-provider";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthAlert } from "@/components/auth/auth-alert";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { AuthSubmitButton } from "@/components/auth/auth-submit-button";
 import { Button } from "@/components/ui/button";
-import { classStreams } from "@/data/mock";
+import { useClassRegistry } from "@/lib/class-registry";
 import {
   LECTURER_MODULE_OPTIONS,
   type StreamCountChoice,
@@ -24,6 +24,7 @@ type Step = "module" | "stream-count" | "streams";
 export default function LecturerOnboardingPage() {
   const translateUI = useTranslate();
   const router = useRouter();
+  const { streams: classStreams, ready: classesReady, error: classesError } = useClassRegistry();
   const [step, setStep] = useState<Step>("module");
   const [moduleIds, setModuleIds] = useState<string[]>([]);
   const [streamCount, setStreamCount] = useState<StreamCountChoice | null>(
@@ -33,21 +34,17 @@ export default function LecturerOnboardingPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const requiredStreams = useMemo(() => {
-    if (streamCount === 1) return 1;
-    if (streamCount === 2) return 2;
-    if (streamCount === "more") return 3;
-    return 0;
-  }, [streamCount]);
+  const requiredStreams = streamCount === "all" ? classStreams.length : streamCount ?? 0;
+  const selectedStreamIds = streamCount === "all" ? classStreams.map(stream => stream.id) : streamIds;
 
   const streamCountLabel =
     streamCount === 1
       ? "one stream"
       : streamCount === 2
         ? "two streams"
-        : streamCount === "more"
-          ? "three or more streams"
-          : null;
+        : streamCount === 3
+          ? "three streams"
+          : "all streams";
 
   function toggleModule(id: string) {
     setModuleIds((prev) =>
@@ -56,14 +53,11 @@ export default function LecturerOnboardingPage() {
   }
 
   function pickStream(id: ClassStreamId) {
+    if (loading || streamCount === "all") return;
     setStreamIds((prev) => {
       if (prev.includes(id)) return prev.filter((s) => s !== id);
       if (streamCount === 1) return [id];
-      if (streamCount === 2) {
-        if (prev.length >= 2) return [prev[1], id];
-        return [...prev, id];
-      }
-      // more: allow 3+
+      if (prev.length >= requiredStreams) return prev;
       return [...prev, id];
     });
   }
@@ -86,6 +80,7 @@ export default function LecturerOnboardingPage() {
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
+    if (loading) return;
     setError("");
     if (moduleIds.length === 0) {
       setError("Select at least one module.");
@@ -95,22 +90,18 @@ export default function LecturerOnboardingPage() {
       setError("Choose how many streams you teach.");
       return;
     }
-    if (streamCount === 1 && streamIds.length !== 1) {
-      setError("Pick the one stream you teach.");
+    if (!classesReady || classesError || classStreams.length === 0) {
+      setError("Classes are unavailable. Please refresh and try again.");
       return;
     }
-    if (streamCount === 2 && streamIds.length !== 2) {
-      setError("Pick exactly two streams.");
-      return;
-    }
-    if (streamCount === "more" && streamIds.length < 3) {
-      setError("Pick at least three streams.");
+    if (selectedStreamIds.length !== requiredStreams || selectedStreamIds.some(id => !classStreams.some(stream => stream.id === id))) {
+      setError("Select the required number of streams.");
       return;
     }
 
     setLoading(true);
     try {
-      const session = await completeLecturerOnboarding({ streamIds, moduleIds });
+      const session = await completeLecturerOnboarding({ streamIds: selectedStreamIds, moduleIds });
       router.replace(getLecturerEntryPath(session));
       router.refresh();
     } catch (err) {
@@ -131,7 +122,7 @@ export default function LecturerOnboardingPage() {
           {translateUI("Set up your")}<br />
           {translateUI("teaching desk.")}</>
       }
-      subtitle="Pick the module(s) you teach, then say whether you cover one stream or more."
+      subtitle="Pick your modules, then choose one, two, three, or all streams."
     >
       <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
         {translateUI("Lecturer setup")}</p>
@@ -228,7 +219,7 @@ export default function LecturerOnboardingPage() {
             <legend className="text-sm font-medium sm:text-xs">
               {translateUI("How many streams do you teach?")}</legend>
             <p className="mt-1 text-[11px] text-muted-foreground">
-              {translateUI("If you teach the same module to more than one class, pick 2 or more.")}</p>
+              {translateUI("Choose one, two, three, or all streams.")}</p>
             <div className="mt-3 grid gap-2">
               {(
                 [
@@ -239,10 +230,11 @@ export default function LecturerOnboardingPage() {
                     hint: "Same module across two classes",
                   },
                   {
-                    value: "more" as const,
-                    title: "Three or more",
-                    hint: "Multiple day / evening streams",
+                    value: 3 as const,
+                    title: "Three streams",
+                    hint: "Choose exactly three classes",
                   },
+                  { value: "all" as const, title: "All streams", hint: "Every available class is selected automatically" },
                 ] as const
               ).map((opt) => (
                 <button
@@ -251,7 +243,7 @@ export default function LecturerOnboardingPage() {
                   onClick={() => goNextFromCount(opt.value)}
                   className="flex w-full flex-col rounded-xl border border-border px-3 py-3 text-left transition hover:border-primary/50 hover:bg-primary/5"
                 >
-                  <span className="text-[13px] font-semibold">{opt.title}</span>
+                  <span className="text-[13px] font-semibold">{translateUI(opt.title)}</span>
                   <span className="text-[11px] text-muted-foreground">
                     {translateUI(opt.hint)}
                   </span>
@@ -281,24 +273,22 @@ export default function LecturerOnboardingPage() {
             <p className="mt-1 text-[11px] text-muted-foreground">
               {translateUI(streamCount === 1
                 ? "Tap the class you teach."
-                : streamCount === 2
-                  ? "Tap exactly two classes."
-                  : "Tap at least three classes.")}{" "}
-              ({translateUI(streamIds.length)}
-              {translateUI(requiredStreams
-                ? streamCount === "more"
-                  ? ` / ${requiredStreams}+`
-                  : ` / ${requiredStreams}`
-                : "")}{" "}
+                : streamCount === "all"
+                  ? "All available streams are selected."
+                  : "Select the required number of streams.")}{" "}
+              ({translateUI(selectedStreamIds.length)}
+              {translateUI(` / ${requiredStreams}`)}{" "}
               {translateUI("selected)")}</p>
             <div className="mt-2 grid gap-2">
               {classStreams.map((s) => {
-                const on = streamIds.includes(s.id);
+                const on = selectedStreamIds.includes(s.id);
                 return (
                   <button
                     key={s.id}
                     type="button"
                     onClick={() => pickStream(s.id)}
+                    aria-pressed={on}
+                    disabled={loading || streamCount === "all" || (!on && streamCount !== 1 && selectedStreamIds.length >= requiredStreams)}
                     className={cn(
                       "flex w-full items-start gap-3 rounded-xl border px-3 py-2.5 text-left transition",
                       on
@@ -332,7 +322,8 @@ export default function LecturerOnboardingPage() {
           </fieldset>
 
           <div className="flex flex-col gap-2">
-            <AuthSubmitButton loading={loading} loadingText={translateUI("Saving…")}>
+            {classesError && <p role="alert" className="text-sm text-danger">{translateUI(classesError)}</p>}
+            <AuthSubmitButton loading={loading} disabled={!classesReady || !!classesError || requiredStreams === 0 || selectedStreamIds.length !== requiredStreams} loadingText={translateUI("Saving…")}>
               {translateUI("Finish setup")}</AuthSubmitButton>
             <Button
               type="button"

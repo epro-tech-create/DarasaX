@@ -96,7 +96,7 @@ async function notifications() {
       return builder;
     },
   };
-  const store = load('src/lib/notifications-store.ts', { react: hooks, '@/lib/supabase/client': { createClient: () => client } }, {
+  const store = load('src/lib/notifications-store.ts', { react: hooks, '@/lib/supabase/client': { createClient: () => client }, '@/components/notifications/push-account-lifecycle': {PushAccountLifecycle: () => null} }, {
     setTimeout: schedule, clearTimeout: id => tasks.delete(id), setInterval: () => 1, clearInterval() {},
     document: { visibilityState: 'visible' }, Event: class { constructor(type) { this.type = type; } },
     window: { addEventListener: (type, fn) => listeners.set(type, fn), removeEventListener: type => listeners.delete(type), dispatchEvent: event => listeners.get(event.type)?.() },

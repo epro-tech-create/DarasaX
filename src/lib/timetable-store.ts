@@ -131,23 +131,14 @@ export function useTimetableStore(range?: { from: string; to: string }) {
     return entry;
   }, [refresh]);
 
-  const deleteEntry = useCallback(async (id: string) => {
-    const existing = entries.find((entry) => entry.id === id);
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("timetable_entries")
-      .delete()
-      .eq("id", id);
-    if (error) throw error;
-    invalidateQueries("timetable");
-    window.dispatchEvent(new Event("darasax:timetable"));
-    setEntries((prev) => prev.filter((e) => e.id !== id));
-    await recordAudit({
-      action: "timetable_edit",
-      summary: `Removed timetable session ${existing?.startTime ?? ""}`.trim(),
-      streamId: existing?.streamId,
+  // Keep the dated history and use the same transaction that cancels queued
+  // reminders. Direct deletion is intentionally forbidden by the database.
+  const deleteEntry = useCallback(async (entry: TimetableEntry, change: { date: string; scope: "once" | "future"; reason: string; requestId: string }) => {
+    await updateEntry(entry.seriesId ?? entry.id, entry, {
+      ...change, newDate: change.date, status: "cancelled",
+      reason: change.reason.trim() || "Lesson deleted from the timetable.",
     });
-  }, [entries]);
+  }, [updateEntry]);
 
   const forStream = useCallback(
     (streamId: ClassStreamId) => entries.filter((e) => e.streamId === streamId && (!e.sessionDate || (e.sessionDate >= (range?.from ?? weekStart(tanzaniaDate())) && e.sessionDate <= (range?.to ?? addDateDays(weekStart(tanzaniaDate()), 6))))),

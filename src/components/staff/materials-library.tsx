@@ -137,6 +137,7 @@ export function MaterialsLibrary({
 }) {
   const translateUI = useTranslate();
   const { session } = useStaffSession();
+  const visibleKinds = kinds.filter(kind => kind.id !== "announcement");
   const canManage = (item: MaterialUpload) => {
     if (!session) return false;
     if (session.role === "admin") return true;
@@ -184,7 +185,7 @@ export function MaterialsLibrary({
   }
 
   const source = useMemo(
-    () => (filterItems ? filterItems(items) : items),
+    () => (filterItems ? filterItems(items) : items).filter(item => item.kind !== "announcement"),
     [items, filterItems],
   );
 
@@ -292,7 +293,7 @@ export function MaterialsLibrary({
           className="h-10 rounded-xl border border-border bg-background px-3 text-[13px] outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 sm:w-44"
         >
           <option value="all">{translateUI("All types")}</option>
-          {kinds.map((k) => (
+          {visibleKinds.map((k) => (
             <option key={k.id} value={k.id}>
               {translateUI(k.label)}
             </option>
@@ -465,7 +466,7 @@ export function MaterialsLibrary({
                 }
                 className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px]"
               >
-                {kinds.map((k) => (
+                {visibleKinds.map((k) => (
                   <option key={k.id} value={k.id}>
                     {translateUI(k.label)}
                   </option>

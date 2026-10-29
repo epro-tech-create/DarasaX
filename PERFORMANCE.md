@@ -1,5 +1,20 @@
 # Staff loading and CR timetable
 
+The student login form warms the CAPTCHA script on mount, while the visitor
+enters their credentials. This removes script loading from submission whenever
+the warm-up has completed. It does not execute or cache verification tokens;
+each protected operation still performs a fresh check. A failed warm-up is
+retried by the normal submission path.
+
+Google sign-in performs one browser redirect. The OAuth callback uses the user
+returned by the authenticated PKCE code exchange, loads independent account
+checks concurrently, and reuses the profile read during profile completion.
+The proxy lets the callback perform its own authentication and authorization
+instead of first checking the previous session. Login audit writes run after the
+server response, or in the background during client navigation, so logging does
+not delay entry. Role, enrollment, admission and administrator email checks
+still finish before access is granted.
+
 Vercel Functions are pinned to Dublin (dub1), matching the existing Supabase
 project in eu-west-1, instead of using the default US region (iad1). Static
 assets continue to use the global CDN. This reduces the geographic distance

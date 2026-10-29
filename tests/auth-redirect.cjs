@@ -20,18 +20,26 @@ assert.equal(redirects.studentPostAuthPath(false, '/modules/topic-1'), '/onboard
 let staff = null;
 let complete = false;
 const signIns = [];
+let auditBlocked = false, exchangeError = null;
+let accountReads = null;
+const readAccount = (key, value) => accountReads ? new Promise(resolve => accountReads.set(key, () => resolve(value))) : Promise.resolve(value);
+async function bounded(task) {
+  let timer;
+  try { return await Promise.race([task, new Promise((_,reject) => {timer=setTimeout(()=>reject(Error('Login waited for nonessential work')),1000);})]); }
+  finally { clearTimeout(timer); }
+}
 const callback = load('src/app/auth/callback/route.ts', {
   '@/lib/auth/redirect': redirects,
-  '@/lib/auth/admission': {getStudentAdmission: async () => approved},
-  '@/lib/auth/staff-profile': {getStaffProfile: async () => staff},
+  '@/lib/auth/admission': {getStudentAdmission: () => readAccount('admission',approved)},
+  '@/lib/auth/staff-profile': {getStaffProfile: () => readAccount('staff',staff)},
   '@/lib/app-role': {roleFromHost: () => 'student', getAppRole: () => 'student', APP_HOME: {class_rep:'/cr'}},
-  'next/server': {NextResponse: {redirect: url => ({location:url.href})}},
-  '@/lib/supabase/server': {createClient: async () => ({rpc: async name => { signIns.push({name, role: staff?.role ?? "student"}); return {error:null}; }, auth: {
-    exchangeCodeForSession: async () => ({error:null}),
-    getUser: async () => ({data:{user:{id:'user'}}}), signOut: async () => ({})
+  'next/server': {after: task => void task(), NextResponse: {redirect: url => ({location:url.href})}},
+  '@/lib/supabase/server': {createClient: async () => ({rpc: async name => { signIns.push({name, role: staff?.role ?? "student"}); if(auditBlocked) await new Promise(()=>{}); return {error:null}; }, auth: {
+    exchangeCodeForSession: async () => ({data:{user:exchangeError ? null : {id:'user'}},error:exchangeError}),
+    getUser: async () => {throw Error('Code exchange already verified the user');}, signOut: async () => ({})
   }})},
   '@/lib/auth/enrollment': { studentEnrollmentError: () => null },
-  '@/lib/auth/profile': {ensureProfile: async () => ({onboarding_completed:complete})}
+  '@/lib/auth/profile': {getProfile: () => readAccount('profile',{onboarding_completed:complete}), ensureProfile: async (_client,_user,profile) => profile}
 });
 (async () => {
   const request = {url:'https://darasax.eprotechtz.com/auth/callback?code=test&next=%2Fcr'};
@@ -46,6 +54,18 @@ const callback = load('src/app/auth/callback/route.ts', {
   assert.equal(new URL((await callback.GET(request)).location).pathname, '/login');
   assert.deepEqual(signIns.map(x => x.role), ['student','student','class_rep']);
   assert.ok(signIns.every(x => x.name === 'record_sign_in'));
+  staff=null; auditBlocked=true;
+  assert.equal(new URL((await bounded(callback.GET(request))).location).pathname, '/dashboard', 'Slow audit logging must not block sign-in');
+  accountReads=new Map();
+  const pending=callback.GET(request);
+  for(let i=0;i<12;i++) await Promise.resolve();
+  assert.deepEqual([...accountReads.keys()].sort(),['admission','profile','staff'],'Independent account reads start together');
+  for(const resolve of accountReads.values()) resolve();
+  await bounded(pending); accountReads=null;
+  const profileHelpers=load('src/lib/auth/profile.ts',{'@/lib/auth/redirect':redirects});
+  const known={id:'user',full_name:'Student',avatar_url:'avatar',email:'student@example.invalid'};
+  assert.equal(await profileHelpers.ensureProfile({from(){throw Error('Repeated profile query');}},{id:'user',email:known.email},known),known);
+  exchangeError=new Error('Expired code');
+  assert.equal(new URL((await callback.GET(request)).location).pathname, '/login', 'Failed code exchange never grants access');
   console.log('Passed return-URL validation and Google callback regression tests.');
 })().catch(error => {console.error(error);process.exitCode=1;});
-

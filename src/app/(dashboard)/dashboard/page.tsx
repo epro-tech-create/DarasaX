@@ -10,16 +10,18 @@ import { StudyChart } from "@/components/dashboard/study-chart";
 import { modules } from "@/data/mock";
 import { LiveNextClass } from "@/components/dashboard/live-next-class";
 import { getGreeting } from "@/lib/utils";
+import { getDashboardTimetable } from "@/lib/auth/dashboard-timetable";
 
 export default async function DashboardPage() {
   const now = new Date();
   const initialNow = now.getTime();
+  const timetable = await getDashboardTimetable(now);
 
   return (
     <div className="space-y-6 sm:space-y-7">
       <OverviewHeader title={<StudentGreeting greeting={getGreeting()} />} />
 
-      <LiveNextClass />
+      <LiveNextClass initialEntries={timetable.entries} initialLoaded={timetable.loaded} initialNow={initialNow} />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
         <DashboardAssignmentStatCard />

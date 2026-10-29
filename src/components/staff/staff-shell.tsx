@@ -2,13 +2,12 @@
 
 import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import {
   Bell,
   BookOpen,
   CalendarDays,
-  ClipboardList,
   GraduationCap,
   Home,
   Megaphone,
@@ -25,7 +24,7 @@ import { Logo } from "@/components/brand/logo";
 import { NotificationPanel } from "@/components/layout/notification-panel";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { StaffPageMotion } from "@/components/staff/staff-page-motion";
-import { clearActiveLecturerStream } from "@/lib/lecturer-context";
+
 import { useNotifications } from "@/lib/notifications-store";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { cn } from "@/lib/utils";
@@ -63,8 +62,6 @@ const lecturerNav: StaffNavItem[] = [
   { href: "/lecturer/students", label: "Students", icon: Users },
   { href: "/lecturer/topics", label: "Topics", icon: ListOrdered },
   { href: "/lecturer/materials", label: "Library", icon: BookOpen },
-  { href: "/lecturer/past-papers", label: "Past papers", icon: ClipboardList },
-  { href: "/lecturer/assignments", label: "Assignments", icon: GraduationCap },
   { href: "/lecturer/announcements", label: "Announce", icon: Megaphone },
   { href: "/lecturer/timetable", label: "Timetable", icon: CalendarDays },
 ];
@@ -86,7 +83,7 @@ function staffNotificationHref(href: string, role: StaffRole): string {
     role === "admin" ? "/admin" : role === "class_rep" ? "/cr" : "/lecturer";
   if (href.startsWith("/past-papers")) return role === "lecturer" ? `${base}/past-papers` : `${base}/materials`;
   if (href.startsWith("/announcements")) {
-    return role === "class_rep" ? `${base}/materials` : `${base}/announcements`;
+    return `${base}/announcements`;
   }
   if (href.startsWith("/assignments")) {
     return role === "lecturer" ? "/lecturer/assignments" : `${base}/materials`;
@@ -104,7 +101,6 @@ export function StaffShell({
   role,
   userName,
   userMeta,
-  streamIds,
   children,
 }: {
   role: StaffRole;
@@ -116,7 +112,7 @@ export function StaffShell({
 }) {
   const translateUI = useTranslate();
   const pathname = usePathname();
-  const router = useRouter();
+
   const [collapsed, setCollapsed] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const { unreadCount } = useNotifications();
@@ -129,16 +125,13 @@ export function StaffShell({
   const home =
     role === "admin" ? "/admin" : role === "class_rep" ? "/cr" : "/lecturer";
   const nav = [...baseNav, { href: `${home}/profile`, label: "Personal Profile", icon: UserRound }];
+  const mobileNav = nav.map((item) =>
+    role === "class_rep" && item.href === "/cr/topics"
+      ? { href: "/cr/announcements", label: "Announce", icon: Megaphone }
+      : item,
+  );
   const isActive = (href: string) =>
     href === home ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
-
-  const canSwitchClass =
-    role === "lecturer" && (streamIds?.length ?? 0) > 1;
-
-  function onSwitchClass() {
-    clearActiveLecturerStream();
-    router.replace("/lecturer/select-class");
-  }
 
   return (
     <div className="flex min-h-screen bg-background font-sans text-[13px]">
@@ -235,15 +228,7 @@ export function StaffShell({
             <p className="truncate text-[13px] font-semibold">{userMeta}</p>
           </div>
           <div className="flex items-center gap-2">
-            {canSwitchClass ? (
-              <button
-                type="button"
-                onClick={onSwitchClass}
-                className="focus-ring hidden h-9 items-center rounded-xl border border-border px-2.5 text-[11px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground sm:inline-flex"
-              >
-                {translateUI("Switch class")}</button>
-            ) : null}
-            <ThemeToggle />
+<ThemeToggle />
             <button
               type="button"
               onClick={() => setNotificationsOpen(true)}
@@ -269,7 +254,7 @@ export function StaffShell({
 
         <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur lg:hidden">
           <div className="scrollbar-thin flex items-stretch gap-1 overflow-x-auto px-3 py-2">
-            {nav.map((item) => {
+            {mobileNav.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href);
               return (

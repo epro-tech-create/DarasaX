@@ -9,6 +9,8 @@ let state = {topics:[],ready:false,error:'',refresh(){},setCompleted(){}};
 const topic = {id:'topic-net-1',moduleId:'mod-sensor-networks',number:1,title:'Introduction to Sensor Networks',durationMinutes:18,summary:'Overview',content:'Sensor nodes collect environmental data.',learningObjectives:['Explain sensor nodes'],completed:false};
 const blank = ({children}) => React.createElement('div',null,children);
 const dependencies = {
+  '@/components/providers/language-provider': { useTranslate: () => value => value },
+  '@/lib/module-links': { useLearningPrefix: () => '' },
   react:React,'react/jsx-runtime':require('react/jsx-runtime'),
   'next/link':{default:blank},
   'next/navigation':{useParams:()=>({id:'mod-sensor-networks',topicId:'topic-net-1'}),notFound:()=>{throw Error('NOT_FOUND')}},

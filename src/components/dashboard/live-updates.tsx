@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useNotifications } from "@/lib/notifications-store";
 import { formatRelativeTime } from "@/lib/utils";
+import { NotificationBody } from "@/components/notifications/notification-body";
 
 const feedIcons = {
   FileText,
@@ -52,9 +53,7 @@ export function DashboardLiveUpdates() {
                 </span>
                 <div className="min-w-0">
                   <p className="text-[13px] font-medium">{item.title}</p>
-                  <p className="mt-1 text-[11px] text-muted-foreground">
-                    {item.body}
-                  </p>
+                  <NotificationBody body={item.body} type={item.type} />
                   <p className="mt-1 text-[11px] text-muted-foreground">
                     {translateUI(formatRelativeTime(item.createdAt))}
                   </p>

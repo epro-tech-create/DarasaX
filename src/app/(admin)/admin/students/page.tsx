@@ -2,6 +2,8 @@
 
 import { StudentExportButton } from "@/components/staff/student-export-button";
 import { StudentApprovals } from "@/components/staff/student-approvals";
+import { StudentSearch } from "@/components/staff/student-search";
+import { matchesStudentSearch } from "@/lib/student-directory";
 import { useTranslate } from "@/components/providers/language-provider";
 import { useMemo, useState } from "react";
 import { GraduationCap, Pencil, Plus, Trash2, Users } from "lucide-react";
@@ -28,6 +30,7 @@ export default function AdminStudentsPage() {
   const { students, addStudent, updateStudent, deleteStudent } =
     useAdminPeopleStore();
   const [stream, setStream] = useState("all");
+  const [query, setQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<StudentMonitor | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -37,9 +40,9 @@ export default function AdminStudentsPage() {
   const filtered = useMemo(() => {
     return students.filter(
       (s) =>
-        stream === "all" || s.streamId === stream,
+        (stream === "all" || s.streamId === stream) && matchesStudentSearch(s, query),
     );
-  }, [students, stream]);
+  }, [students, stream, query]);
 
   const streamCount = new Set(students.map((s) => s.streamId)).size;
 
@@ -163,6 +166,7 @@ export default function AdminStudentsPage() {
       </div>
 
       <StaffSection title={translateUI("Roster")} description={translateUI(`${filtered.length} students`)}>
+        <StudentSearch value={query} onChange={setQuery} />
         <div className="overflow-x-auto">
           <table className="w-full min-w-[680px] text-left text-[12px]">
             <thead>
@@ -175,6 +179,7 @@ export default function AdminStudentsPage() {
               </tr>
             </thead>
             <tbody>
+              {filtered.length === 0 && <tr><td colSpan={5} className="py-8 text-center text-muted-foreground">{translateUI(query.trim() ? "No students match your search." : "No students in this class yet.")}</td></tr>}
               {filtered.map((s) => (
                 <tr key={s.id} className="border-b border-border/60 last:border-0">
                   <td className="py-3 pr-3">

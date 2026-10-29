@@ -22,8 +22,9 @@ export async function getProfile(
 export async function ensureProfile(
   supabase: Client,
   user: User,
+  knownProfile?: Profile | null,
 ): Promise<Profile> {
-  const existing = await getProfile(supabase, user.id);
+  const existing = knownProfile === undefined ? await getProfile(supabase, user.id) : knownProfile;
   if (existing) {
     // Fill missing avatar/name from OAuth metadata once, without overwriting edits.
     const meta = user.user_metadata ?? {};

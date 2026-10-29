@@ -2,15 +2,11 @@
 
 import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
-import { OverviewHeader, OverviewShortcut } from "@/components/dashboard/overview-ui";
+import { OverviewHeader } from "@/components/dashboard/overview-ui";
 import {
   ArrowUpRight,
-  BookOpen,
   CalendarDays,
-  ClipboardList,
-  FilePlus2,
   FileUp,
-  GraduationCap,
   LibraryBig,
   ListOrdered,
   Megaphone,
@@ -20,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { StaffSection, StaffStatCard } from "@/components/staff/staff-ui";
 import { StaffFadeItem, StaffStagger } from "@/components/staff/staff-motion";
 import { classStreams, modules } from "@/data/mock";
-import { getActiveLecturerStream } from "@/lib/lecturer-context";
+
 import { useMaterialsStore } from "@/lib/materials-store";
 import { useStaffSession } from "@/lib/staff-auth";
 import { useTopicsStore } from "@/lib/topics-store";
@@ -30,9 +26,7 @@ export default function LecturerOverviewPage() {
   const translateUI = useTranslate();
   const { session } = useStaffSession();
   const displayName = session?.name?.trim().split(" ")[0] || "Lecturer";
-  const active = getActiveLecturerStream();
-  const activeLabel =
-    classStreams.find((s) => s.id === active)?.label ?? active ?? null;
+  const activeLabel = session?.streamIds.map(id => classStreams.find(stream => stream.id === id)?.label ?? id).join(", ") || null;
   const moduleCount = session?.moduleIds?.length ?? 0;
   const streamCount = session?.streamIds?.length ?? 0;
   const { items: uploads } = useMaterialsStore();
@@ -50,111 +44,32 @@ export default function LecturerOverviewPage() {
       moduleSet.size === 0 ||
       moduleSet.has(t.module_id),
   );
-  const notes = mine.filter((u) => u.kind === "notes" || u.kind === "slides");
-  const assignments = mine.filter((u) => u.kind === "assignment");
+  const files = mine.filter((item) => item.kind !== "announcement");
+  const announcements = mine.filter((item) => item.kind === "announcement");
   const myModules = modules.filter((m) =>
     moduleSet.size === 0 ? true : moduleSet.has(m.id),
   );
-  const recent = mine.slice(0, 5);
+  const recent = files.slice(0, 5);
 
-  const quickLinks = [
-    {
-      href: "/lecturer/materials",
-      title: "Upload materials",
-      body: "Notes, slides, past papers, assignments",
-      icon: FilePlus2,
-    },
-    {
-      href: "/lecturer/topics",
-      title: "Module topics",
-      body: "Build the outline students mark done",
-      icon: ListOrdered,
-    },
-    {
-      href: "/lecturer/assignments",
-      title: "Assignments",
-      body: "Publish coursework files to the class",
-      icon: GraduationCap,
-    },
-    {
-      href: "/lecturer/materials",
-      title: "Library",
-      body: "View, download, edit your files",
-      icon: LibraryBig,
-    },
-    {
-      href: "/lecturer/announcements",
-      title: "Announcements",
-      body: "Post notices students see instantly",
-      icon: Megaphone,
-    },
-    {
-      href: "/lecturer/timetable",
-      title: "Timetable",
-      body: "Review sessions for your class",
-      icon: CalendarDays,
-    },
+  const cards = [
+    { href: "/lecturer/materials", label: "Library", value: files.length, hint: "Upload, view, and manage files", icon: LibraryBig },
+    { href: "/lecturer/topics", label: "Module topics", value: myTopics.length, hint: "Manage your module outlines", icon: ListOrdered },
+    { href: "/lecturer/announcements", label: "Announcements", value: announcements.length, hint: "Post notices students see instantly", icon: Megaphone },
+    { href: "/lecturer/timetable", label: "Timetable", value: streamCount, hint: "Assigned classes", icon: CalendarDays },
   ];
 
   return (
     <div className="space-y-6 sm:space-y-7">
       <OverviewHeader label={translateUI("Lecturer workspace")} title={translateUI(`${getGreeting()}, ${displayName}`)}
         description={translateUI(`${activeLabel || "Your teaching workspace"} / ${moduleCount} modules / ${streamCount} classes. Bring your next lesson to life.`)}
-        actions={<><Button href="/lecturer/materials" size="sm"><FileUp className="h-4 w-4" />Upload material</Button><Button href="/lecturer/topics" size="sm" variant="outline">Manage topics</Button></>}
       />
 
       <StaffStagger className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StaffFadeItem>
-          <StaffStatCard
-            label={translateUI("Your uploads")}
-            value={String(mine.length)}
-            hint={translateUI(activeLabel ? `To ${activeLabel}` : "Published files")}
-            icon={FileUp}
-            tone="primary"
-          />
-        </StaffFadeItem>
-        <StaffFadeItem>
-          <StaffStatCard
-            label={translateUI("Notes & slides")}
-            value={String(notes.length)}
-            hint={translateUI(`${myTopics.length} topic${myTopics.length === 1 ? "" : "s"} outlined`)}
-            icon={BookOpen}
-            tone="success"
-          />
-        </StaffFadeItem>
-        <StaffFadeItem>
-          <StaffStatCard
-            label={translateUI("Assignment files")}
-            value={String(assignments.length)}
-            hint={translateUI("Live on student Modules")}
-            icon={ClipboardList}
-            tone="warning"
-          />
-        </StaffFadeItem>
-        <StaffFadeItem>
-          <StaffStatCard
-            label={translateUI("Modules taught")}
-            value={String(myModules.length || moduleCount)}
-            hint={
-              translateUI(streamCount > 1
-                ? `${streamCount} classes selected`
-                : "Across your streams")
-            }
-            icon={GraduationCap}
-            tone="primary"
-          />
-        </StaffFadeItem>
-      </StaffStagger>
-
-      <StaffStagger className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {quickLinks.map((card) => {
-          const Icon = card.icon;
-          return (
-            <StaffFadeItem key={card.href}>
-              <OverviewShortcut href={card.href} title={card.title} description={card.body} icon={Icon} />
-            </StaffFadeItem>
-          );
-        })}
+        {cards.map(card => (
+          <StaffFadeItem key={card.href}>
+            <StaffStatCard label={translateUI(card.label)} value={String(card.value)} hint={translateUI(card.hint)} icon={card.icon} href={card.href} />
+          </StaffFadeItem>
+        ))}
       </StaffStagger>
 
       <div className="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
@@ -193,7 +108,7 @@ export default function LecturerOverviewPage() {
                 </div>
               );
             })}
-            {mine.length === 0 ? (
+            {files.length === 0 ? (
               <div className="flex flex-col items-center gap-2 py-8 text-center">
                 <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
                   <FileUp className="h-4 w-4" />

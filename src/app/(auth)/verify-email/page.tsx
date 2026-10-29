@@ -1,10 +1,11 @@
 "use client";
 import { getStudentAdmission } from "@/lib/auth/admission";
+import { verifySignupEmail } from "@/lib/auth/verify-signup-email";
 
 import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, Suspense, useEffect, useState } from "react";
+import { FormEvent, Suspense, useEffect, useRef, useState } from "react";
 import { AuthAlert } from "@/components/auth/auth-alert";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { AuthSteps } from "@/components/auth/auth-steps";
@@ -39,6 +40,7 @@ function VerifyEmailForm() {
   const [success, setSuccess] = useState(false);
   const [continueTo, setContinueTo] = useState("/onboarding");
   const [loading, setLoading] = useState(false);
+  const verifying = useRef(false);
   const [resending, setResending] = useState(false);
   const [info, setInfo] = useState("");
 
@@ -63,42 +65,14 @@ function VerifyEmailForm() {
   }, [router]);
 
   async function verify(token: string) {
+    if (verifying.current) return;
+    verifying.current = true;
     setError("");
     setInfo("");
     setLoading(true);
     try {
       const supabase = createClient();
-      const { data, error: verifyError } = await supabase.auth.verifyOtp({
-        email,
-        token,
-        type: "signup",
-      });
-
-      if (verifyError) {
-        const retry = await supabase.auth.verifyOtp({
-          email,
-          token,
-          type: "email",
-        });
-        if (retry.error) throw verifyError;
-        if (!retry.data.user) throw new Error("No user");
-        if (staffRole) {
-          await ensureStaffProfile(supabase, retry.data.user, { role: staffRole });
-        } else {
-          await ensureProfile(supabase, retry.data.user);
-        }
-      } else if (data.user) {
-        if (staffRole) {
-          await ensureStaffProfile(supabase, data.user, { role: staffRole });
-        } else {
-          await ensureProfile(supabase, data.user);
-        }
-      }
-
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user");
+      const user = await verifySignupEmail(supabase, email, token);
       if (staffRole) {
         if (staffRole === "lecturer") {
           const { error: registrationError } = await supabase.rpc("complete_lecturer_registration");
@@ -122,7 +96,6 @@ function VerifyEmailForm() {
           // Signup verification does not replace the password + email sign-in check.
           await supabase.auth.signOut({ scope: "local" });
           router.replace("/login");
-          router.refresh();
           return;
         }
         setSuccess(true);
@@ -138,6 +111,7 @@ function VerifyEmailForm() {
       setError(getAuthErrorMessage(err));
       setOtp("");
     } finally {
+      verifying.current = false;
       setLoading(false);
     }
   }
@@ -190,7 +164,6 @@ function VerifyEmailForm() {
             ctaLabel={continueTo === "/lecturer-approval" ? "View application" : staffRole ? "Continue to desk" : "Continue to profile"}
             onContinue={() => {
               router.replace(continueTo);
-              router.refresh();
             }}
           />
         </>

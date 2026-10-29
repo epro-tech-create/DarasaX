@@ -42,6 +42,9 @@ async function authorizeRequest(request: NextRequest) {
   const { pathname } = request.nextUrl;
   if (pathname === "/sw.js" || pathname === "/manifest.webmanifest") return NextResponse.next();
   if (pathname === "/auth/signout") return NextResponse.next();
+  // The callback exchanges and verifies its code and checks membership itself.
+  // Reading the old session here adds latency before that exchange can even start.
+  if (pathname === "/auth/callback") return NextResponse.next();
   // Share pages and file handlers enforce authentication, approval and class scope themselves.
   if (pathname.startsWith("/share/")) return NextResponse.next();
   // This endpoint verifies the session and database permissions itself.

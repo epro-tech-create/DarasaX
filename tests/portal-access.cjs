@@ -104,6 +104,7 @@ async function check(host, path, member, expected, destination) {
   await check('darasax-cr.eprotechtz.com', '/', undefined, 307, '/cr');
   assert.equal(new URL((await proxy({ nextUrl: new URL('https://cr.darasax.com/'), url: 'https://cr.darasax.com/', headers: new Headers({ host: 'cr.darasax.com' }) })).location).origin, 'https://darasax.com');
   failed = true;
+  await check(host, '/auth/callback', cr, 200);
   await check(host, '/cr', cr, 503);
   failed = false;
   delete process.env.NEXT_PUBLIC_SUPABASE_URL;

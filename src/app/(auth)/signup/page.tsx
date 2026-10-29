@@ -81,7 +81,6 @@ function SignupForm() {
           await supabase.auth.signOut({ scope: "local" });
           router.replace("/login");
         } else router.replace(lecturer ? "/lecturer-approval" : `/onboarding${nextQuery}`);
-        router.refresh();
         return;
       }
 

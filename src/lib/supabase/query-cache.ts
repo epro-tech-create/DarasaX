@@ -13,6 +13,16 @@ type Entry =
   | { at: number; promise: Promise<unknown> };
 
 const store = new Map<string, Entry>();
+const invalidatedEvents = new WeakMap<Event, Set<string>>();
+
+/** All subscribers to one browser event share the same fresh request. */
+export function invalidateQueriesForEvent(prefix: string, event: Event) {
+  let prefixes = invalidatedEvents.get(event);
+  if (prefixes?.has(prefix)) return;
+  if (!prefixes) { prefixes = new Set(); invalidatedEvents.set(event, prefixes); }
+  prefixes.add(prefix);
+  invalidateQueries(prefix);
+}
 
 export const QUERY_TTL_MS = 30_000;
 

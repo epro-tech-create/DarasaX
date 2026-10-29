@@ -35,4 +35,4 @@ export const LECTURER_MODULE_OPTIONS = [
 export type LecturerModuleOptionId =
   (typeof LECTURER_MODULE_OPTIONS)[number]["id"];
 
-export type StreamCountChoice = 1 | 2 | "more";
+export type StreamCountChoice = 1 | 2 | 3 | "all";

@@ -8,8 +8,6 @@ import { createClient } from "@/lib/supabase/client";
 import { ensureStaffProfile, getStaffProfile } from "@/lib/auth/staff-profile";
 import {
   clearActiveLecturerStream,
-  getActiveLecturerStream,
-  setActiveLecturerStream,
 } from "@/lib/lecturer-context";
 import type { ClassStreamId, StaffRole } from "@/types";
 import type { StaffProfile } from "@/types/database";
@@ -62,20 +60,13 @@ function isConfigured() {
   );
 }
 
-/** Where a lecturer should land after auth (onboarding / class pick / desk). */
+/** Lecturer entry uses the saved onboarding assignments. */
 export function getLecturerEntryPath(session: StaffSession): string {
   if (!session.onboardingCompleted || session.streamIds.length === 0) {
     return "/lecturer/onboarding";
   }
-  if (session.streamIds.length === 1) {
-    setActiveLecturerStream(session.streamIds[0]);
-    return "/lecturer";
-  }
-  const active = getActiveLecturerStream();
-  if (active && session.streamIds.includes(active)) {
-    return "/lecturer";
-  }
-  return "/lecturer/select-class";
+
+  return "/lecturer";
 }
 
 export async function loginStaff(input: {
@@ -162,9 +153,7 @@ export async function completeLecturerOnboarding(input: {
   if (!data) throw new Error("Could not save teaching profile.");
 
   clearActiveLecturerStream();
-  if (input.streamIds.length === 1) {
-    setActiveLecturerStream(input.streamIds[0]);
-  }
+
 
   const session = toSession(data, user.email ?? "");
   invalidateQueries("staff");

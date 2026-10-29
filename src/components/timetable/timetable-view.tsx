@@ -22,6 +22,7 @@ import { cn, formatTime } from "@/lib/utils";
 import type { ClassStreamId, TimetableEntry } from "@/types";
 import { addDateDays, dateDay, tanzaniaDate, weekStart } from "@/lib/timetable-dates";
 import { Button } from "@/components/ui/button";
+import { NoLessonsTodayButton } from "@/components/timetable/no-lessons-today-button";
 
 const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const dayFull = [
@@ -200,6 +201,7 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
         actions={
           <div className="flex flex-wrap items-center gap-2">
             {actions}
+            {onEdit && <NoLessonsTodayButton key={streamId} streamId={streamId} />}
             <div className="inline-flex rounded-xl border border-border/80 bg-muted/40 p-0.5">
             {(["today", "week"] as const).map((item) => (
               <button

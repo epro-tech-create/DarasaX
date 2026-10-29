@@ -446,6 +446,9 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      get_announcement_reactions: { Args: { announcement_ids: string[] }; Returns: import("@/lib/announcement-reactions").ReactionSummary[] };
+      set_announcement_reaction: { Args: { announcement_id: string; reaction_emoji: string | null }; Returns: undefined };
+      cancel_timetable_today: { Args: { target_class: string; reason_text: string; request_key: string }; Returns: number };
       get_timetable_occurrences: { Args: { range_start: string; range_end: string }; Returns: import("@/lib/timetable-dates").TimetableOccurrence[] };
       change_timetable_session: { Args: { entry_id: string; occurrence_date: string; change_scope: string; new_date: string; new_start: string; new_end: string; new_room: string; new_lecturer: string; new_module: string; change_status: string; change_reason: string; request_id: string }; Returns: undefined };
       get_push_public_key: { Args: Record<string, never>; Returns: string };

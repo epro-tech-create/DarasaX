@@ -3,6 +3,8 @@
 import { StudentExportButton } from "@/components/staff/student-export-button";
 import { ClassInvitation } from "@/components/staff/class-invitation";
 import { StudentApprovals } from "@/components/staff/student-approvals";
+import { StudentSearch } from "@/components/staff/student-search";
+import { matchesStudentSearch } from "@/lib/student-directory";
 import { useTranslate } from "@/components/providers/language-provider";
 import { useMemo, useState } from "react";
 import { Pencil, Plus, Trash2, Users } from "lucide-react";
@@ -29,6 +31,8 @@ export default function ClassRepMembersPage() {
   const { studentsForStream, addStudent, updateStudent, deleteStudent } =
     useAdminPeopleStore({ rosterOnly: true });
   const members = studentsForStream(streamId);
+  const [query, setQuery] = useState("");
+  const filteredMembers = members.filter(student => matchesStudentSearch(student, query));
 
   function initials(name: string) {
     return name
@@ -150,7 +154,8 @@ export default function ClassRepMembersPage() {
         <p className="text-[12px] font-medium text-success">{translateUI(message)}</p>
       ) : null}
 
-      <StaffSection title={translateUI("Roster")} description={translateUI(`${members.length} students`)}>
+      <StaffSection title={translateUI("Roster")} description={translateUI(`${filteredMembers.length} students`)}>
+        <StudentSearch value={query} onChange={setQuery} />
         <div className="overflow-x-auto">
           <table className="w-full min-w-[420px] text-left text-[12px]">
             <thead>
@@ -162,16 +167,16 @@ export default function ClassRepMembersPage() {
               </tr>
             </thead>
             <tbody>
-              {members.length === 0 ? (
+              {filteredMembers.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={3}
+                    colSpan={4}
                     className="py-10 text-center text-muted-foreground"
                   >
-                    {translateUI("No members yet. Add a student to get started.")}</td>
+                    {translateUI(query.trim() ? "No students match your search." : "No members yet. Add a student to get started.")}</td>
                 </tr>
               ) : null}
-              {members.map((s) => (
+              {filteredMembers.map((s) => (
                 <tr key={s.id} className="border-b border-border/60 last:border-0">
                   <td className="py-3 pr-3">
                     <div className="flex items-center gap-2.5">

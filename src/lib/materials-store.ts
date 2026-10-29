@@ -6,7 +6,7 @@ import { downloadFile } from "@/lib/download";
 
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { cachedQuery, invalidateQueries } from "@/lib/supabase/query-cache";
+import { cachedQuery, invalidateQueries, invalidateQueriesForEvent } from "@/lib/supabase/query-cache";
 import type { MaterialRow } from "@/types/database";
 import { recordAudit } from "@/lib/audit-log";
 import type {
@@ -239,14 +239,21 @@ export function useMaterialsStore() {
 
   useEffect(() => {
     const timer = setTimeout(() => void refresh(), 0);
-    const onFocus = () => {
-      invalidateQueries("materials");
+    const onFocus = (event: Event) => {
+      invalidateQueriesForEvent("materials", event);
       void refresh();
     };
     window.addEventListener("focus", onFocus);
     window.addEventListener("darasax:materials", onFocus);
+    const poll = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        invalidateQueries("materials");
+        void refresh();
+      }
+    }, 30000);
     return () => {
       clearTimeout(timer);
+      clearInterval(poll);
       window.removeEventListener("focus", onFocus);
       window.removeEventListener("darasax:materials", onFocus);
     };
@@ -407,10 +414,11 @@ export function useMaterialsStore() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!input.streamId || input.streamId === "all")
+      if (!user) throw new Error("Sign in again to publish an announcement.");
+      if (!input.streamId)
         throw new Error("Choose the class receiving this announcement.");
       const id = `ann-${Date.now()}`;
-      const streamId = input.streamId;
+      const streamId = input.streamId === "all" ? null : input.streamId;
       const { data, error } = await supabase
         .from("materials")
         .insert({
@@ -427,7 +435,7 @@ export function useMaterialsStore() {
         })
         .select("*")
         .single();
-      if (error) throw error;
+      if (error) throw new Error(error.message);
       window.dispatchEvent(new Event("darasax:materials"));
       const entry = toUpload(data);
       invalidateQueries("materials");
@@ -447,16 +455,19 @@ export function useMaterialsStore() {
 
   const deleteItem = useCallback(async (id: string) => {
     const supabase = createClient();
-    const { data: existing } = await supabase
+    const { data: existing, error: readError } = await supabase
       .from("materials")
       .select("*")
       .eq("id", id)
       .maybeSingle();
+    if (readError) throw new Error(readError.message);
+    if (!existing) throw new Error("Announcement or material is unavailable. Refresh and try again.");
     if (existing?.file_path?.startsWith("r2:")) {
       await fileAction({ action: "delete", materialId: id });
     } else {
-      const { error } = await supabase.from("materials").delete().eq("id", id);
-      if (error) throw error;
+      const { data: deleted, error } = await supabase.from("materials").delete().eq("id", id).select("id").maybeSingle();
+      if (error) throw new Error(error.message);
+      if (!deleted) throw new Error("You do not have permission to delete this announcement or material.");
     }
     invalidateQueries("materials");
     if (existing?.file_path && !existing.file_path.startsWith("r2:")) {
@@ -467,6 +478,7 @@ export function useMaterialsStore() {
     }
     window.dispatchEvent(new Event("darasax:materials"));
     setItems((prev) => prev.filter((i) => i.id !== id));
+    window.dispatchEvent(new Event("darasax:notifications"));
     if (existing) {
       await recordAudit({
         actor: existing.uploaded_by,

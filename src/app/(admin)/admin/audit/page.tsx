@@ -103,9 +103,9 @@ export default function AdminAuditPage() {
             }
             setError("");
             setBusyId("all");
-            void clearLogs(filtered.map((row) => row.id)).catch(() => {
+            void clearLogs(filtered.map((row) => row.id)).catch((err) => {
               setError(
-                "Could not delete logs. Run the latest Supabase migration, then try again.",
+                err instanceof Error ? err.message : "Could not delete logs. Please try again.",
               );
             }).finally(() => setBusyId(null));
           }}
@@ -168,9 +168,9 @@ export default function AdminAuditPage() {
                     setBusyId(row.id);
                     setError("");
                     void deleteLog(row.id)
-                      .catch(() => {
+                      .catch((err) => {
                         setError(
-                          "Could not delete this log. Run the latest Supabase migration, then try again.",
+                          err instanceof Error ? err.message : "Could not delete this log. Please try again.",
                         );
                       })
                       .finally(() => setBusyId(null));

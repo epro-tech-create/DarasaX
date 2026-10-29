@@ -3,6 +3,7 @@
 import { useTranslate } from "@/components/providers/language-provider";
 import { useMemo, useState } from "react";
 import { AnnouncementCard } from "@/components/announcements/announcement-card";
+import { AnnouncementReactionsProvider } from "@/lib/announcement-reactions";
 import { PageHeader } from "@/components/layout/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useMaterialsStore } from "@/lib/materials-store";
@@ -48,6 +49,7 @@ export default function AnnouncementsPage() {
           category: "general" as const,
           pinned: false,
           postedAt: item.createdAt,
+          material: item,
         })),
     [published],
   );
@@ -127,14 +129,15 @@ export default function AnnouncementsPage() {
           }
         />
       ) : (
-        <div className="space-y-2.5">
+        <AnnouncementReactionsProvider announcementIds={filtered.map(item => item.id)}><div className="space-y-2.5">
           {filtered.map((announcement) => (
             <AnnouncementCard
               key={announcement.id}
               announcement={announcement}
+              attachment={announcement.material}
             />
           ))}
-        </div>
+        </div></AnnouncementReactionsProvider>
       )}
     </div>
   );

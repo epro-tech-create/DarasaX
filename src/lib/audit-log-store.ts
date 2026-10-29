@@ -39,9 +39,13 @@ export function useAuditLog() {
   const setAction = (value: "all" | AuditAction) => { updateAction(value); setPage(0); };
   const clearLogs = async (ids: string[]) => {
     if (!ids.length) return;
-    const { error } = await createClient().from("audit_log").delete().in("id", ids.map(Number));
-    if (error) throw error;
+    const uniqueIds = [...new Set(ids)];
+    const { data, error } = await createClient().from("audit_log").delete().in("id", uniqueIds.map(Number)).select("id");
+    if (error) throw new Error(error.message);
     invalidateQueries("people"); refresh();
+    if (data?.length !== uniqueIds.length) {
+      throw new Error("Some logs were not deleted. Refresh the list and verify your administrator session before trying again.");
+    }
   };
   const loading = result.key !== key;
   return { ...result, audit: loading ? [] : result.audit, loading, page, setPage, query, setQuery, action, setAction, refresh,

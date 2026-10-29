@@ -4,7 +4,8 @@ import { getStudentAdmission } from "@/lib/auth/admission";
 import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, Suspense, useState } from "react";
+import { FormEvent, Suspense, useEffect, useState } from "react";
+import { preloadCaptcha } from "@/lib/auth/captcha";
 import { AuthAlert } from "@/components/auth/auth-alert";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { AuthSubmitButton } from "@/components/auth/auth-submit-button";
@@ -32,6 +33,7 @@ import {
 } from "@/lib/staff-auth";
 
 function StudentLoginForm() {
+  useEffect(() => { void preloadCaptcha(); }, []);
   const translateUI = useTranslate();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -83,15 +85,14 @@ function StudentLoginForm() {
           await supabase.auth.signOut();
           throw new Error("Use your assigned portal or contact your administrator.");
         }
-        await recordAudit({ action: "login", summary: "Signed in" });
+        void recordAudit({ action: "login", summary: "Signed in" });
         router.replace("/cr");
-        router.refresh();
         return;
       }
-      const profile = savedProfile ?? await ensureProfile(supabase, data.user);
+      const profile = savedProfile ?? await ensureProfile(supabase, data.user, savedProfile);
       const restriction = studentEnrollmentError(profile);
       if (restriction) { await supabase.auth.signOut(); setError(restriction); return; }
-      await recordAudit({
+      void recordAudit({
         actor: profile?.full_name ?? normalized,
         role: "student",
         action: "login",
@@ -99,7 +100,6 @@ function StudentLoginForm() {
       });
       const dest = studentPostAuthPath(profile.onboarding_completed, next, admission);
       router.replace(dest);
-      router.refresh();
     } catch (err) {
       const msg = getAuthErrorMessage(err);
       if (msg.includes("verify your email")) {
@@ -227,7 +227,7 @@ function StaffLoginForm({
         email: normalized,
         password,
       });
-      if (role !== "admin") await recordAudit({
+      if (role !== "admin") void recordAudit({
         actor: staffSession.name,
         role: staffSession.role,
         action: "login",
@@ -241,7 +241,6 @@ function StaffLoginForm({
             ? next
             : APP_HOME[role];
       router.replace(dest);
-      router.refresh();
     } catch (err) {
       if (role === "lecturer" && err instanceof Error && err.message === "LECTURER_APPROVAL_REQUIRED") {
         router.replace("/lecturer-approval");

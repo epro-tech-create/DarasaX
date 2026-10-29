@@ -7,7 +7,7 @@ export function materialsForModule(
   moduleId: string,
 ) {
   return materials.filter(
-    (m) => m.status === "published" && m.moduleId === moduleId,
+    (m) => m.status === "published" && m.moduleId === moduleId && m.kind !== "announcement",
   );
 }
 

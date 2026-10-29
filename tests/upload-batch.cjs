@@ -19,6 +19,7 @@ const { UploadWorkspace } = load('src/components/staff/upload-workspace.tsx', {
   '@/data/mock': { modules: [{ id: 'mod-a', code: 'A', name: 'Module A' }] },
   '@/lib/class-registry': { useClassRegistry: () => ({ streams: [{ id: 'class-1', label: 'Class 1' }, { id: 'class-2', label: 'Class 2' }], ready: true, error: '' }) },
   '@/lib/materials-store': { useMaterialsStore: () => ({ publish: async () => {} }) },
+  '@/lib/staff-auth': { useStaffSession: () => ({ session: { streamIds: ['class-1', 'class-2'] } }) },
   '@/lib/upload-batch': batch,
   '@/lib/supabase/query-cache': { invalidateQueries() {} },
 });

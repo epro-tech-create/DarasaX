@@ -12,6 +12,10 @@ import {
   Pin,
 } from "lucide-react";
 import { getModule } from "@/data/mock";
+import { AnnouncementReactions } from "@/components/announcements/announcement-reactions";
+import { AnnouncementBody } from "@/components/announcements/announcement-body";
+import { MaterialUploadCard } from "@/components/modules/material-upload-card";
+import type { MaterialUpload } from "@/types";
 
 const categoryMeta = {
   general: {
@@ -44,14 +48,16 @@ const categoryMeta = {
 export function AnnouncementCard({
   announcement,
   className,
+  attachment,
 }: {
   announcement: Announcement;
   className?: string;
+  attachment?: MaterialUpload;
 }) {
   const translateUI = useTranslate();
   const meta = categoryMeta[announcement.category];
   const Icon = meta.icon;
-  const module = announcement.moduleId
+  const courseModule = announcement.moduleId
     ? getModule(announcement.moduleId)
     : undefined;
 
@@ -89,9 +95,9 @@ export function AnnouncementCard({
             <Badge tone={meta.tone} className="capitalize">
               {announcement.category}
             </Badge>
-            {module ? (
+            {courseModule ? (
               <span className="text-[10px] font-medium text-muted-foreground">
-                {translateUI(module.code)}
+                {translateUI(courseModule.code)}
               </span>
             ) : null}
             <span className="ml-auto text-[10px] text-muted-foreground">
@@ -101,9 +107,9 @@ export function AnnouncementCard({
           <h3 className="font-heading text-[13px] font-semibold tracking-tight sm:text-[14px]">
             {announcement.title}
           </h3>
-          <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
-            {announcement.body}
-          </p>
+          <AnnouncementBody body={announcement.body} />
+          <AnnouncementReactions announcementId={announcement.id} />
+          {attachment?.fileName && <div className="mt-2"><MaterialUploadCard item={attachment} /></div>}
         </div>
       </div>
     </article>

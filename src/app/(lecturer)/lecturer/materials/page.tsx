@@ -5,14 +5,14 @@ import { useCallback } from "react";
 import { PageHeader } from "@/components/layout/page-header";
 import { LibraryUploadButton } from "@/components/staff/library-upload-button";
 import { MaterialsLibrary } from "@/components/staff/materials-library";
-import { getActiveLecturerStream } from "@/lib/lecturer-context";
+
 import { useStaffSession } from "@/lib/staff-auth";
 import type { MaterialUpload } from "@/types";
 
 export default function LecturerMaterialsPage() {
   const translateUI = useTranslate();
   const { session } = useStaffSession();
-  const active = getActiveLecturerStream();
+
 
   const filterItems = useCallback(
     (items: MaterialUpload[]) => {
@@ -25,14 +25,13 @@ export default function LecturerMaterialsPage() {
           moduleIds.includes(u.moduleId);
         const streamOk =
           !u.streamId ||
-          streamIds.includes(u.streamId) ||
-          (active ? u.streamId === active : false);
+          streamIds.includes(u.streamId);
         const mine =
           u.role === "lecturer" || u.uploadedBy === session?.name;
         return (moduleOk && streamOk) || mine;
       });
     },
-    [active, session],
+    [session],
   );
 
   return (

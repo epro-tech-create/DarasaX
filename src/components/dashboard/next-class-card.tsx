@@ -24,6 +24,7 @@ export function NextClassCard({
   moduleHref,
   timetableHref = "/timetable",
   moduleLabel = "View Module",
+  initialNow,
 }: {
   entry: TimetableEntry;
   module: Module;
@@ -31,9 +32,10 @@ export function NextClassCard({
   moduleHref?: string;
   timetableHref?: string;
   moduleLabel?: string;
+  initialNow?: number;
 }) {
   const translateUI = useTranslate();
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState(() => initialNow ?? Date.now());
   useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 30000); return () => clearInterval(timer); }, []);
   const mins = entry.sessionDate ? Math.round((occurrenceTime(entry.sessionDate, entry.startTime) - now) / 60000) : minutesUntil(entry.startTime, dayOffset);
   const days = Math.floor(mins / (60 * 24));
@@ -51,7 +53,7 @@ export function NextClassCard({
             : "Coming up";
 
   return (
-    <section className="relative overflow-hidden rounded-[22px] bg-[#1565C0] text-white">
+    <section className="relative min-h-[260px] overflow-hidden rounded-[22px] bg-[#1565C0] text-white sm:min-h-[200px]">
       <Image
         src="/next-class-students-v1.webp"
         alt={""}

@@ -3,11 +3,12 @@ import { studentEnrollmentError } from "@/lib/auth/enrollment";
 import { studentPostAuthPath } from "@/lib/auth/redirect";
 import { getStaffProfile } from "@/lib/auth/staff-profile";
 import { roleFromHost, getAppRole, APP_HOME } from "@/lib/app-role";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { adminEmailVerified, ADMIN_EMAIL_PATH } from "@/lib/auth/admin-security";
 import {
   ensureProfile,
+  getProfile,
 } from "@/lib/auth/profile";
 
 export async function GET(request: Request) {
@@ -24,12 +25,11 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      // The code exchange authenticates this user; a second Auth request is redundant.
+      const user = data.user;
 
       if (user) {
         const portal = roleFromHost(new URL(request.url).host) ?? getAppRole();
@@ -40,7 +40,17 @@ export async function GET(request: Request) {
             return NextResponse.redirect(new URL("/login?error=Could%20not%20activate%20lecturer%20account", origin));
           }
         }
-        const staff = await getStaffProfile(supabase, user.id);
+        const [staff, savedProfile, admission] = await Promise.all([
+          getStaffProfile(supabase, user.id),
+          portal === "student" ? getProfile(supabase, user.id) : null,
+          portal === "student" ? getStudentAdmission(supabase, user.id) : null,
+        ]);
+        const recordSignIn = () => after(async () => {
+          try {
+            const { error } = await supabase.rpc("record_sign_in");
+            if (error) console.warn("Sign-in log was not saved.");
+          } catch { console.warn("Sign-in log was not saved."); }
+        });
         if (portal === "student" && staff?.status === "active" && staff.role === "admin") {
           // Move to the fixed administrator origin; never transfer tokens in a URL.
           return NextResponse.redirect(new URL("https://admin.darasax.com/login"));
@@ -58,10 +68,10 @@ export async function GET(request: Request) {
             return NextResponse.redirect(new URL("/login?error=Account%20not%20authorized%20for%20this%20portal", origin));
           }
           if (staff?.role === "admin" && !await adminEmailVerified(supabase)) return NextResponse.redirect(new URL(ADMIN_EMAIL_PATH, origin));
-          await supabase.rpc("record_sign_in");
+          recordSignIn();
           return NextResponse.redirect(new URL(staff!.role === "lecturer" && !staff!.onboarding_completed ? "/lecturer/onboarding" : APP_HOME[staff!.role], origin));
         }
-        const profile = await ensureProfile(supabase, user);
+        const profile = await ensureProfile(supabase, user, savedProfile);
         const restriction = studentEnrollmentError(profile);
         if (restriction) {
           await supabase.auth.signOut();
@@ -69,9 +79,9 @@ export async function GET(request: Request) {
           destination.searchParams.set("error", restriction);
           return NextResponse.redirect(destination);
         }
-        await supabase.rpc("record_sign_in");
+        recordSignIn();
         const dest =
-          studentPostAuthPath(profile.onboarding_completed, next, await getStudentAdmission(supabase, user.id));
+          studentPostAuthPath(profile.onboarding_completed, next, admission);
         return NextResponse.redirect(new URL(dest, origin));
       }
     }

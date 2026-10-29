@@ -10,6 +10,7 @@ import { useClassRegistry } from "@/lib/class-registry";
 import { useMaterialsStore } from "@/lib/materials-store";
 import { MAX_UPLOAD_BYTES, publishBatch, type UploadState } from "@/lib/upload-batch";
 import { invalidateQueries } from "@/lib/supabase/query-cache";
+import { useStaffSession } from "@/lib/staff-auth";
 
 const kinds: { id: UploadKind; label: string }[] = [
   { id: "notes", label: "Notes" }, { id: "slides", label: "Slides" },
@@ -26,11 +27,15 @@ export function UploadWorkspace({ title, description, defaultKind = "notes", upl
 }) {
   const t = useTranslate();
   const { streams, ready: classesReady, error: classesError } = useClassRegistry();
+  const { session } = useStaffSession();
+  const recipientStreams = role === "lecturer" ? streams.filter(stream => session?.streamIds.includes(stream.id)) : streams;
+  const canTargetAll = role !== "lecturer" || (classesReady && streams.length > 0 && streams.every(stream => session?.streamIds.includes(stream.id)));
   const { publish } = useMaterialsStore();
   const catalog = allowedModuleIds === undefined ? modules : modules.filter(module => allowedModuleIds.includes(module.id));
   const [kind, setKind] = useState<UploadKind>(defaultKind);
   const [moduleId, setModuleId] = useState(catalog[0]?.id ?? "");
-  const [streamId, setStreamId] = useState<ClassStreamId | "all">("all");
+  const [selectedStream, setStreamId] = useState<ClassStreamId | "all">("all");
+  const streamId = selectedStream === "all" && canTargetAll ? "all" : recipientStreams.some(stream => stream.id === selectedStream) ? selectedStream : recipientStreams[0]?.id;
   const [dueAt, setDueAt] = useState("");
   const [files, setFiles] = useState<QueuedFile[]>([]);
   const [publishing, setPublishing] = useState(false);
@@ -52,6 +57,7 @@ export function UploadWorkspace({ title, description, defaultKind = "notes", upl
 
   async function handlePublish() {
     if (busy.current || !pending.length) return;
+    if (!streamId || !classesReady || classesError) { setError("Choose an available teaching class."); return; }
     if (!moduleId || !catalog.some(module => module.id === moduleId)) { setError("Select a module you teach."); return; }
     if (pending.some(item => !item.title.trim())) { setError("Enter a title for every file."); return; }
     busy.current = true; setPublishing(true); onBusyChange?.(true); setError("");
@@ -74,8 +80,8 @@ export function UploadWorkspace({ title, description, defaultKind = "notes", upl
     <div className="grid gap-3 sm:grid-cols-2">
       <label className="space-y-1.5 sm:col-span-2"><span className="text-xs font-medium">{t("Target stream")}</span>
         <select value={streamId} disabled={publishing} onChange={event => setStreamId(event.target.value as ClassStreamId | "all")} className={control}>
-          <option value="all">{t("All streams")}</option>
-          {streams.map(stream => <option key={stream.id} value={stream.id}>{stream.label}</option>)}
+          {canTargetAll && <option value="all">{t("All streams")}</option>}
+          {recipientStreams.map(stream => <option key={stream.id} value={stream.id}>{stream.label}</option>)}
         </select>
         <p className="text-xs text-muted-foreground">{t(streamId === "all" ? "These files will be available to approved students in every stream." : "These files will be available only to the selected class.")}</p>
         {!classesReady && <p className="text-xs text-muted-foreground">{t("Loading classes...")}</p>}
@@ -83,7 +89,7 @@ export function UploadWorkspace({ title, description, defaultKind = "notes", upl
       </label>
       <label className="space-y-1.5"><span className="text-xs font-medium">{t("Type")}</span>
         <select value={kind} disabled={publishing} onChange={event => setKind(event.target.value as UploadKind)} className={control}>
-          {kinds.map(item => <option key={item.id} value={item.id}>{t(item.label)}</option>)}
+          {kinds.filter(item => defaultKind === "announcement" ? item.id === "announcement" : item.id !== "announcement").map(item => <option key={item.id} value={item.id}>{t(item.label)}</option>)}
         </select>
       </label>
       <label className="space-y-1.5"><span className="text-xs font-medium">{t("Module")}</span>

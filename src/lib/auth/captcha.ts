@@ -28,6 +28,12 @@ function load(): Promise<TurnstileApi> {
   return loading;
 }
 
+/** Warm the script while the form is open; verification still runs on submission. */
+export async function preloadCaptcha(): Promise<void> {
+  if (!SITE_KEY || typeof window === "undefined") return;
+  try { await load(); } catch { /* A protected submission retries and reports any failure. */ }
+}
+
 async function challenge(): Promise<string> {
   const api = await load();
   return new Promise((resolve, reject) => {

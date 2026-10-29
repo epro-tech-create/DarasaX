@@ -8,6 +8,7 @@ export async function signInWithGoogle(
     provider: "google",
     options: {
       redirectTo,
+      skipBrowserRedirect: true,
       queryParams: {
         access_type: "online",
         prompt: "select_account",

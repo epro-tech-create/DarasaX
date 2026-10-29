@@ -10,7 +10,7 @@ import {
   lecturerHomeOrBare,
 } from "@/components/staff/lecturer-gate";
 import { classStreams } from "@/data/mock";
-import { useActiveLecturerStream } from "@/lib/lecturer-context";
+
 import { useStaffSession } from "@/lib/staff-auth";
 
 export default function LecturerLayout({
@@ -22,11 +22,7 @@ export default function LecturerLayout({
   const pathname = usePathname();
   const { session } = useStaffSession();
   const bare = lecturerHomeOrBare(pathname);
-  const { activeStreamId } = useActiveLecturerStream(session?.streamIds ?? []);
-  const activeLabel =
-    classStreams.find((s) => s.id === activeStreamId)?.label ??
-    activeStreamId ??
-    null;
+  const activeLabel = session?.streamIds.map(id => classStreams.find(stream => stream.id === id)?.label ?? id).join(", ") || null;
 
   return (
     <RoleGuard allow="lecturer">

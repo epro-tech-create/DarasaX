@@ -8,6 +8,7 @@ import { useNotifications } from "@/lib/notifications-store";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PushSettings } from "@/components/notifications/push-settings";
+import { NotificationBody } from "@/components/notifications/notification-body";
 
 export function NotificationPanel({
   open,
@@ -80,19 +81,17 @@ export function NotificationPanel({
                       markRead(n.id);
                       onClose();
                     }}
-                    className="flex gap-3 px-4 py-3 transition hover:bg-muted/70"
+                    className="flex gap-3 px-4 py-4 transition hover:bg-muted/70"
                   >
                     <span
                       className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
                         n.read ? "bg-transparent" : "bg-primary"
                       }`}
                     />
-                    <span className="min-w-0">
-                      <span className="block text-sm font-medium">{translateUI(n.title)}</span>
-                      <span className="mt-0.5 block text-[13px] text-muted-foreground">
-                        {n.body}
-                      </span>
-                      <span className="mt-1 block text-xs text-muted-foreground">
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-semibold leading-6">{translateUI(n.title)}</span>
+                      <NotificationBody body={n.body} type={n.type} />
+                      <span className="mt-3 block text-xs text-muted-foreground">
                         {translateUI(formatRelativeTime(n.createdAt))}
                       </span>
                     </span>
