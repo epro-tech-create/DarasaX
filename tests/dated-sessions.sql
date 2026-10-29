@@ -3,7 +3,7 @@ begin;
 do $$
 declare cr uuid; student uuid:=gen_random_uuid(); teacher uuid:=gen_random_uuid();
  series text:='dated-test-'||gen_random_uuid(); reminder text:='reminder-test-'||gen_random_uuid(); starts_now text:='start-test-'||gen_random_uuid();
- today date:=(now() at time zone 'Africa/Dar_es_Salaam')::date; d date; device uuid; rid uuid:=gen_random_uuid(); n int; test_start timestamptz:=now()+interval '29 minutes';
+ today date:=(now() at time zone 'Africa/Dar_es_Salaam')::date; d date; device uuid; rid uuid:=gen_random_uuid(); cancellation_id uuid:=gen_random_uuid(); n int; test_start timestamptz:=now()+interval '29 minutes';
 begin
  d:=today+((8-extract(dow from today)::int)%7)+7;
  select id into cr from public.staff_profiles where role='class_rep' and status='active' and stream_id='BENG24COE-1' limit 1;
@@ -34,7 +34,8 @@ begin
  if (select start_time from public.timetable_entries where id=series)<>'07:00' then raise exception 'Original timetable changed'; end if;
  perform public.change_timetable_session(series,d+8,'once',d+8,'10:00','12:00','Weekly room','Fixture lecturer','mod-numerical','postponed','Time unknown',gen_random_uuid());
  if not exists(select 1 from public.get_timetable_occurrences(d+8,d+8) where series_id=series and status='postponed') then raise exception 'Postponement missing'; end if;
- perform public.change_timetable_session(series,d+8,'once',d+8,'10:00','12:00','Weekly room','Fixture lecturer','mod-numerical','cancelled','No class',gen_random_uuid());
+ perform public.change_timetable_session(series,d+8,'once',d+8,'10:00','12:00','Weekly room','Fixture lecturer','mod-numerical','cancelled','',cancellation_id);
+ if exists(select 1 from public.notifications where source_type='timetable' and source_id=cancellation_id::text) then raise exception 'Deleted lesson sent a notification'; end if;
  if not exists(select 1 from public.get_timetable_occurrences(d+8,d+8) where series_id=series and status='cancelled') then raise exception 'Cancellation missing'; end if;
  perform set_config('request.jwt.claims',jsonb_build_object('sub',student,'role','authenticated')::text,true);
  begin perform public.change_timetable_session(series,d+8,'once',d+8,'10:00','12:00','X','X','mod-numerical','scheduled','',gen_random_uuid());raise exception 'Student edit allowed'; exception when insufficient_privilege then null; end;
@@ -59,6 +60,14 @@ begin
  perform set_config('request.jwt.claims','{"role":"service_role"}',true);
  perform public.enqueue_lesson_push();
  if exists(select 1 from private.push_deliveries where subscription_id=device and lesson_id=reminder and state='pending') then raise exception 'Postponed lesson reminder recreated'; end if;
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',cr,'role','authenticated')::text,true);
+ cancellation_id:=gen_random_uuid();
+ perform public.change_timetable_session(starts_now,today,'once',today,to_char(now() at time zone 'Africa/Dar_es_Salaam','HH24:MI'),'23:59','Start room','Fixture lecturer','mod-numerical','cancelled','',cancellation_id);
+ if exists(select 1 from public.notifications where source_type='timetable' and source_id=cancellation_id::text) then raise exception 'Deletion published a cancellation notice'; end if;
+ if exists(select 1 from private.push_deliveries where subscription_id=device and lesson_id=starts_now and state in ('pending','processing')) then raise exception 'Deleted lesson retained an unsent reminder'; end if;
+ perform set_config('request.jwt.claims','{"role":"service_role"}',true);
+ perform public.enqueue_lesson_push();
+ if exists(select 1 from private.push_deliveries where subscription_id=device and lesson_id=starts_now and state in ('pending','processing')) then raise exception 'Deleted lesson reminder recreated'; end if;
  if not exists(select 1 from public.timetable_entries where id=series) then raise exception 'Original series lost'; end if;
  if has_table_privilege('authenticated','public.timetable_revisions','insert') or has_table_privilege('anon','public.timetable_changes','select') then raise exception 'Timetable write grant exposed'; end if;
  if has_table_privilege('authenticated','public.timetable_entries','update') or has_table_privilege('authenticated','public.timetable_entries','delete') then raise exception 'Baseline can be rewritten or deleted through browser'; end if;

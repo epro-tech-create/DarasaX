@@ -105,7 +105,6 @@ function ClassBlock({
           >
             {courseModule?.name}
           </p>
-          {entry.status && entry.status !== "scheduled" ? <span className="rounded bg-background/80 px-1 py-0.5 text-[9px] font-semibold capitalize">{entry.status}</span> : null}
           {isNext ? (
             <span className="shrink-0 rounded-md bg-primary/15 px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-primary">
               {translateUI("Next")}</span>
@@ -159,7 +158,7 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
   const next = getNextClass(new Date(), streamId, allEntries);
 
   const streamTimetable = useMemo(
-    () => forStream(streamId),
+    () => forStream(streamId).filter(entry => entry.status !== "cancelled" && entry.status !== "postponed"),
     [forStream, streamId],
   );
 
@@ -384,7 +383,6 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
                             <p className="truncate text-[13px] font-semibold">
                               {courseModule?.name}
                             </p>
-                            {entry.status && entry.status !== "scheduled" ? <p className="mt-1 text-xs font-semibold capitalize text-primary">{entry.status}{entry.reason ? ` · ${entry.reason}` : ""}</p> : null}
                             <p className="mt-0.5 text-[11px] text-muted-foreground">
                               {translateUI(courseModule?.code)} ·{" "}
                               {translateUI(durationLabel(entry.startTime, entry.endTime))}
@@ -470,7 +468,6 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
                                 <p className="text-[12px] font-semibold">
                                   {courseModule?.name}
                                 </p>
-                                {entry.status && entry.status !== "scheduled" ? <p className="mt-1 text-xs font-semibold capitalize text-primary">{entry.status}{entry.reason ? ` · ${entry.reason}` : ""}</p> : null}
                                 <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
                                   {translateUI(formatTime(entry.startTime))} –{" "}
                                   {translateUI(formatTime(entry.endTime))} · {entry.room}

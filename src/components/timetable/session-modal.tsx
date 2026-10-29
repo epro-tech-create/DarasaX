@@ -18,7 +18,7 @@ export function SessionModal({ entry, streamId, onClose }: { entry: TimetableEnt
     day: entry?.day ?? 1, startTime: entry?.startTime ?? "08:00", endTime: entry?.endTime ?? "10:00",
     room: entry?.room ?? "", lecturer: entry?.lecturer ?? availableModules[0]?.lecturer ?? "",
     scope: "once" as "once" | "future", date: original, newDate: entry?.sessionDate ?? original,
-    status: (entry?.status === "postponed" ? "postponed" : "scheduled") as "scheduled" | "postponed" | "cancelled", reason: "" });
+    status: (entry?.status === "postponed" ? "postponed" : "scheduled") as "scheduled" | "postponed" | "cancelled" });
   const requestId = useRef<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -31,7 +31,7 @@ export function SessionModal({ entry, streamId, onClose }: { entry: TimetableEnt
     deleting.current = true; setBusy(true); setError("");
     deleteRequestId.current ??= crypto.randomUUID();
     try {
-      await deleteEntry(entry, { date: original, scope: "once", reason: form.reason, requestId: deleteRequestId.current });
+      await deleteEntry(entry, { date: original, scope: "once", reason: "", requestId: deleteRequestId.current });
       onClose();
     } catch (failure) {
       setError(failure && typeof failure === "object" && "message" in failure ? String(failure.message) : "Could not delete this lesson. Please try again.");
@@ -47,7 +47,7 @@ export function SessionModal({ entry, streamId, onClose }: { entry: TimetableEnt
       if (entry) {
         requestId.current ??= crypto.randomUUID();
         await updateEntry(entry.seriesId ?? entry.id, values, { date: form.date, scope: form.scope,
-          newDate: form.status === "scheduled" ? form.newDate : form.date, status: form.status, reason: form.reason, requestId: requestId.current });
+          newDate: form.status === "scheduled" ? form.newDate : form.date, status: form.status, reason: "", requestId: requestId.current });
       } else await addEntry(values);
       onClose();
     } catch (failure) {
@@ -67,7 +67,7 @@ export function SessionModal({ entry, streamId, onClose }: { entry: TimetableEnt
       </div> : null}
       {confirmDelete && entry ? <>
         <p className="text-sm leading-relaxed">Delete only the lesson on <strong>{dateLabel(lessonDate)}</strong>? Other weeks stay unchanged.</p>
-        <p className="text-sm leading-relaxed text-muted-foreground">Students will get a cancellation update. Further reminders for this lesson will stop. It stays marked as cancelled on the timetable.</p>
+        <p className="text-sm leading-relaxed text-muted-foreground">This lesson will disappear from the timetable. No notification will be sent, and further reminders will stop.</p>
         {error ? <p role="alert" className="text-sm text-danger">{error}</p> : null}
         <div className="flex justify-end gap-2"><Button type="button" variant="outline" disabled={busy} onClick={() => { setConfirmDelete(false); setError(""); }}>Keep lesson</Button><Button type="button" variant="danger" disabled={busy} onClick={() => void removeLesson()}>{busy ? "Deleting…" : "Delete lesson"}</Button></div>
       </> : <>
@@ -88,14 +88,13 @@ export function SessionModal({ entry, streamId, onClose }: { entry: TimetableEnt
           <label className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-sm ${form.scope === "future" ? "border-primary bg-primary/5" : "border-border"}`}><input type="radio" name="lesson-scope" value="future" checked={form.scope === "future"} onChange={() => change({ scope: "future" })} className="accent-primary" /><span>This and future weeks</span></label>
           {form.scope === "future" ? <p className="text-xs leading-relaxed text-muted-foreground">Weekly changes start from {dateLabel(original)}. Earlier lessons and separately edited dates stay unchanged.</p> : null}
         </fieldset> : null}
-        {postponed ? <label className="block text-sm font-medium">Reason<textarea required maxLength={500} placeholder="e.g. Lecturer unavailable" className="mt-1 min-h-20 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" value={form.reason} disabled={busy} onChange={e => change({ reason: e.target.value })} /></label> : <details className="rounded-xl border border-border px-3 py-2.5">
+        {!postponed ? <details className="rounded-xl border border-border px-3 py-2.5">
           <summary className="focus-ring cursor-pointer text-sm font-medium">{entry ? "More details" : "Lecturer"}</summary>
           <div className="mt-3 space-y-3">
             {entry ? <label className="block text-sm">Module<select className={input} value={form.moduleId} disabled={busy} onChange={e => change({ moduleId: e.target.value, lecturer: modules.find(m => m.id === e.target.value)?.lecturer ?? "" })}>{availableModules.map(m => <option key={m.id} value={m.id}>{m.code} · {m.name}</option>)}</select></label> : null}
             <label className="block text-sm">Lecturer<input required maxLength={200} className={input} value={form.lecturer} disabled={busy} onChange={e => change({ lecturer: e.target.value })} /></label>
-            {entry ? <label className="block text-sm">Reason (optional)<textarea maxLength={500} className="mt-1 min-h-20 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" value={form.reason} disabled={busy} onChange={e => change({ reason: e.target.value })} /></label> : null}
           </div>
-        </details>}
+        </details> : null}
         {entry ? <p className="text-xs leading-relaxed text-muted-foreground">{postponed ? "Students will be notified. Reminders pause until a new time is saved." : "Students will be notified and reminders will follow the updated time."}</p> : null}
         {error ? <p role="alert" className="text-sm text-danger">{error}</p> : null}
         <div className="sticky -bottom-4 -mx-4 flex flex-wrap items-center justify-end gap-2 border-t border-border bg-background px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:-bottom-5 sm:-mx-5 sm:px-5">

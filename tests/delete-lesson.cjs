@@ -32,9 +32,9 @@ vm.runInNewContext(ts.transpileModule(fs.readFileSync('src/lib/timetable-store.t
   assert.equal(request.args.change_scope, 'once');
   assert.equal(request.args.change_status, 'cancelled');
   assert.equal(request.args.new_module, entry.moduleId);
-  assert.equal(request.args.change_reason, 'Lesson deleted from the timetable.');
+  assert.equal(request.args.change_reason, '');
   assert.equal(request.args.request_id, change.requestId);
   failure = new Error('Permission denied');
   await assert.rejects(store.deleteEntry(entry, change), /Permission denied/);
-  console.log('Passed dated lesson deletion, cancellation RPC, original series identity, default reason, and permission failure propagation.');
+  console.log('Passed dated lesson deletion, cancellation RPC, original series identity, empty reason, and permission failure propagation.');
 })().catch(error => { console.error(error); process.exitCode = 1; });
