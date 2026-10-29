@@ -50,6 +50,8 @@ begin
  perform public.enqueue_lesson_push(); perform public.enqueue_lesson_push();
  if (select count(*) from private.push_deliveries where subscription_id=device and lesson_id=reminder and lesson_phase='advance')<>1 then raise exception '30-minute reminder missing or duplicated'; end if;
  if (select count(*) from private.push_deliveries where subscription_id=device and lesson_id=starts_now and lesson_phase='start')<>1 then raise exception 'Start reminder missing or duplicated'; end if;
+ if exists(select 1 from private.push_deliveries where subscription_id=device and lesson_id in (reminder,starts_now)
+   and (payload->>'tag' is distinct from 'lesson:'||lesson_id||':'||lesson_original_date or payload->>'lessonPhase' is distinct from lesson_phase)) then raise exception 'Lesson alert tag is not shared across phases'; end if;
  if exists(select 1 from private.push_deliveries where subscription_id=device and lesson_id=reminder and lesson_phase='start') then raise exception 'Start alert sent too early'; end if;
  perform set_config('request.jwt.claims',jsonb_build_object('sub',cr,'role','authenticated')::text,true);
  perform public.change_timetable_session(reminder,(test_start at time zone 'Africa/Dar_es_Salaam')::date,'once',(test_start at time zone 'Africa/Dar_es_Salaam')::date,to_char(test_start at time zone 'Africa/Dar_es_Salaam','HH24:MI'),'23:59','Reminder room','Fixture lecturer','mod-numerical','postponed','Delayed',gen_random_uuid());

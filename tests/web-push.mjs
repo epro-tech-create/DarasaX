@@ -23,11 +23,22 @@ const outcomes=[];
 await sendBatch([{...base,id:1},{...base,id:2,endpoint:'https://localhost/private'},{...base,id:3,expiresAt:new Date(now-1).toISOString()}],{now:()=>now,send:async()=>{throw new Error('offline')},finish:async(j,result)=>outcomes.push([j.id,result])});
 assert.deepEqual(outcomes.sort(),[[1,'retry'],[2,'failed'],[3,'failed']]);
 
-const handlers={}, shown=[], opened=[];
-const scope={location:{origin:'https://www.darasax.com'},addEventListener:(type,cb)=>handlers[type]=cb,registration:{showNotification:async(...args)=>shown.push(args)},clients:{matchAll:async()=>[],openWindow:async url=>opened.push(url)}};
+const handlers={}, shown=[], opened=[], visible=new Map();
+const scope={location:{origin:'https://www.darasax.com'},addEventListener:(type,cb)=>handlers[type]=cb,registration:{getNotifications:async()=>[...visible.values()],showNotification:async(...args)=>{shown.push(args);const tag=args[1].tag;visible.set(tag,{tag,close:()=>visible.delete(tag)});}},clients:{matchAll:async()=>[],openWindow:async url=>opened.push(url)}};
 vm.runInNewContext(fs.readFileSync('public/sw.js','utf8'),{self:scope,URL,Date});
 let pending; handlers.push({data:{json:()=>({title:'DarasaX · New assignment',body:'Numerical Methods · Due Friday',href:'/assignments',tag:'assignment:1'})},waitUntil:p=>pending=p});await pending;
 assert.equal(shown[0][0],'DarasaX · New assignment');assert.equal(shown[0][1].icon,'/apple-touch-icon.png');assert.equal(shown[0][1].data.href,'https://www.darasax.com/assignments');
+const lessonTag='lesson:fixture:2026-10-29';
+for (const phase of ['advance','start']) {
+  handlers.push({data:{json:()=>({title:phase==='start'?'Class starts now':'Class in 30 minutes',tag:lessonTag,lessonPhase:phase})},waitUntil:p=>pending=p});await pending;
+}
+assert.equal([...visible.keys()].filter(tag=>tag.startsWith('lesson:')).length,1);
+assert.equal(shown.at(-1)[0],'Class starts now');assert.equal(shown.at(-1)[1].tag,lessonTag);assert.equal(shown.at(-1)[1].renotify,true);
+const legacyTag=lessonTag+':advance';visible.delete(lessonTag);visible.set(legacyTag,{tag:legacyTag,close:()=>visible.delete(legacyTag)});
+handlers.push({data:{json:()=>({title:'Class starts now',tag:lessonTag+':start'})},waitUntil:p=>pending=p});await pending;
+assert.equal(visible.has(legacyTag),false);assert.equal(visible.has(lessonTag),true);
+handlers.push({data:{json:()=>({title:'Tomorrow’s class',tag:'lesson:fixture:2026-10-30',lessonPhase:'advance'})},waitUntil:p=>pending=p});await pending;
+assert.equal([...visible.keys()].filter(tag=>tag.startsWith('lesson:')).length,2,'Different dated lessons remain separate');
 handlers.notificationclick({notification:{data:{href:'https://evil.com'},close(){}},waitUntil:p=>pending=p});await pending;assert.equal(opened[0],'https://www.darasax.com/dashboard');
 const ts=createRequire(import.meta.url)('typescript');
 const clientExports={};let timeoutCallback;let timerCleared=false;

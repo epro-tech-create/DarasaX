@@ -25,7 +25,7 @@ function useNotificationInbox(initialUserId: string | null) {
         if (!userId) { if (!disposed && request === generation) setInbox({ ...emptyInbox, ready: true }); return; }
         const recipient = userId;
         const [list, unread] = await Promise.all([
-          supabase.from("notifications").select("*").eq("recipient_id", recipient).order("created_at", { ascending: false }).limit(100),
+          supabase.from("notifications").select("*").eq("recipient_id", recipient).order("created_at", { ascending: false }).order("id", { ascending: false }).limit(50),
           supabase.from("notifications").select("id", { count: "exact", head: true }).eq("recipient_id", recipient).is("read_at", null),
         ]);
         if (list.error || unread.error) throw list.error || unread.error;

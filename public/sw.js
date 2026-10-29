@@ -4,13 +4,24 @@ self.addEventListener('activate', event => event.waitUntil(self.clients.claim())
 self.addEventListener('push', event => {
   let data = {};
   try { data = event.data?.json() || {}; } catch { /* Show a safe fallback. */ }
-  event.waitUntil(self.registration.showNotification(data.title || 'DarasaX · New update', {
+  // Both phases share a tag for this dated lesson. Also accept queued payloads
+  // from before the rollout and retire their old, phase-specific alerts.
+  const rawTag = typeof data.tag === 'string' ? data.tag : 'darasax-update';
+  const tag = rawTag.startsWith('lesson:') ? rawTag.replace(/:(advance|start)$/, '') : rawTag;
+  event.waitUntil((async () => {
+    if (tag.startsWith('lesson:')) {
+      for (const previous of await self.registration.getNotifications()) {
+        if (previous.tag === `${tag}:advance` || previous.tag === `${tag}:start`) previous.close();
+      }
+    }
+    await self.registration.showNotification(data.title || 'DarasaX · New update', {
     body: data.body || 'You have a new update. Open DarasaX to view it.',
     icon: '/apple-touch-icon.png', badge: '/favicon-32.png',
-    tag: data.tag || 'darasax-update', renotify: false,
+    tag, renotify: data.lessonPhase === 'start' || rawTag.endsWith(':start'),
     timestamp: data.timestamp || Date.now(),
     data: { href: safeHref(data.href) },
-  }));
+    });
+  })());
 });
 function safeHref(href) {
   try {

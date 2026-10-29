@@ -6,6 +6,10 @@ The device receives announcements, assignments, published notes/slides/past pape
 
 **Send test** performs an actual encrypted Web Push request, not a local demo notification. It is limited to once per minute per owned device. A successful response means the push service accepted it; verify appearance on the physical phone. New opt-ins do not receive historical notifications. Updates already read in the inbox are skipped if they have not been dispatched yet.
 
+Each account keeps its newest **50 inbox notifications**. New arrivals delete the oldest overflow, whether read or unread. Read items expire **30 days after `read_at`**; unread items expire **90 days after creation**. The private `darasax-notification-retention` cron job runs hourly (at minute 10), including when the app is closed. Expiry is also checked for affected inboxes on insert. Cleanup removes related queued push deliveries through the existing foreign key; announcements, materials, topics, timetable records and device subscriptions remain. Browser roles cannot call the cleanup function directly. The migration prunes existing inboxes once as well.
+
+The advance and start reminders keep separate delivery jobs but share the tag `lesson:<series>:<original-date>`, so the start alert replaces the advance alert for the same lesson. The service worker also retires older phase-specific tags and requests a fresh alert at the start, subject to phone settings. Different lessons/dates remain separate. Inbox retention does not remotely erase alerts already displayed by the phone's OS. Validate retention with rollback-only `tests/notification-retention.sql` and reminder replacement with `node tests/web-push.mjs` and `tests/dated-sessions.sql`.
+
 ## Delivery and security
 
 - `public/sw.js` displays push and routes taps within the current origin. It does not cache pages, sessions, or API responses.
