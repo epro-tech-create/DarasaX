@@ -51,6 +51,7 @@ const adminNav: StaffNavItem[] = [
 
 const crNav: StaffNavItem[] = [
   { href: "/cr", label: "Overview", icon: Home },
+  { href: "/cr/announcements", label: "Announcements", icon: Megaphone },
   { href: "/cr/topics", label: "Topics", icon: ListOrdered },
   { href: "/cr/materials", label: "Library", icon: BookOpen },
   { href: "/cr/timetable", label: "Timetable", icon: CalendarDays },
@@ -125,11 +126,7 @@ export function StaffShell({
   const home =
     role === "admin" ? "/admin" : role === "class_rep" ? "/cr" : "/lecturer";
   const nav = [...baseNav, { href: `${home}/profile`, label: "Personal Profile", icon: UserRound }];
-  const mobileNav = nav.map((item) =>
-    role === "class_rep" && item.href === "/cr/topics"
-      ? { href: "/cr/announcements", label: "Announce", icon: Megaphone }
-      : item,
-  );
+  const mobileNav = nav.filter((item) => role !== "class_rep" || item.href !== "/cr/topics");
   const isActive = (href: string) =>
     href === home ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
 
@@ -286,3 +283,4 @@ export function StaffShell({
     </div>
   );
 }
+
