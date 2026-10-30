@@ -5,15 +5,15 @@ import { Copy, Share2 } from "lucide-react";
 import { useTranslate } from "@/components/providers/language-provider";
 import { announcementShareText } from "@/lib/announcement-sharing";
 
-export function AnnouncementShareButton({ id, title, body, recipient, trailingAction, showInstructions = false }: {
-  id: string; title: string; body?: string; recipient?: string; trailingAction?: ReactNode; showInstructions?: boolean;
+export function AnnouncementShareButton({ title, body, trailingAction, showInstructions = false }: {
+  title: string; body?: string; trailingAction?: ReactNode; showInstructions?: boolean;
 }) {
   const t = useTranslate();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [manualText, setManualText] = useState("");
   function getText() {
-    return announcementShareText({ id, title, body, recipient }, window.location.origin);
+    return announcementShareText({ title, body });
   }
   function share() {
     window.open(`https://wa.me/?text=${encodeURIComponent(getText())}`, "_blank", "noopener,noreferrer");

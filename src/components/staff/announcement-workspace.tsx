@@ -138,7 +138,7 @@ export function AnnouncementWorkspace({ role }: { role: StaffRole }) {
             ) : null}
             {justPublished && <div className="rounded-xl border border-primary/25 bg-primary/5 p-3">
               <p className="text-sm font-semibold">{justPublished.title}</p>
-              <AnnouncementShareButton key={justPublished.id} id={justPublished.id} title={justPublished.title} body={justPublished.body} recipient={recipientLabel(justPublished)} showInstructions />
+              <AnnouncementShareButton key={justPublished.id} title={justPublished.title} body={justPublished.body} showInstructions />
             </div>}
           </div>
         </div>
@@ -159,7 +159,7 @@ export function AnnouncementWorkspace({ role }: { role: StaffRole }) {
                   </div>
                   <AnnouncementBody body={item.body || translateUI("Published notice")} />
                   <AnnouncementReactions announcementId={item.id} />
-                  <AnnouncementShareButton id={item.id} title={item.title} body={item.body} recipient={recipientLabel(item)} trailingAction={canDelete(item) ? <Button type="button" size="icon" variant="ghost" className="h-11 w-11 shrink-0 rounded-xl border border-danger/20 text-danger hover:bg-danger/10" aria-label={translateUI(deletingId === item.id ? "Deleting…" : "Delete announcement")} title={translateUI("Delete announcement")} disabled={deletingId !== null} onClick={() => void removeAnnouncement(item)}>
+                  <AnnouncementShareButton title={item.title} body={item.body} trailingAction={canDelete(item) ? <Button type="button" size="icon" variant="ghost" className="h-11 w-11 shrink-0 rounded-xl border border-danger/20 text-danger hover:bg-danger/10" aria-label={translateUI(deletingId === item.id ? "Deleting…" : "Delete announcement")} title={translateUI("Delete announcement")} disabled={deletingId !== null} onClick={() => void removeAnnouncement(item)}>
                     <Trash2 className="h-4 w-4" aria-hidden="true" />
                   </Button> : null} />
                   {item.fileName && <div className="mt-2"><MaterialUploadCard item={item} /></div>}
