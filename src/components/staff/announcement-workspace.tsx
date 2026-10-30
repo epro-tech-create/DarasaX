@@ -138,7 +138,7 @@ export function AnnouncementWorkspace({ role }: { role: StaffRole }) {
             ) : null}
             {justPublished && <div className="rounded-xl border border-primary/25 bg-primary/5 p-3">
               <p className="text-sm font-semibold">{justPublished.title}</p>
-              <AnnouncementShareButton key={justPublished.id} id={justPublished.id} title={justPublished.title} body={justPublished.body} recipient={recipientLabel(justPublished)} />
+              <AnnouncementShareButton key={justPublished.id} id={justPublished.id} title={justPublished.title} body={justPublished.body} recipient={recipientLabel(justPublished)} showInstructions />
             </div>}
           </div>
         </div>
@@ -152,17 +152,16 @@ export function AnnouncementWorkspace({ role }: { role: StaffRole }) {
                 {translateUI("No announcements published yet.")}</p>
             ) : (
               live.map((item) => (
-                <div key={item.id} className="rounded-xl border border-border/70 px-3 py-2.5">
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="text-[12px] font-semibold">{item.title}</p>
-                    <Badge tone="primary">{translateUI(item.streamId ?? "All streams")}</Badge>
+                <div key={item.id} className="rounded-xl border border-border/70 p-3 sm:p-4">
+                  <div className="flex flex-col items-start gap-2">
+                    <Badge tone="primary" className="max-w-full break-words rounded-lg">{translateUI(recipientLabel(item))}</Badge>
+                    <p className="min-w-0 break-words text-[13px] font-semibold leading-5">{item.title}</p>
                   </div>
                   <AnnouncementBody body={item.body || translateUI("Published notice")} />
                   <AnnouncementReactions announcementId={item.id} />
-                  <AnnouncementShareButton id={item.id} title={item.title} body={item.body} recipient={recipientLabel(item)} />
-                  {canDelete(item) && <Button type="button" size="icon" variant="ghost" className="mt-2 text-danger hover:bg-danger/10" aria-label={translateUI(deletingId === item.id ? "Deleting…" : "Delete announcement")} title={translateUI("Delete announcement")} disabled={deletingId !== null} onClick={() => void removeAnnouncement(item)}>
+                  <AnnouncementShareButton id={item.id} title={item.title} body={item.body} recipient={recipientLabel(item)} trailingAction={canDelete(item) ? <Button type="button" size="icon" variant="ghost" className="h-11 w-11 shrink-0 rounded-xl border border-danger/20 text-danger hover:bg-danger/10" aria-label={translateUI(deletingId === item.id ? "Deleting…" : "Delete announcement")} title={translateUI("Delete announcement")} disabled={deletingId !== null} onClick={() => void removeAnnouncement(item)}>
                     <Trash2 className="h-4 w-4" aria-hidden="true" />
-                  </Button>}
+                  </Button> : null} />
                   {item.fileName && <div className="mt-2"><MaterialUploadCard item={item} /></div>}
                 </div>
               ))
