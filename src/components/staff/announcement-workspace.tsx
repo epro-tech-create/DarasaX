@@ -15,6 +15,7 @@ import { MaterialUploadCard } from "@/components/modules/material-upload-card";
 import { AnnouncementReactionsProvider } from "@/lib/announcement-reactions";
 import { AnnouncementReactions } from "@/components/announcements/announcement-reactions";
 import { AnnouncementBody } from "@/components/announcements/announcement-body";
+import { AnnouncementShareButton } from "@/components/announcements/announcement-share-button";
 
 export function AnnouncementWorkspace({ role }: { role: StaffRole }) {
   const translateUI = useTranslate();
@@ -33,6 +34,11 @@ export function AnnouncementWorkspace({ role }: { role: StaffRole }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [justPublished, setJustPublished] = useState<MaterialUpload | null>(null);
+
+  function recipientLabel(item: MaterialUpload) {
+    return item.streamId ? classStreams.find(stream => stream.id === item.streamId)?.label ?? item.streamId : translateUI("All streams");
+  }
 
   const live = items.filter(
     (item) => item.kind === "announcement" && item.status === "published",
@@ -54,6 +60,7 @@ export function AnnouncementWorkspace({ role }: { role: StaffRole }) {
     setDeleteMessage("");
     try {
       await deleteItem(item.id);
+      if (justPublished?.id === item.id) setJustPublished(null);
       setDeleteMessage("Announcement deleted from all portals.");
     } catch (failure) {
       setDeleteError(failure instanceof Error ? failure.message : "Could not delete announcement. Please try again.");
@@ -67,8 +74,9 @@ export function AnnouncementWorkspace({ role }: { role: StaffRole }) {
     setBusy(true);
     setError("");
     setMessage("");
+    setJustPublished(null);
     try {
-      await publishNotice({
+      const published = await publishNotice({
         title,
         body,
         uploadedBy: session?.name ?? "Staff",
@@ -76,6 +84,7 @@ export function AnnouncementWorkspace({ role }: { role: StaffRole }) {
         streamId,
       });
       setTitle("");
+      setJustPublished(published);
       setBody("");
       setMessage("Announcement published. Students can see it now.");
     } catch (err) {
@@ -127,6 +136,10 @@ export function AnnouncementWorkspace({ role }: { role: StaffRole }) {
             {error ? (
               <p className="text-[12px] font-medium text-danger">{translateUI(error)}</p>
             ) : null}
+            {justPublished && <div className="rounded-xl border border-primary/25 bg-primary/5 p-3">
+              <p className="text-sm font-semibold">{justPublished.title}</p>
+              <AnnouncementShareButton key={justPublished.id} id={justPublished.id} title={justPublished.title} body={justPublished.body} recipient={recipientLabel(justPublished)} />
+            </div>}
           </div>
         </div>
 
@@ -146,6 +159,7 @@ export function AnnouncementWorkspace({ role }: { role: StaffRole }) {
                   </div>
                   <AnnouncementBody body={item.body || translateUI("Published notice")} />
                   <AnnouncementReactions announcementId={item.id} />
+                  <AnnouncementShareButton id={item.id} title={item.title} body={item.body} recipient={recipientLabel(item)} />
                   {canDelete(item) && <Button type="button" size="icon" variant="ghost" className="mt-2 text-danger hover:bg-danger/10" aria-label={translateUI(deletingId === item.id ? "Deleting…" : "Delete announcement")} title={translateUI("Delete announcement")} disabled={deletingId !== null} onClick={() => void removeAnnouncement(item)}>
                     <Trash2 className="h-4 w-4" aria-hidden="true" />
                   </Button>}
@@ -159,3 +173,5 @@ export function AnnouncementWorkspace({ role }: { role: StaffRole }) {
     </div>
   );
 }
+
+

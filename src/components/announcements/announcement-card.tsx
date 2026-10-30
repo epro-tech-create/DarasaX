@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useRef } from "react";
 import { useTranslate } from "@/components/providers/language-provider";
 import type { Announcement } from "@/types";
 import { Badge } from "@/components/ui/badge";
@@ -55,6 +56,13 @@ export function AnnouncementCard({
   attachment?: MaterialUpload;
 }) {
   const translateUI = useTranslate();
+  const articleRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("announcement") === announcement.id) {
+      articleRef.current?.scrollIntoView({ block: "center" });
+      articleRef.current?.focus({ preventScroll: true });
+    }
+  }, [announcement.id]);
   const meta = categoryMeta[announcement.category];
   const Icon = meta.icon;
   const courseModule = announcement.moduleId
@@ -63,6 +71,9 @@ export function AnnouncementCard({
 
   return (
     <article
+      ref={articleRef}
+      id={`announcement-${announcement.id}`}
+      tabIndex={-1}
       className={cn(
         "surface group relative overflow-hidden rounded-[16px] transition duration-200",
         "hover:scale-[1.01] hover:border-primary hover:shadow-lg hover:shadow-primary/20",
@@ -115,3 +126,4 @@ export function AnnouncementCard({
     </article>
   );
 }
+

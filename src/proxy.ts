@@ -155,7 +155,7 @@ async function authorizeRequest(request: NextRequest) {
     });
   }
   if (protectedPath && !user)
-    return redirect(`/login?next=${encodeURIComponent(pathname)}`);
+    return redirect(`/login?next=${encodeURIComponent(pathname + request.nextUrl.search)}`);
   if (portal !== "student") {
     if (
       user &&
