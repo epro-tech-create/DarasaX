@@ -4,7 +4,7 @@ import Script from "next/script";
 import { headers } from "next/headers";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { LanguageProvider } from "@/components/providers/language-provider";
-import { SessionTimeout } from "@/components/auth/session-timeout";
+import { SessionRestore } from "@/components/auth/session-restore";
 import { SiteVisitorTracker } from "@/components/analytics/site-visitor-tracker";
 import "./globals.css";
 import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from "@/lib/seo";
@@ -71,7 +71,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         />
         <LanguageProvider>
           <ThemeProvider>
-          <SessionTimeout />
+          <SessionRestore />
           <SiteVisitorTracker />
           {children}
           </ThemeProvider>

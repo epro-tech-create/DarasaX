@@ -19,6 +19,7 @@ import {
   Trash2,
   type LucideIcon,
 } from "lucide-react";
+import { SubmissionManagerButton } from "@/components/assignments/submissions";
 import { MaterialShareButton } from "@/components/modules/material-share-button";
 import { Button } from "@/components/ui/button";
 import { StaffModal } from "@/components/staff/staff-modal";
@@ -82,7 +83,8 @@ function FileActions({
 }) {
   const translateUI = useTranslate();
   return (
-    <div className={cn("flex items-center gap-0.5", className)}>
+    <div className={cn("flex flex-wrap items-center gap-0.5", className)}>
+      {item.kind === "assignment" && canManage ? <SubmissionManagerButton assignment={item} /> : null}
       <button
         type="button"
         disabled={busy}

@@ -48,6 +48,18 @@ export function useAuditLog() {
     }
   };
   const loading = result.key !== key;
+  const clearAllLogs = async () => {
+    const client = createClient();
+    // Match every primary key, independent of the current page and filters.
+    const { error } = await client.from("audit_log").delete().not("id", "is", null);
+    if (error) throw new Error(error.message);
+    invalidateQueries("people");
+    setPage(0);
+    refresh();
+    const { count, error: verifyError } = await client.from("audit_log").select("id", { count: "exact", head: true });
+    if (verifyError) throw new Error("Could not verify that all logs were deleted. Please refresh and try again.");
+    if (count !== 0) throw new Error("Some logs remain. Refresh the list and verify your administrator session before trying again.");
+  };
   return { ...result, audit: loading ? [] : result.audit, loading, page, setPage, query, setQuery, action, setAction, refresh,
-    clearLogs, deleteLog: (id: string) => clearLogs([id]) };
+    clearLogs, clearAllLogs, deleteLog: (id: string) => clearLogs([id]) };
 }

@@ -32,7 +32,7 @@ const actionTone: Record<AuditAction, "default" | "primary" | "success" | "warni
 export default function AdminAuditPage() {
   const translateUI = useTranslate();
   const { audit: filtered, totalCount, todayCount, matchingCount, page, setPage, query, setQuery, action, setAction,
-    loading, error: loadError, refresh, deleteLog, clearLogs } = useAuditLog();
+    loading, error: loadError, refresh, deleteLog, clearLogs, clearAllLogs } = useAuditLog();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
@@ -62,7 +62,7 @@ export default function AdminAuditPage() {
         />
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
         <input
           value={query}
           aria-label={translateUI("Search audit logs")}
@@ -112,6 +112,22 @@ export default function AdminAuditPage() {
         >
           <Trash2 className="h-3.5 w-3.5" />
           {translateUI("Delete shown")}</Button>
+        <Button
+          type="button"
+          variant="danger"
+          disabled={loading || !!loadError || busyId !== null || !totalCount}
+          onClick={() => {
+            if (!window.confirm(translateUI("Permanently delete all audit logs from all time, across every page and filter? This cannot be undone."))) return;
+            setError("");
+            setBusyId("delete-all");
+            void clearAllLogs().catch((err) => {
+              setError(err instanceof Error ? err.message : "Could not delete logs. Please try again.");
+            }).finally(() => setBusyId(null));
+          }}
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+          {translateUI(busyId === "delete-all" ? "Deleting all logs…" : "Delete all logs")}
+        </Button>
       </div>
       {error ? (
         <p className="text-[12px] font-medium text-danger">{translateUI(error)}</p>

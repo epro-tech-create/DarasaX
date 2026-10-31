@@ -3,6 +3,7 @@
 import { useTranslate } from "@/components/providers/language-provider";
 import { useMemo } from "react";
 import { notFound, useParams } from "next/navigation";
+import { StudentSubmission } from "@/components/assignments/submissions";
 import { MaterialUploadCard } from "@/components/modules/material-upload-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -69,7 +70,7 @@ export default function AssignmentDetailPage() {
           </p>
         </section>
 
-        {assignment.material && <MaterialUploadCard item={assignment.material} />}
+        {assignment.material && <><MaterialUploadCard item={assignment.material} /><StudentSubmission key={assignment.material.id} assignment={assignment.material} /></>}
 
         {assignment.attachedFiles.length > 0 ? (
           <section>

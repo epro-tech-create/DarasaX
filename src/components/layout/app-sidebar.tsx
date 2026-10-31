@@ -18,7 +18,7 @@ import {
   PanelLeft,
   History,
 } from "lucide-react";
-import { SignOutButton } from "@/components/auth/sign-out-button";
+import { MoreMenu } from "@/components/layout/more-menu";
 import { Logo } from "@/components/brand/logo";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -185,12 +185,12 @@ export function TopBar({
         <button
           type="button"
           onClick={onOpenSearch}
-          className="focus-ring inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground md:hidden"
+          className="focus-ring inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition hover:bg-muted hover:text-foreground md:hidden"
           aria-label={translateUI("Search")}
         >
-          <Search className="h-4 w-4" aria-hidden /></button>
+          <Search className="h-[18px] w-[18px]" aria-hidden /></button>
         <NotificationBellButton onOpen={onOpenNotifications} />
-        <SignOutButton />
+        <MoreMenu settingsHref="/settings" helpdeskHref="/helpdesk" />
       </div>
     </header>
   );
@@ -203,14 +203,14 @@ function NotificationBellButton({ onOpen }: { onOpen: () => void }) {
     <button
       type="button"
       onClick={onOpen}
-      className="focus-ring relative inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground"
+      className="focus-ring relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition hover:bg-muted hover:text-foreground"
       aria-label={
         translateUI(unreadCount > 0
           ? `Notifications, ${unreadCount} unread`
           : "Notifications")
       }
     >
-      <Bell className="h-4 w-4" />
+      <Bell className="h-[18px] w-[18px]" />
       {unreadCount > 0 ? (
         <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-semibold text-white">
           {translateUI(unreadCount > 9 ? "9+" : unreadCount)}

@@ -14,6 +14,7 @@ export function NoLessonsTodayButton({ streamId }: { streamId: string }) {
   const t = useTranslate();
   const { session } = useStaffSession();
   const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState<number | null>(null);
@@ -27,7 +28,7 @@ export function NoLessonsTodayButton({ streamId }: { streamId: string }) {
     requestId.current ??= crypto.randomUUID();
     try {
       const { data, error } = await createClient().rpc("cancel_timetable_today", {
-        target_class: streamId, reason_text: "", request_key: requestId.current,
+        target_class: streamId, reason_text: reason.trim(), request_key: requestId.current,
       });
       if (error) throw error;
       invalidateQueries("timetable");
@@ -41,13 +42,14 @@ export function NoLessonsTodayButton({ streamId }: { streamId: string }) {
   }
 
   return <>
-    <Button size="sm" variant="outline" onClick={() => { setError(""); setResult(null); requestId.current = null; setOpen(true); }}>
+    <Button size="sm" variant="outline" onClick={() => { setReason(""); setError(""); setResult(null); requestId.current = null; setOpen(true); }}>
       <CalendarOff className="h-4 w-4" aria-hidden="true" />{t("No lessons today")}
     </Button>
     {result !== null && <span role="status" className="text-xs text-muted-foreground">{t("Today's no-lessons announcement is on the Announcements page.")}</span>}
     {open && <StaffModal open title={t("No lessons today")} description={`${streamId} · ${tanzaniaDate()} · EAT`} onClose={() => { if (!busy) setOpen(false); }}>
       <form className="space-y-4" onSubmit={event => { event.preventDefault(); void confirm(); }}>
         <p className="text-sm text-muted-foreground">{t("Publish one announcement that there are no sessions for this class today. It appears on the Announcements page. Today's lesson reminders stop, and future sessions stay unchanged. Add any explanation in the Announcements panel.")}</p>
+        <label className="block text-sm font-medium">{t("Reason (optional)")}<textarea maxLength={500} value={reason} disabled={busy} onChange={event => { setReason(event.target.value); requestId.current = null; }} className="mt-1 min-h-20 w-full rounded-xl border border-border bg-background p-3 text-sm" /></label>
         {error && <p role="alert" className="text-sm text-danger">{t(error)}</p>}
         <div className="flex justify-end gap-2"><Button variant="outline" type="button" disabled={busy} onClick={() => setOpen(false)}>{t("Close")}</Button><Button type="submit" disabled={busy}>{t(busy ? "Saving…" : "Confirm no lessons today")}</Button></div>
       </form>

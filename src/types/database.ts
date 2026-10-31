@@ -22,6 +22,22 @@ export type AuditLogRow = Database["public"]["Tables"]["audit_log"]["Row"];
 export type Database = {
   public: {
     Tables: {
+      assignment_submissions: {
+        Row: { id: string; assignment_id: string; student_id: string; student_name: string; registration_number: string | null; file_path: string; file_name: string; submitted_at: string };
+        Insert: { assignment_id: string; student_id: string; file_path: string; file_name: string };
+        Update: { file_path?: string; file_name?: string };
+        Relationships: [];
+      };
+      timetable_imports: {
+        Row: { id: string; stream_id: string; effective_date: string; filename: string; previous_bounds: Json; new_ids: string[]; created_by: string; created_at: string; undone_at: string | null };
+        Insert: never; Update: never; Relationships: [];
+      };
+      helpdesk_requests: {
+        Row: { id: string; user_id: string; sender_name: string; category: "question" | "feedback" | "review"; subject: string; message: string; status: "open" | "resolved"; admin_reply: string; created_at: string };
+        Insert: { user_id: string; sender_name: string; category: "question" | "feedback" | "review"; subject: string; message: string };
+        Update: { status?: "open" | "resolved"; admin_reply?: string };
+        Relationships: [];
+      };
       student_admissions: {
         Row: import("@/lib/auth/admission").StudentAdmission;
         Insert: { user_id: string; registration_number?: string | null; status?: string; submitted_at?: string | null; reviewed_by?: string | null; reviewed_at?: string | null; welcome_seen_at?: string | null; legacy_approved?: boolean };
@@ -193,6 +209,7 @@ export type Database = {
           year_of_study: number;
           semester: number;
           due_at: string | null;
+          online_submission: boolean;
           uploaded_by: string;
           uploaded_by_id: string | null;
           role: string | null;
@@ -219,6 +236,7 @@ export type Database = {
           year_of_study?: number;
           semester?: number;
           due_at?: string | null;
+          online_submission?: boolean;
           uploaded_by?: string;
           uploaded_by_id?: string | null;
           role?: string | null;
@@ -245,6 +263,7 @@ export type Database = {
           year_of_study?: number;
           semester?: number;
           due_at?: string | null;
+          online_submission?: boolean;
           uploaded_by?: string;
           uploaded_by_id?: string | null;
           role?: string | null;
@@ -446,6 +465,10 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      can_submit_assignment: { Args: { assignment_id: string }; Returns: boolean };
+      can_import_timetable: { Args: { target_class: string }; Returns: boolean };
+      apply_timetable_import: { Args: { target_class: string; starts_on: string; sessions: Json; source_name: string; request_key: string }; Returns: string };
+      undo_timetable_import: { Args: { import_id: string }; Returns: undefined };
       get_announcement_reactions: { Args: { announcement_ids: string[] }; Returns: import("@/lib/announcement-reactions").ReactionSummary[] };
       set_announcement_reaction: { Args: { announcement_id: string; reaction_emoji: string | null }; Returns: undefined };
       cancel_timetable_today: { Args: { target_class: string; reason_text: string; request_key: string }; Returns: number };

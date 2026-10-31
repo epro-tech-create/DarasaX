@@ -19,7 +19,7 @@ const { UploadWorkspace } = load('src/components/staff/upload-workspace.tsx', {
   '@/data/mock': { modules: [{ id: 'mod-a', code: 'A', name: 'Module A' }] },
   '@/lib/class-registry': { useClassRegistry: () => ({ streams: [{ id: 'class-1', label: 'Class 1' }, { id: 'class-2', label: 'Class 2' }], ready: true, error: '' }) },
   '@/lib/materials-store': { useMaterialsStore: () => ({ publish: async () => {} }) },
-  '@/lib/staff-auth': { useStaffSession: () => ({ session: { streamIds: ['class-1', 'class-2'] } }) },
+  '@/lib/staff-auth': { useStaffSession: () => ({ session: { streamId: 'class-1', streamIds: ['class-1', 'class-2'] } }) },
   '@/lib/upload-batch': batch,
   '@/lib/supabase/query-cache': { invalidateQueries() {} },
 });
@@ -28,8 +28,13 @@ for (const role of ['admin', 'class_rep', 'lecturer']) {
     role, title: 'Publish', description: 'Files', uploadedBy: 'Fixture',
     allowedModuleIds: role === 'lecturer' ? ['mod-a'] : undefined,
   }));
-  assert.match(html, /<option value="all" selected="">All streams<\/option>/);
-  assert.match(html, /value="class-1"/); assert.match(html, /value="class-2"/);
+  assert.match(html, /value="class-1"/);
+  if (role === 'class_rep') {
+    assert.doesNotMatch(html, /value="all"|value="class-2"/);
+  } else {
+    assert.match(html, /<option value="all" selected="">All streams<\/option>/);
+    assert.match(html, /value="class-2"/);
+  }
   assert.match(html, /type="file"[^>]*multiple=""/);
   assert.match(html, /500 MB per file/);
 }
@@ -60,5 +65,5 @@ assert.equal(batch.MAX_UPLOAD_BYTES, 500 * 1024 * 1024);
   assert.equal(calls.filter(item => item === 0).length, 1, 'Successful files are not uploaded again on retry');
   assert.equal(calls.filter(item => item === 1).length, 2);
   assert.equal(states.get(1).state, 'published');
-  console.log('Passed all-role global defaults, multiple selection, empty lecturer scope, 500 MB limit, bounded concurrency, partial failure and retry without duplicates.');
+  console.log('Passed admin/lecturer global defaults, CR class restriction, multiple selection, empty lecturer scope, 500 MB limit, bounded concurrency, partial failure and retry without duplicates.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

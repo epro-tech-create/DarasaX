@@ -39,8 +39,13 @@ const view = load('src/components/timetable/timetable-view.tsx', {
 const html = renderToStaticMarkup(React.createElement(view.TimetableView, { lockedStream: 'TEST-CLASS', onEdit() {} }));
 assert.match(html, /Course-scheduled/);
 assert.match(html, /Course-rescheduled/);
-assert.doesNotMatch(html, /Course-cancelled|Course-postponed|PRIVATE-OLD-REASON/);
-assert.match(html, /2 classes/);
+assert.match(html, /Course-cancelled/);
+assert.match(html, /Course-postponed/);
+for (const status of ['Cancelled', 'Rescheduled', 'Postponed']) {
+  assert.match(html, new RegExp('class="[^"]*text-primary"[^>]*>' + status + '</span>'));
+}
+assert.doesNotMatch(html, /PRIVATE-OLD-REASON/);
+assert.match(html, /4 classes/);
 const modal = load('src/components/timetable/session-modal.tsx', {
   ...common,
   '@/components/staff/staff-modal': { StaffModal: blank },
@@ -48,6 +53,7 @@ const modal = load('src/components/timetable/session-modal.tsx', {
 });
 for (const status of ['scheduled', 'postponed']) {
   const form = renderToStaticMarkup(React.createElement(modal.SessionModal, { entry: { ...fixtures[0], status, originalDate: '2026-10-29', lecturer: 'Teacher' }, streamId: 'TEST-CLASS', onClose() {} }));
-  assert.doesNotMatch(form, /<textarea|Reason|reason/);
+  assert.match(form, /Reason \(optional\)/);
+  assert.match(form, /<textarea(?![^>]*required)/);
 }
-console.log('Passed scheduled-only timetable visibility, class totals, hidden legacy reasons, and reason-free lesson forms.');
+console.log('Passed all-status timetable visibility, blue status labels, class totals, hidden legacy reasons, and optional lesson reasons.');

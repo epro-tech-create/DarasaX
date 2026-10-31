@@ -28,8 +28,8 @@ export function UploadWorkspace({ title, description, defaultKind = "notes", upl
   const t = useTranslate();
   const { streams, ready: classesReady, error: classesError } = useClassRegistry();
   const { session } = useStaffSession();
-  const recipientStreams = role === "lecturer" ? streams.filter(stream => session?.streamIds.includes(stream.id)) : streams;
-  const canTargetAll = role !== "lecturer" || (classesReady && streams.length > 0 && streams.every(stream => session?.streamIds.includes(stream.id)));
+  const recipientStreams = role === "lecturer" ? streams.filter(stream => session?.streamIds.includes(stream.id)) : role === "class_rep" ? streams.filter(stream => session?.streamId === stream.id) : streams;
+  const canTargetAll = role === "admin" || role === "lecturer" && (classesReady && streams.length > 0 && streams.every(stream => session?.streamIds.includes(stream.id)));
   const { publish } = useMaterialsStore();
   const catalog = allowedModuleIds === undefined ? modules : modules.filter(module => allowedModuleIds.includes(module.id));
   const [kind, setKind] = useState<UploadKind>(defaultKind);
@@ -37,6 +37,7 @@ export function UploadWorkspace({ title, description, defaultKind = "notes", upl
   const [selectedStream, setStreamId] = useState<ClassStreamId | "all">("all");
   const streamId = selectedStream === "all" && canTargetAll ? "all" : recipientStreams.some(stream => stream.id === selectedStream) ? selectedStream : recipientStreams[0]?.id;
   const [dueAt, setDueAt] = useState("");
+  const [onlineSubmission, setOnlineSubmission] = useState(false);
   const [files, setFiles] = useState<QueuedFile[]>([]);
   const [publishing, setPublishing] = useState(false);
   const [error, setError] = useState("");
@@ -58,11 +59,13 @@ export function UploadWorkspace({ title, description, defaultKind = "notes", upl
   async function handlePublish() {
     if (busy.current || !pending.length) return;
     if (!streamId || !classesReady || classesError) { setError("Choose an available teaching class."); return; }
+    if (kind === "assignment" && onlineSubmission && streamId === "all") { setError("Choose a specific class for online submissions."); return; }
     if (!moduleId || !catalog.some(module => module.id === moduleId)) { setError("Select a module you teach."); return; }
     if (pending.some(item => !item.title.trim())) { setError("Enter a title for every file."); return; }
     busy.current = true; setPublishing(true); onBusyChange?.(true); setError("");
     try {
       await publishBatch(pending, item => publish({
+        onlineSubmission: kind === "assignment" && onlineSubmission,
         title: item.title.trim(), file: item.file, kind, moduleId, streamId, uploadedBy, role,
         dueAt: kind === "assignment" && dueAt ? new Date(dueAt).toISOString() : undefined,
       }, { deferRefresh: true }), (index, state, message) => {
@@ -102,6 +105,7 @@ export function UploadWorkspace({ title, description, defaultKind = "notes", upl
     {kind === "assignment" && <label className="block space-y-1.5"><span className="text-xs font-medium">{t("Assignment deadline (optional)")}</span>
       <input type="datetime-local" value={dueAt} disabled={publishing} onChange={event => setDueAt(event.target.value)} className={control} />
     </label>}
+    {kind === "assignment" && <label className="flex items-start gap-3 rounded-xl border border-border p-3 text-sm"><input type="checkbox" checked={onlineSubmission} disabled={publishing} onChange={e => setOnlineSubmission(e.target.checked)} className="mt-1 accent-primary" /><span>{t("Accept online submissions")}<span className="mt-1 block text-xs text-muted-foreground">{t("Students can upload one file and replace it until the deadline. Leave off for offline hand-in.")}</span></span></label>}
     <label onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); addFiles(event.dataTransfer.files); }}
       className="focus-ring flex cursor-pointer flex-col items-center rounded-2xl border border-dashed border-border bg-muted/30 px-4 py-7 text-center hover:border-primary/50">
       <input type="file" multiple disabled={publishing} className="sr-only" accept=".pdf,.ppt,.pptx,.doc,.docx,.png,.jpg,.jpeg,.zip,.txt,.md"

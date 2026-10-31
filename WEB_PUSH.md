@@ -1,3 +1,13 @@
+## Current automatic setup (31 October 2026)
+
+Notification delivery is automatic for registered devices. The notification panel includes **Disable notifications**, which detaches this browser subscription and persists an account-specific opt-out on this device so automatic connection does not immediately undo it. **Enable notifications** reconnects it. The setup reminder includes **Dismiss**, which hides only the banner for that account/browser. In-app announcements remain available. There are no category switches. When browser permission has not been granted, an **Enable notifications** setup button opens the native permission prompt. Permission is never requested from unrelated workspace taps. **Notifications on** is displayed only after permission and the registered device connection are confirmed. Already-approved devices connect automatically on workspace entry, focus, and reconnection, including installed Home Screen apps. Browser or OS permission cannot be bypassed; a denied permission must be changed in device/browser settings. iPhone/iPad users must first install the Home Screen app.
+
+Both updates and lesson reminders are enforced on existing and new subscriptions by `20261031150035_automatic_notification_defaults.sql`. The legacy preferences RPC remains compatible but cannot turn delivery off. Explicit account sign-out still removes the device subscription and displayed notifications for shared-device privacy. Localhost ports 3005–3008 are accepted for local push testing.
+
+App inactivity logout has been removed for every role. Browser sessions persist and refresh tokens automatically. Normal revocation, manual sign-out, and browser-data removal still apply. Restored browser-history snapshots are refreshed to recheck the current account, without an inactivity clock.
+
+The older setup notes below describe the original implementation.
+
 # Phone notifications
 
 Open the notification bell or student Settings → Notifications. Choose **Enable notifications** and approve the browser prompt. On iPhone/iPad (iOS 16.4+), first add DarasaX to the Home Screen and open its icon. Permissions and subscriptions are specific to each device and site origin.

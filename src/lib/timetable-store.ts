@@ -136,7 +136,7 @@ export function useTimetableStore(range?: { from: string; to: string }) {
   const deleteEntry = useCallback(async (entry: TimetableEntry, change: { date: string; scope: "once" | "future"; reason: string; requestId: string }) => {
     await updateEntry(entry.seriesId ?? entry.id, entry, {
       ...change, newDate: change.date, status: "cancelled",
-      reason: "",
+      reason: change.reason.trim(),
     });
   }, [updateEntry]);
 

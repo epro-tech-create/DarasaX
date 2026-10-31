@@ -27,10 +27,10 @@ export function ThemeToggle({
       type="button"
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className={cn(
-        "focus-ring inline-flex h-10 w-10 items-center justify-center rounded-lg border transition",
+        "focus-ring inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition",
         lightOnDark
           ? "border-white/25 bg-white/10 text-white hover:bg-white/20"
-          : "border-border bg-card text-muted-foreground hover:text-foreground",
+          : "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
         className,
       )}
       aria-label={translateUI(isDark ? "Switch to light mode" : "Switch to dark mode")}

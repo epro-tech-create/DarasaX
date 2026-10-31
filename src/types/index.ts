@@ -249,6 +249,7 @@ export interface StaffIssue {
 export interface MaterialUpload {
   id: string;
   dueAt?: string;
+  onlineSubmission?: boolean;
   title: string;
   kind: UploadKind;
   moduleId?: string;

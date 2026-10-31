@@ -29,6 +29,7 @@ function isStudentProtected(pathname: string) {
     "/missed",
     "/profile",
     "/settings",
+    "/helpdesk",
     "/onboarding",
     "/pending-approval",
     "/welcome",
@@ -49,6 +50,7 @@ async function authorizeRequest(request: NextRequest) {
   if (pathname.startsWith("/share/")) return NextResponse.next();
   // This endpoint verifies the session and database permissions itself.
   if (pathname === "/api/material-files") return NextResponse.next();
+  if (pathname === "/api/timetable-import") return NextResponse.next();
   if (pathname === "/api/students/export") return NextResponse.next();
   if (pathname === "/api/admin-security") return NextResponse.next();
   if (pathname === "/api/site-visits") return NextResponse.next();

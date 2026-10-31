@@ -48,6 +48,7 @@ function toUpload(row: MaterialRow): MaterialUpload {
       (row.size_bytes != null ? formatFileSize(row.size_bytes) : "—"),
     createdAt: row.created_at,
     dueAt: row.due_at ?? undefined,
+    onlineSubmission: row.online_submission,
     downloads: row.downloads,
     fileUrl: row.file_url ?? undefined,
     filePath: row.file_path ?? undefined,
@@ -192,6 +193,7 @@ export async function downloadMaterial(item: MaterialUpload) {
 
 export type PublishMaterialInput = {
   dueAt?: string;
+  onlineSubmission?: boolean;
   title: string;
   kind: UploadKind;
   moduleId?: string;
@@ -202,6 +204,7 @@ export type PublishMaterialInput = {
 };
 
 export type UpdateMaterialInput = {
+  onlineSubmission?: boolean;
   title?: string;
   kind?: UploadKind;
   moduleId?: string;
@@ -275,6 +278,7 @@ export function useMaterialsStore() {
         id,
         title: input.title.trim(),
         due_at: input.dueAt || null,
+        online_submission: input.kind === "assignment" && input.onlineSubmission === true,
         kind: input.kind,
         module_id: input.moduleId ?? null,
         stream_id: streamId,
@@ -354,6 +358,7 @@ export function useMaterialsStore() {
       const { data, error } = await supabase
         .from("materials")
         .update({
+          online_submission: (patch.kind ?? existing.kind) === "assignment" && (patch.onlineSubmission ?? existing.online_submission),
           title: patch.title?.trim() ?? existing.title,
           kind: patch.kind ?? existing.kind,
           module_id: patch.moduleId ?? existing.module_id,

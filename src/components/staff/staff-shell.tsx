@@ -26,7 +26,7 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { StaffPageMotion } from "@/components/staff/staff-page-motion";
 
 import { useNotifications } from "@/lib/notifications-store";
-import { SignOutButton } from "@/components/auth/sign-out-button";
+import { MoreMenu } from "@/components/layout/more-menu";
 import { cn } from "@/lib/utils";
 import type { ClassStreamId, StaffRole } from "@/types";
 
@@ -126,7 +126,7 @@ export function StaffShell({
   const home =
     role === "admin" ? "/admin" : role === "class_rep" ? "/cr" : "/lecturer";
   const nav = [...baseNav, { href: `${home}/profile`, label: "Personal Profile", icon: UserRound }];
-  const mobileNav = nav.filter((item) => role !== "class_rep" || item.href !== "/cr/topics");
+  const mobileNav = nav.filter((item) => item.href !== `${home}/profile` && (role !== "class_rep" || item.href !== "/cr/topics"));
   const isActive = (href: string) =>
     href === home ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
 
@@ -229,17 +229,17 @@ export function StaffShell({
             <button
               type="button"
               onClick={() => setNotificationsOpen(true)}
-              className="focus-ring relative inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+              className="focus-ring relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition hover:bg-muted hover:text-foreground"
               aria-label={translateUI("Notifications")}
             >
-              <Bell className="h-4 w-4" />
+              <Bell className="h-[18px] w-[18px]" />
               {unreadCount > 0 ? (
                 <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
                   {translateUI(unreadCount > 9 ? "9+" : unreadCount)}
                 </span>
               ) : null}
             </button>
-            <SignOutButton />
+            <MoreMenu profileHref={`${home}/profile`} helpdeskHref={`${home}/helpdesk`} assignmentsHref={`${home}/assignments`} />
           </div>
         </header>
 

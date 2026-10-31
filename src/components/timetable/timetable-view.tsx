@@ -62,6 +62,14 @@ function blockStyle(entry: TimetableEntry, startHour = GRID_START) {
   return { top, height };
 }
 
+function SessionStatus({ entry }: { entry: TimetableEntry }) {
+  const translateUI = useTranslate();
+  const label = entry.status === "cancelled" ? "Cancelled"
+    : entry.status === "rescheduled" ? "Rescheduled"
+    : entry.status === "postponed" ? "Postponed" : null;
+  return label ? <span className="text-[10px] font-semibold leading-tight text-primary">{translateUI(label)}</span> : null;
+}
+
 function ClassBlock({
   entry,
   isNext,
@@ -96,6 +104,7 @@ function ClassBlock({
           compact ? "py-1.5" : "py-2",
         )}
       >
+        <SessionStatus entry={entry} />
         <div className="flex items-start justify-between gap-1">
           <p
             className={cn(
@@ -158,7 +167,7 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
   const next = getNextClass(new Date(), streamId, allEntries);
 
   const streamTimetable = useMemo(
-    () => forStream(streamId).filter(entry => entry.status !== "cancelled" && entry.status !== "postponed"),
+    () => forStream(streamId),
     [forStream, streamId],
   );
 
@@ -383,6 +392,7 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
                             <p className="truncate text-[13px] font-semibold">
                               {courseModule?.name}
                             </p>
+                            <SessionStatus entry={entry} />
                             <p className="mt-0.5 text-[11px] text-muted-foreground">
                               {translateUI(courseModule?.code)} ·{" "}
                               {translateUI(durationLabel(entry.startTime, entry.endTime))}
@@ -468,6 +478,7 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
                                 <p className="text-[12px] font-semibold">
                                   {courseModule?.name}
                                 </p>
+                                <SessionStatus entry={entry} />
                                 <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
                                   {translateUI(formatTime(entry.startTime))} –{" "}
                                   {translateUI(formatTime(entry.endTime))} · {entry.room}
