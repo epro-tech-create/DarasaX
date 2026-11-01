@@ -58,7 +58,6 @@ export default function ClassRepOverviewPage() {
       />
 
       {next && <NextClassCard entry={next.entry} module={next.module} dayOffset={next.dayOffset} moduleHref="/cr/topics" moduleLabel={translateUI("Module topics")} timetableHref="/cr/timetable" />}
-      <CrCountdowns assignments={classUploads} />
 
       <StaffStagger className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StaffFadeItem>
@@ -99,6 +98,7 @@ export default function ClassRepOverviewPage() {
           </div>
         </StaffSection>
       </div>
+      <CrCountdowns />
     </div>
   );
 }

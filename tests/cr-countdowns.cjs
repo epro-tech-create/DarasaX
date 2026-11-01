@@ -4,7 +4,7 @@ const school={};vm.runInNewContext(ts.transpileModule(fs.readFileSync('src/lib/s
 const api={};vm.runInNewContext(ts.transpileModule(fs.readFileSync('src/components/dashboard/cr-countdowns.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2020}}).outputText,{
  exports:api,Date,require:name=>name==='react'?{...React,useState:v=>[v===null?now:v,()=>{}],useEffect(){}}:name==='react/jsx-runtime'?require(name):name==='next/link'?{default:({children,...props})=>React.createElement('a',props,children)}:name.includes('language-provider')?{useTranslate:()=>Object.assign(s=>s,{locale:'en'})}:name.includes('exam-countdown')?{ExamCountdown:()=>React.createElement('section',null,'Exam countdown')}:name.includes('/school')?school:new Proxy({},{get:()=>()=>null})
 });
-const fixtures=[{id:'expired',title:'Expired work',kind:'assignment',dueAt:new Date(now-1000).toISOString()},{id:'later',title:'Later work',kind:'assignment',dueAt:new Date(now+7200000).toISOString()},{id:'next',title:'Next assignment',kind:'assignment',dueAt:new Date(now+3600000).toISOString()},{id:'notes',title:'Notes',kind:'notes',dueAt:new Date(now+1000).toISOString()}];
-let html=renderToStaticMarkup(React.createElement(api.CrCountdowns,{assignments:fixtures}));assert.match(html,/Exam countdown/);assert.match(html,/Assignment countdown/);assert.match(html,/Next assignment/);assert.doesNotMatch(html,/Expired work|Later work|>Notes</);assert.match(html,/href="\/cr\/assignments"/);assert.match(html,/>01</);
-html=renderToStaticMarkup(React.createElement(api.CrCountdowns,{assignments:[]}));assert.match(html,/No upcoming assignment deadlines/);
-console.log('Passed CR exam card reuse, nearest upcoming assignment countdown, expired/non-assignment filtering, CR navigation, and empty state.');
+const html=renderToStaticMarkup(React.createElement(api.CrCountdowns));
+assert.match(html,/Exam countdown/);assert.doesNotMatch(html,/Assignment countdown|View assignments/);
+const page=fs.readFileSync('src/app/(cr)/cr/page.tsx','utf8');assert.ok(page.indexOf('<CrCountdowns />')>page.indexOf('</StaffSection>'));
+console.log('Passed CR exam countdown at the bottom and removal of assignment countdown.');

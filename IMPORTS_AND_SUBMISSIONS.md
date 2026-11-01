@@ -18,4 +18,4 @@ Validation: `node tests/timetable-import.cjs` exercises real Excel, PDF, image O
 
 Timetable documents upload directly to the private Supabase `timetable-import-uploads` bucket; the processing endpoint receives only a small JSON reference. This preserves the 10 MB file limit without passing image bytes through Vercel Functions. RLS restricts temporary files to the uploading CR/admin and their authorized class. Both client and processing endpoint clean up through the Storage API. Non-JSON platform errors are reported as readable upload/auth/timeout errors. The deployed function explicitly includes Tesseract core/worker assets and PDF rendering dependencies.
 
-The CR overview also includes the shared academic exam countdown and a live countdown to the nearest upcoming published assignment deadline in the CR’s class, with a link to CR assignments.
+The CR overview includes the shared academic exam countdown at the bottom of the dashboard, matching the student layout. It does not show an assignment countdown.
