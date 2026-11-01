@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PushSetupButton } from "@/components/notifications/push-setup-button";
 import { useTranslate } from "@/components/providers/language-provider";
@@ -9,11 +9,13 @@ import { dismissNotificationBanner, notificationBannerDismissed, phoneNotificati
 // Granted devices connect automatically; first-time setup uses an explicit button.
 export function PushAccountLifecycle({ userId }: { userId: string | null }) {
   const t = useTranslate();
+  const connected = useRef(false);
   const [status, setStatus] = useState("checking");
   const [dismissed, setDismissed] = useState(false);
   const [error, setError] = useState("");
   useEffect(() => {
     if (!userId) return;
+    connected.current = false;
     let disposed = false, syncing = false;
     const active = () => !disposed;
     const needsInstall = () => {
@@ -26,19 +28,23 @@ export function PushAccountLifecycle({ userId }: { userId: string | null }) {
       syncing = true;
       try {
         setDismissed(notificationBannerDismissed(userId!));
-        if (phoneNotificationsDisabled(userId!)) { setStatus("disabled"); return; }
+        if (phoneNotificationsDisabled(userId!)) { connected.current = false; setStatus("disabled"); setError(""); return; }
         if (needsInstall()) { setStatus("install"); return; }
         if (!pushSupported()) { setStatus("unsupported"); return; }
-        setStatus(Notification.permission);
+        if (Notification.permission !== "granted") {
+          connected.current = false; setStatus(Notification.permission); setError(""); return;
+        }
         if (Notification.permission === "granted") {
           const device = await ensurePhoneNotifications(userId!, active);
           if (active()) {
-            if (phoneNotificationsDisabled(userId!)) { setStatus("disabled"); return; }
+            if (phoneNotificationsDisabled(userId!)) { connected.current = false; setStatus("disabled"); setError(""); return; }
             if (!device?.id) throw new Error("Could not connect notifications. Please try again.");
-            setStatus("connected"); setError("");
+            connected.current = true; setStatus("connected"); setError("");
           }
         }
-      } catch (error) { if (active()) setError(error instanceof Error ? error.message : "Could not connect notifications. Please try again."); }
+      } catch (error) {
+        if (active() && !connected.current) { setStatus("granted"); setError(error instanceof Error ? error.message : "Could not connect notifications. Please try again."); }
+      }
       finally { syncing = false; }
     }
     void sync();
@@ -62,7 +68,7 @@ export function PushAccountLifecycle({ userId }: { userId: string | null }) {
   return <aside className="fixed inset-x-3 bottom-24 z-40 mx-auto max-w-xl rounded-2xl border border-border bg-card p-5 shadow-xl lg:bottom-4" aria-label={t("Notification setup")}>
     <div className="flex items-center justify-between gap-3"><p className="text-sm font-semibold">{t("Stay updated with DarasaX")}</p><Button size="sm" variant="ghost" onClick={() => { dismissNotificationBanner(userId); setDismissed(true); }}>{t("Dismiss")}</Button></div>
     <p className="mt-1 text-xs text-muted-foreground">{t(status === "install" ? "On iPhone or iPad, add DarasaX to your Home Screen and open it from its icon to receive notifications automatically." : status === "unsupported" ? "This browser cannot receive device notifications. Open DarasaX in a supported browser or install the Home Screen app. In-app announcements remain available." : status === "denied" ? "Notifications are blocked by your browser. Allow them in your browser or phone settings. In-app notifications remain active." : status === "disabled" ? "Device notifications are off. Enable them to receive announcements, assignments, and class reminders." : status === "default" ? "Enable notifications on this device. Announcements, assignments, learning updates, and class reminders are already selected by default." : "Notifications connect automatically. Check your connection and reopen the app if this message continues.")}</p>
-    {status === "default" || status === "disabled" || status === "denied" || error ? <PushSetupButton key={userId} userId={userId} reconnect={status === "granted"} onConnected={() => { setStatus("connected"); setError(""); }} /> : null}
+    {status === "default" || status === "disabled" || status === "denied" || error ? <PushSetupButton key={userId} userId={userId} reconnect={status === "granted"} onConnected={() => { connected.current = true; setStatus("connected"); setError(""); }} /> : null}
     {error ? <p role="status" className="mt-2 text-xs text-danger">{t(error)}</p> : null}
   </aside>;
 }

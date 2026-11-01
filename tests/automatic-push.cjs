@@ -25,25 +25,28 @@ vm.runInNewContext(ts.transpileModule(fs.readFileSync('src/lib/push-client.ts','
  currentUser='user-b';assert.equal(await api.ensurePhoneNotifications('user-a'),null);assert.equal(registered,3);
  notification.permission='denied';assert.equal(await api.ensurePhoneNotifications('user-b'),null);assert.equal(prompts,0);
  const lifecycleSource=ts.transpileModule(fs.readFileSync('src/components/notifications/push-account-lifecycle.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020,jsx:ts.JsxEmit.ReactJSX}}).outputText;
- let permissionPrompts=0,automaticConnections=0; const saved=new Map();
+ let permissionPrompts=0,automaticConnections=0,failConnection=false; const saved=new Map();
  function mount(permission) {
-  const listeners={};const lifecycle={};const native={permission};
+  const listeners={};const lifecycle={};const native={permission};const states=[];let stateIndex=0;
   class KeyEvent {constructor(key){this.key=key;this.isTrusted=true;}}
   vm.runInNewContext(lifecycleSource,{exports:lifecycle,KeyboardEvent:KeyEvent,Notification:native,
    setInterval:()=>1,clearInterval(){},document:{visibilityState:"visible",addEventListener:(name,fn)=>{listeners[name]=fn;},removeEventListener(){}},
    localStorage:{getItem:key=>saved.get(key),setItem:(key,value)=>saved.set(key,value)},
    navigator:{userAgent:'Android',platform:'Linux',maxTouchPoints:1},
    window:{matchMedia:()=>({matches:true}),addEventListener:(name,fn)=>{listeners[name]=fn;},removeEventListener(){}},
-   require:name=>name==='react'?{useEffect:fn=>fn(),useState:initial=>[initial,()=>{}]}:name.includes('language-provider')?{useTranslate:()=>text=>text}:name.includes('push-client')?{
-    phoneNotificationsDisabled:()=>false,notificationBannerDismissed:()=>false,dismissNotificationBanner(){},pushSupported:()=>true,ensurePhoneNotifications:async()=>{automaticConnections++;return {id:'device'};},
+   require:name=>name==='react'?{useEffect:fn=>fn(),useRef:value=>({current:value}),useState:initial=>{const index=stateIndex++;states[index]=initial;return [initial,value=>{states[index]=typeof value==='function'?value(states[index]):value;}];}}:name.includes('language-provider')?{useTranslate:()=>text=>text}:name.includes('push-client')?{
+    phoneNotificationsDisabled:()=>false,notificationBannerDismissed:()=>false,dismissNotificationBanner(){},pushSupported:()=>true,ensurePhoneNotifications:async()=>{automaticConnections++;if(failConnection)throw Error('Temporary network failure');return {id:'device'};},
     requestPhonePermission:()=>{permissionPrompts++;native.permission='granted';return Promise.resolve('granted');},
    }:{jsx:()=>null,jsxs:()=>null}
   });
-  lifecycle.PushAccountLifecycle({userId:'user-a'});return listeners;
+  lifecycle.PushAccountLifecycle({userId:'user-a'});listeners.states=states;listeners.native=native;return listeners;
  }
  const listeners=mount('default');assert.equal(permissionPrompts,0);
  assert.equal(listeners.click,undefined);assert.equal(listeners.keydown,undefined,'Ordinary workspace gestures do not ask permission');
- mount('granted');await new Promise(resolve=>setImmediate(resolve));assert.equal(automaticConnections,1,'Granted devices connect automatically');
+ const granted=mount('granted');await new Promise(resolve=>setImmediate(resolve));assert.equal(automaticConnections,1,'Granted devices connect automatically');
+ assert.equal(granted.states[0],'connected');const checking=granted.focus();assert.equal(granted.states[0],'connected','Polling must not reopen the banner while a connected device is checked');await checking;
+ failConnection=true;await granted.focus();assert.equal(granted.states[0],'connected');assert.equal(granted.states[2],'','Transient network errors must not nag an already enabled device');failConnection=false;
+ granted.native.permission='denied';await granted.focus();assert.equal(granted.states[0],'denied','Revoked browser permission is still reported');
  const buttonSource=ts.transpileModule(fs.readFileSync('src/components/notifications/push-setup-button.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020,jsx:ts.JsxEmit.ReactJSX}}).outputText;
  let confirmed=0,connections=0,decision='granted',deviceResult={id:'device'};
  function setup() {
