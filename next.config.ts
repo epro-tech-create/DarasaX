@@ -7,6 +7,9 @@ const privatePages = ["login", "signup", "register", "verify-email", "forgot-pas
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["pdfkit", "pdf-parse", "tesseract.js", "exceljs"],
+  outputFileTracingIncludes: {
+    "/api/timetable-import": ["./node_modules/tesseract.js/src/**/*", "./node_modules/tesseract.js-core/**/*", "./node_modules/wasm-feature-detect/**/*", "./node_modules/is-url/**/*", "./node_modules/bmp-js/**/*", "./node_modules/regenerator-runtime/**/*", "./node_modules/pdf-parse/dist/**/*", "./node_modules/@napi-rs/canvas*/**/*", "./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"],
+  },
   async headers() {
     const images = ["/auth-panel-v1.webp", "/next-class-students-v1.webp"].map(source => ({
       source, headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],

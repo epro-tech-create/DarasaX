@@ -4,6 +4,7 @@ import { useTranslate } from "@/components/providers/language-provider";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { NextClassCard } from "@/components/dashboard/next-class-card";
+import { CrCountdowns } from "@/components/dashboard/cr-countdowns";
 import { useTimetableStore } from "@/lib/timetable-store";
 import { getNextClass } from "@/lib/academic";
 import { formatRelativeTime } from "@/lib/utils";
@@ -57,6 +58,7 @@ export default function ClassRepOverviewPage() {
       />
 
       {next && <NextClassCard entry={next.entry} module={next.module} dayOffset={next.dayOffset} moduleHref="/cr/topics" moduleLabel={translateUI("Module topics")} timetableHref="/cr/timetable" />}
+      <CrCountdowns assignments={classUploads} />
 
       <StaffStagger className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StaffFadeItem>

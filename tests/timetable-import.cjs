@@ -2,10 +2,11 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const ts = require('typescript');
+const dependencyRequire = process.env.TIMETABLE_TRACE_ROOT ? require('node:module').createRequire(require('node:path').join(process.env.TIMETABLE_TRACE_ROOT, 'package.json')) : require;
 function load(file, dependencies = {}) {
   const exported = {};
   vm.runInNewContext(ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true } }).outputText, {
-    exports: exported, require: name => name in dependencies ? dependencies[name] : require(name), Buffer, File, setTimeout, clearTimeout,
+    exports: exported, require: name => name in dependencies ? dependencies[name] : dependencyRequire(name), Buffer, File, setTimeout, clearTimeout,
   });
   return exported;
 }
@@ -37,6 +38,8 @@ const rows = [fields, ['Monday', '07:00', '09:00', course.code, 'R1-1', 'Teacher
   const image = await sharp(Buffer.from(svg)).png().toBuffer();
   result = await documents.extractTimetable(new File([image], 'schedule.png'));
   assert.ok(result.text.includes('Monday')); assert.equal(result.sessions.length, 1); assert.equal(result.sessions[0].moduleId, course.id);
+  result = await documents.extractTimetable(new File([await sharp(image).jpeg().toBuffer()], 'schedule.jpg'));
+  assert.equal(result.sessions.length, 1); assert.equal(result.sessions[0].moduleId, course.id);
   const scan = new PDF({ size: [1800, 160], margin: 0 }); const scanChunks = [];
   const scanned = new Promise(resolve => scan.on('end', resolve)); scan.on('data', chunk => scanChunks.push(chunk));
   scan.image(image, 0, 0, { width: 1800, height: 160 }); scan.end(); await scanned;

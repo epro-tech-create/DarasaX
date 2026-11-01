@@ -2544,5 +2544,12 @@
   "Disconnecting…": "Inatenganisha…",
   "Device notifications are off. In-app notifications remain active.": "Arifa za kifaa zimezimwa. Arifa ndani ya programu bado zinaendelea.",
   "Could not disconnect notifications. Please try again.": "Imeshindikana kutenganisha arifa. Tafadhali jaribu tena.",
-  "Device notifications are off. Enable them to receive announcements, assignments, and class reminders.": "Arifa za kifaa zimezimwa. Ziwashe ili kupokea matangazo, kazi, na vikumbusho vya vipindi."
+  "Device notifications are off. Enable them to receive announcements, assignments, and class reminders.": "Arifa za kifaa zimezimwa. Ziwashe ili kupokea matangazo, kazi, na vikumbusho vya vipindi.",
+  "Assignment countdown": "Muda uliobaki wa kazi",
+  "No upcoming assignment deadlines for your class.": "Hakuna muda wa mwisho wa kazi unaokaribia kwa darasa lako.",
+  "The upload was too large for the server. Refresh the app and try uploading again.": "Faili ilikuwa kubwa mno kwa seva. Onyesha programu upya na ujaribu tena.",
+  "The timetable service returned an unexpected response. Please refresh and try again.": "Huduma ya ratiba imerudisha jibu lisilotarajiwa. Tafadhali onyesha upya na ujaribu tena.",
+  "Reading the timetable took too long. Try a clearer or smaller image.": "Kusoma ratiba kumechukua muda mrefu. Jaribu picha iliyo wazi zaidi au ndogo.",
+  "Could not upload the timetable. Check your class access and connection, then try again.": "Imeshindikana kupakia ratiba. Angalia ruhusa ya darasa lako na muunganisho, kisha ujaribu tena.",
+  "The upload request could not be completed. Check your connection, refresh DarasaX, and try again.": "Ombi la kupakia halikukamilika. Angalia muunganisho, onyesha DarasaX upya, na ujaribu tena."
 }

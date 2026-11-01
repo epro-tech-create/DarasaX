@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/client";
 import { invalidateQueries } from "@/lib/supabase/query-cache";
 import { tanzaniaDate } from "@/lib/timetable-dates";
 import { validateImport, type ImportSession } from "@/lib/timetable-import";
+import { uploadTimetableDocument } from "@/lib/timetable-upload";
 import type { Database, Json } from "@/types/database";
 
 const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -47,10 +48,7 @@ function ImportForm({ streamId }: { streamId: string }) {
     if (!file || busyRef.current) return;
     busyRef.current = true; setBusy(true); setError(""); setNotice(""); requestId.current = null;
     try {
-      const form = new FormData(); form.append("file", file);
-      const response = await fetch(`/api/timetable-import?class=${encodeURIComponent(streamId)}`, { method: "POST", body: form });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error);
+      const result = await uploadTimetableDocument(file, streamId);
       setSessions(result.sessions); setText(result.text); setNotice(result.warning);
     } catch (error) { setError(error instanceof Error ? error.message : "Could not read this timetable."); }
     finally { busyRef.current = false; setBusy(false); }
