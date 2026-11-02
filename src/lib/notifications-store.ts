@@ -25,7 +25,7 @@ function useNotificationInbox(initialUserId: string | null) {
         if (!userId) { if (!disposed && request === generation) setInbox({ ...emptyInbox, ready: true }); return; }
         const recipient = userId;
         const [list, unread] = await Promise.all([
-          supabase.from("notifications").select("*").eq("recipient_id", recipient).order("created_at", { ascending: false }).order("id", { ascending: false }).limit(50),
+          supabase.from("notifications").select("*").eq("recipient_id", recipient).is("read_at", null).order("created_at", { ascending: false }).order("id", { ascending: false }).limit(50),
           supabase.from("notifications").select("id", { count: "exact", head: true }).eq("recipient_id", recipient).is("read_at", null),
         ]);
         if (list.error || unread.error) throw list.error || unread.error;
@@ -67,6 +67,9 @@ function useNotificationInbox(initialUserId: string | null) {
     const { error } = await createClient().from("notifications").update({ read_at: new Date().toISOString() })
       .eq("recipient_id", inbox.userId).eq("id", id).is("read_at", null);
     if (error) { setInbox((previous) => ({ ...previous, error: "Could not mark this notification read. Please try again." })); return; }
+    setInbox(previous => previous.userId !== inbox.userId ? previous : ({ ...previous,
+      items: previous.items.filter(item => item.id !== id),
+      unreadCount: Math.max(0, previous.unreadCount - (previous.items.some(item => item.id === id) ? 1 : 0)), error: "" }));
     refresh();
   }, [inbox.userId, refresh]);
   const markAllRead = useCallback(async () => {
@@ -75,6 +78,11 @@ function useNotificationInbox(initialUserId: string | null) {
     const { error } = await createClient().from("notifications").update({ read_at: cutoff })
       .eq("recipient_id", inbox.userId).is("read_at", null).lte("created_at", cutoff);
     if (error) { setInbox((previous) => ({ ...previous, error: "Could not mark notifications read. Please try again." })); return; }
+    setInbox(previous => {
+      if (previous.userId !== inbox.userId) return previous;
+      const remaining = previous.items.filter(item => item.createdAt > cutoff);
+      return { ...previous, items: remaining, unreadCount: remaining.length, error: "" };
+    });
     refresh();
   }, [inbox.userId, refresh]);
   return { ...inbox, markRead, markAllRead, refresh };

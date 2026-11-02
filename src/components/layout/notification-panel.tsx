@@ -62,7 +62,7 @@ export function NotificationPanel({
           <div className="p-4">
             <EmptyState
               icon={Bell}
-              title={translateUI("No notifications yet")}
+              title={translateUI("No unread notifications")}
               description={translateUI(emptyDescription)}
               className="border-0 bg-transparent py-8"
             />

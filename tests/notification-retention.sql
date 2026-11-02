@@ -38,7 +38,8 @@ begin
  insert into public.notifications(recipient_id,source_type,source_id,title,body,type,href)
  select age_user,'topic',name,'Fixture','Fixture','announcement','/announcements'
  from unnest(array['read-expired','read-kept','unread-expired','unread-kept','old-recently-read','exact-read','exact-unread']) name;
- -- Simulate the passage of time without relying on new inserts for cleanup.
+ -- Read notifications disappear immediately, independent of age. Unread age
+ -- retention still runs independently of new inserts.
  update public.notifications set created_at=now()-interval '40 days',read_at=now()-interval '31 days' where recipient_id=age_user and source_id='read-expired';
  update public.notifications set created_at=now()-interval '40 days',read_at=now()-interval '29 days' where recipient_id=age_user and source_id='read-kept';
  update public.notifications set created_at=now()-interval '91 days' where recipient_id=age_user and source_id='unread-expired';
@@ -47,7 +48,8 @@ begin
  update public.notifications set created_at=now()-interval '40 days',read_at=now()-interval '30 days' where recipient_id=age_user and source_id='exact-read';
  update public.notifications set created_at=now()-interval '90 days' where recipient_id=age_user and source_id='exact-unread';
  perform private.prune_notifications(array[age_user]);
- if (select count(*) from public.notifications where recipient_id=age_user)<>3 then raise exception 'Age retention failed'; end if;
+ if (select count(*) from public.notifications where recipient_id=age_user)<>1 then raise exception 'Unread age retention or immediate read cleanup failed'; end if;
+ if exists(select 1 from public.notifications where recipient_id=age_user and read_at is not null) then raise exception 'Read notifications remain visible'; end if;
  if exists(select 1 from public.notifications where recipient_id=age_user and source_id in ('read-expired','unread-expired','exact-read','exact-unread')) then raise exception 'Expired notifications remain'; end if;
  if private.prune_notifications(array[age_user])<>0 then raise exception 'Cleanup is not idempotent'; end if;
  if has_function_privilege('authenticated','private.prune_notifications(uuid[])','execute') or has_function_privilege('anon','private.prune_notifications(uuid[])','execute') then raise exception 'Cleanup exposed to browser'; end if;

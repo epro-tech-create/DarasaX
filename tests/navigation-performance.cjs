@@ -66,6 +66,7 @@ async function serverRender() {
 async function notifications() {
   let state, mounted = false, authChanged, context, effect, cleanup, queryError = false;
   const tasks = new Map(), listeners = new Map(), queries = [], mutations = [];
+  const readNotices = new Set();
   let sequence = 0;
   const schedule = fn => { const id = ++sequence; tasks.set(id, fn); return id; };
   const hooks = {
@@ -80,16 +81,17 @@ async function notifications() {
     auth: { getUser: () => { throw new Error('Inbox should reuse server identity'); },
       onAuthStateChange: fn => { authChanged = fn; return { data: { subscription: { unsubscribe() {} } } }; } },
     from: table => {
-      let recipient, count = false, mutation;
+      let recipient, count = false, mutation, unreadOnly = false;
       const builder = {
         select: (_columns, options) => { count = options?.head === true; return builder; },
         eq: (column, value) => { if (column === 'recipient_id') recipient = value; return builder; },
-        order: () => builder, limit: () => builder, is: () => builder, lte: () => builder,
+        order: () => builder, limit: () => builder, is: (column, value) => { if (column === 'read_at' && value === null) unreadOnly = true; return builder; }, lte: () => builder,
         update: value => { mutation = value; return builder; },
         then: (resolve, reject) => {
-          if (mutation) mutations.push({ recipient, mutation });
-          else queries.push({ table, recipient, count });
-          return Promise.resolve({ data: count || mutation ? null : [{ id: `${recipient}-notice`, title: recipient, created_at: '2026-10-21', read_at: null }], count: 1,
+          if (mutation) { mutations.push({ recipient, mutation }); if (!queryError) readNotices.add(`${recipient}-notice`); }
+          else queries.push({ table, recipient, count, unreadOnly });
+          const hidden = unreadOnly && readNotices.has(`${recipient}-notice`);
+          return Promise.resolve({ data: count || mutation ? null : hidden ? [] : [{ id: `${recipient}-notice`, title: recipient, created_at: '2026-10-21', read_at: null }], count: hidden ? 0 : 1,
             error: queryError ? new Error('Offline') : null }).then(resolve, reject);
         },
       };
@@ -108,9 +110,12 @@ async function notifications() {
   const first = store.useNotifications();
   for (let i = 0; i < 4; i++) assert.equal(store.useNotifications(), first, 'Badges and panel share the same inbox');
   assert.equal(queries.length, 2, 'Only list/count run once for all consumers');
+  assert.ok(queries.every(query => query.unreadOnly), 'Read notifications never enter the visible inbox');
   assert.equal(first.items[0].title, 'first');
   await first.markRead('first-notice'); await settle(); render();
   assert.equal(mutations[0].recipient, 'first');
+  assert.equal(store.useNotifications().items.length, 0, 'Read notification disappears');
+  assert.equal(store.useNotifications().unreadCount, 0, 'Read notification clears its badge');
   authChanged('SIGNED_OUT', null); await timers();
   assert.equal(store.useNotifications().items.length, 0);
   const afterLogout = queries.length;
@@ -119,6 +124,9 @@ async function notifications() {
   authChanged('SIGNED_IN', { user: { id: 'second' } }); await timers();
   assert.equal(store.useNotifications().items[0].title, 'second');
   assert.equal(queries.at(-1).recipient, 'second');
+  await store.useNotifications().markAllRead(); await settle(); render();
+  assert.equal(store.useNotifications().items.length, 0, 'Mark all read clears the inbox');
+  assert.equal(store.useNotifications().unreadCount, 0);
   queryError = true; listeners.get('focus')(); await settle(); render();
   assert.match(store.useNotifications().error, /could not be loaded/);
   cleanup(); assert.equal(listeners.size, 0);
