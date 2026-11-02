@@ -69,8 +69,15 @@ async function check(host, path, member, expected, destination) {
   await check(host, '/cr', { ...cr, status: 'inactive' }, 403);
   await check(host, '/cr', { role: 'lecturer', status: 'active' }, 403);
   await check(host, '/dashboard', null, 200);
+  for (const path of ['/messages', '/mbunge', '/mbunge/students', '/mbunge/timetable']) {
+    await check(host, path, undefined, 307, '/login');
+    await check(host, path, null, 200); // The Mbunge server layout additionally verifies appointment.
+    await check(host, path, cr, 307, '/cr');
+  }
   admission = {status:'pending',welcome_seen_at:null};
   await check(host, '/dashboard', null, 307, '/pending-approval');
+  await check(host, '/messages', null, 307, '/pending-approval');
+  await check(host, '/mbunge/students', null, 307, '/pending-approval');
   await check(host, '/pending-approval', null, 200);
   admission.status = 'approved';
   await check(host, '/dashboard', null, 307, '/welcome');
@@ -95,6 +102,7 @@ async function check(host, path, member, expected, destination) {
   await check('admin.darasax.com', '/signup', undefined, 200);
   adminVerified=false;
   await check('admin.darasax.com','/admin',{role:'admin',status:'active'},307,'/admin-verify-email');
+  await check('admin.darasax.com','/admin/mbunge',{role:'admin',status:'active'},307,'/admin-verify-email');
   await check('admin.darasax.com','/admin-verify-email',{role:'admin',status:'active'},200);
   await check('admin.darasax.com','/admin-verify-email',undefined,307,'/login');
   adminVerified=true;lecturerApplication={status:'pending'};

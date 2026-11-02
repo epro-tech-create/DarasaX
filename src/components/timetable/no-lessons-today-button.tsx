@@ -20,7 +20,7 @@ export function NoLessonsTodayButton({ streamId }: { streamId: string }) {
   const [result, setResult] = useState<number | null>(null);
   const requestId = useRef<string | null>(null);
   const submitting = useRef(false);
-  if (session?.role !== "admin" && !(session?.role === "class_rep" && session.streamId === streamId)) return null;
+  if (!session?.isMbunge && session?.role !== "admin" && !(session?.role === "class_rep" && session.streamId === streamId)) return null;
 
   async function confirm() {
     if (submitting.current) return;

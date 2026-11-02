@@ -22,6 +22,20 @@ export type AuditLogRow = Database["public"]["Tables"]["audit_log"]["Row"];
 export type Database = {
   public: {
     Tables: {
+      mbunge_appointments: {
+        Row: { student_id: string; appointed_by: string; appointed_at: string; revoked_at: string | null; revoked_by: string | null };
+        Insert: never; Update: never; Relationships: [];
+      };
+      class_messages: {
+        Row: { id: string; room_id: string; author_id: string; author_name: string; body: string; created_at: string };
+        Insert: { id?: string; room_id: string; author_id: string; body: string };
+        Update: never; Relationships: [];
+      };
+      class_message_reads: {
+        Row: { user_id: string; room_id: string; read_at: string };
+        Insert: { user_id: string; room_id: string; read_at?: string };
+        Update: { read_at?: string }; Relationships: [];
+      };
       assignment_submissions: {
         Row: { id: string; assignment_id: string; student_id: string; student_name: string; registration_number: string | null; file_path: string; file_name: string; submitted_at: string };
         Insert: { assignment_id: string; student_id: string; file_path: string; file_name: string };
@@ -465,6 +479,12 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      is_mbunge: { Args: Record<string, never>; Returns: boolean };
+      appoint_mbunge: { Args: { student_email: string }; Returns: undefined };
+      revoke_mbunge: { Args: { target_student: string }; Returns: undefined };
+      list_mbunge_appointments: { Args: Record<string, never>; Returns: Json };
+      mbunge_students: { Args: Record<string, never>; Returns: Json };
+      chat_unread_counts: { Args: Record<string, never>; Returns: Json };
       can_submit_assignment: { Args: { assignment_id: string }; Returns: boolean };
       can_import_timetable: { Args: { target_class: string }; Returns: boolean };
       apply_timetable_import: { Args: { target_class: string; starts_on: string; sessions: Json; source_name: string; request_key: string }; Returns: string };

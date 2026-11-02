@@ -19,6 +19,8 @@ import {
 function isStudentProtected(pathname: string) {
   const roots = [
     "/dashboard",
+    "/messages",
+    "/mbunge",
     "/modules",
     "/assignments",
     "/timetable",

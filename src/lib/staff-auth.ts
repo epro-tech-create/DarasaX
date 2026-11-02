@@ -15,6 +15,8 @@ import type { StaffProfile } from "@/types/database";
 const SESSION_EVENT = "darasax:staff-session";
 
 export type StaffSession = {
+  /** A student capability, never a staff_profiles membership or login role. */
+  isMbunge?: boolean;
   id: string;
   role: StaffRole;
   email: string;

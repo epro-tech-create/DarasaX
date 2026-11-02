@@ -1,6 +1,6 @@
 const STUDENT_ROUTES = [
   "/dashboard", "/modules", "/assignments", "/timetable", "/past-papers",
-  "/announcements", "/ask", "/missed", "/profile", "/settings",
+  "/announcements", "/ask", "/missed", "/profile", "/settings", "/messages", "/mbunge",
 ];
 
 /** Return URLs are untrusted input, never permission to enter a staff workspace. */

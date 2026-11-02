@@ -16,6 +16,8 @@ for (const next of ['/planner','/cr','/cr/materials','/admin','/lecturer','//evi
   assert.equal(redirects.studentPostAuthPath(false, next), '/onboarding');
 }
 assert.equal(redirects.studentPostAuthPath(true, '/modules/topic-1?tab=notes', approved), '/modules/topic-1?tab=notes');
+assert.equal(redirects.studentPostAuthPath(true, '/messages', approved), '/messages');
+assert.equal(redirects.studentPostAuthPath(true, '/mbunge/timetable', approved), '/mbunge/timetable');
 assert.equal(redirects.studentPostAuthPath(false, '/modules/topic-1'), '/onboarding?next=%2Fmodules%2Ftopic-1');
 let staff = null;
 let complete = false;

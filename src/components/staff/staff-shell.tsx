@@ -43,6 +43,7 @@ const adminNav: StaffNavItem[] = [
   { href: "/admin/timetable", label: "Timetable", icon: CalendarDays },
   { href: "/admin/students", label: "Students", icon: Users },
   { href: "/admin/class-reps", label: "Class reps", icon: GraduationCap },
+  { href: "/admin/mbunge", label: "Mbunge", icon: Users },
   { href: "/admin/lecturers", label: "Lecturers", icon: BookOpen },
   { href: "/admin/streams", label: "Streams", icon: Shield },
   { href: "/admin/announcements", label: "Announce", icon: Megaphone },

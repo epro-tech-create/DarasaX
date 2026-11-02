@@ -5,10 +5,15 @@ import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/types/database";
 import { NotificationsProvider } from "@/lib/notifications-store";
 
-type Context = { profile: Profile | null; avatarUrl: string | null; updateProfile: (profile: Profile) => void };
+type Context = { profile: Profile | null; avatarUrl: string | null; isMbunge: boolean; updateProfile: (profile: Profile) => void };
 const StudentProfileContext = createContext<Context | null>(null);
 
-export function StudentProfileProvider({ initialProfile, children }: { initialProfile: Profile | null; children: React.ReactNode }) {
+export function StudentProfileProvider({ initialProfile, initialMbunge = false, children }: { initialProfile: Profile | null; initialMbunge?: boolean; children: React.ReactNode }) {
+  const [isMbunge, setIsMbunge] = useState(initialMbunge);
+  useEffect(() => {
+    const timer = setTimeout(() => setIsMbunge(initialMbunge), 0);
+    return () => clearTimeout(timer);
+  }, [initialMbunge]);
   const [profile, setProfile] = useState(initialProfile);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   useEffect(() => {
@@ -21,6 +26,8 @@ export function StudentProfileProvider({ initialProfile, children }: { initialPr
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || user.id !== initialProfile?.id) return;
+      const { data: membership, error: membershipError } = await supabase.rpc("is_mbunge");
+      if (!disposed) setIsMbunge(!membershipError && membership === true);
       const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
       if (!disposed && data) setProfile(data);
     };
@@ -45,7 +52,7 @@ export function StudentProfileProvider({ initialProfile, children }: { initialPr
     const timer = setInterval(() => void resolve(), 45 * 60 * 1000);
     return () => { cancelled = true; clearInterval(timer); };
   }, [profile?.avatar_url, profile?.id]);
-  return <StudentProfileContext.Provider value={{ profile, avatarUrl, updateProfile }}><NotificationsProvider key={initialProfile?.id} userId={initialProfile?.id ?? null}>{children}</NotificationsProvider></StudentProfileContext.Provider>;
+  return <StudentProfileContext.Provider value={{ profile, avatarUrl, isMbunge, updateProfile }}><NotificationsProvider key={initialProfile?.id} userId={initialProfile?.id ?? null}>{children}</NotificationsProvider></StudentProfileContext.Provider>;
 }
 
 export function useStudentProfile() {

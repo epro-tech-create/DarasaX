@@ -82,9 +82,10 @@ function FileActions({
   canManage: boolean;
 }) {
   const translateUI = useTranslate();
+  const { session } = useStaffSession();
   return (
     <div className={cn("flex flex-wrap items-center gap-0.5", className)}>
-      {item.kind === "assignment" && canManage ? <SubmissionManagerButton assignment={item} /> : null}
+      {item.kind === "assignment" && canManage && !session?.isMbunge ? <SubmissionManagerButton assignment={item} /> : null}
       <button
         type="button"
         disabled={busy}
@@ -142,6 +143,7 @@ export function MaterialsLibrary({
   const visibleKinds = kinds.filter(kind => kind.id !== "announcement");
   const canManage = (item: MaterialUpload) => {
     if (!session) return false;
+    if (session.isMbunge) return true;
     if (session.role === "admin") return true;
     const moduleAllowed = session.role !== "lecturer" || !item.moduleId || session.moduleIds.includes(item.moduleId);
     const classAllowed = Boolean(item.streamId && (session.role === "class_rep" ? session.streamId === item.streamId : session.streamIds.includes(item.streamId)));

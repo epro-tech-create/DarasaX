@@ -17,6 +17,7 @@ import {
   PanelLeftClose,
   PanelLeft,
   History,
+  Users,
 } from "lucide-react";
 import { MoreMenu } from "@/components/layout/more-menu";
 import { Logo } from "@/components/brand/logo";
@@ -45,7 +46,7 @@ const bottomNav = [
 export function AppSidebar() {
   const translateUI = useTranslate();
   const pathname = usePathname();
-  const { profile, avatarUrl } = useStudentProfile();
+  const { profile, avatarUrl, isMbunge } = useStudentProfile();
   const displayName = profile?.full_name?.trim() || "Student";
   const [collapsed, setCollapsed] = useState(false);
 
@@ -88,7 +89,7 @@ export function AppSidebar() {
       </div>
 
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-2.5 py-1.5 scrollbar-thin">
-        {mainNav.map((item) => {
+        {[...mainNav, ...(isMbunge ? [{ href: "/mbunge", label: "Mbunge tools", icon: Users }] : [])].map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href);
           return (
@@ -166,6 +167,7 @@ export function TopBar({
   onOpenSearch: () => void;
 }) {
   const translateUI = useTranslate();
+  const { isMbunge } = useStudentProfile();
   return (
     <header className="sticky top-0 z-30 flex min-h-14 flex-wrap items-center justify-between gap-2 border-b border-border bg-background/85 px-4 backdrop-blur-md sm:px-5">
       <div className="lg:hidden">
@@ -190,7 +192,7 @@ export function TopBar({
         >
           <Search className="h-[18px] w-[18px]" aria-hidden /></button>
         <NotificationBellButton onOpen={onOpenNotifications} />
-        <MoreMenu settingsHref="/settings" helpdeskHref="/helpdesk" />
+        <MoreMenu settingsHref="/settings" helpdeskHref="/helpdesk" mbungeTools={isMbunge} />
       </div>
     </header>
   );

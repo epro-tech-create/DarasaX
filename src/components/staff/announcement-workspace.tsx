@@ -46,6 +46,7 @@ export function AnnouncementWorkspace({ role }: { role: StaffRole }) {
 
   function canDelete(item: MaterialUpload) {
     if (!session) return false;
+    if (session.isMbunge) return true;
     if (session.role === "admin") return true;
     const moduleAllowed = session.role !== "lecturer" || !item.moduleId || session.moduleIds.includes(item.moduleId);
     const classAllowed = Boolean(item.streamId && (session.role === "class_rep" ? session.streamId === item.streamId : session.streamIds.includes(item.streamId)));

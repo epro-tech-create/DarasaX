@@ -142,7 +142,7 @@ function ClassBlock({
   );
 }
 
-export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStream, onEdit, actions }: { initialStream?: ClassStreamId; lockedStream?: ClassStreamId; onEdit?: (entry: TimetableEntry) => void; actions?: ReactNode }) {
+export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStream, onEdit, actions, onStreamChange }: { initialStream?: ClassStreamId; lockedStream?: ClassStreamId; onEdit?: (entry: TimetableEntry) => void; actions?: ReactNode; onStreamChange?: (stream: ClassStreamId) => void }) {
   const translateUI = useTranslate();
   const [view, setView] = useState<"today" | "week">("week");
   const [selectedDate, setSelectedDate] = useState(tanzaniaDate);
@@ -262,7 +262,7 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
             value={streamId}
             disabled={Boolean(lockedStream)}
             onChange={(event) =>
-              setBrowsingStream(event.target.value as ClassStreamId)
+              { setBrowsingStream(event.target.value as ClassStreamId); onStreamChange?.(event.target.value as ClassStreamId); }
             }
             aria-label={translateUI("View class timetable")}
             className="h-10 w-full rounded-xl border border-border bg-background px-3 text-[13px] font-medium outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
