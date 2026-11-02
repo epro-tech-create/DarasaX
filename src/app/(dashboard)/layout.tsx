@@ -22,7 +22,7 @@ export default async function DashboardLayout({
   return (
     <RoleGuard allow="student">
       <StudentProfileProvider initialProfile={profile} initialMbunge={isMbunge}>
-        <MessagesProvider><DashboardShell>{children}</DashboardShell></MessagesProvider>
+        <MessagesProvider userId={user.id}><DashboardShell>{children}</DashboardShell></MessagesProvider>
       </StudentProfileProvider>
     </RoleGuard>
   );

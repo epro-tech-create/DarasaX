@@ -1,5 +1,4 @@
 import { OverviewHeader } from "@/components/dashboard/overview-ui";
-import { ChatLauncher } from "@/components/messages/chat-launcher";
 import { StudentGreeting } from "@/components/dashboard/student-greeting";
 import { ExamCountdown, AcademicCountdownStatCard } from "@/components/dashboard/exam-countdown";
 import { ComingUp } from "@/components/dashboard/coming-up";
@@ -20,7 +19,6 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6 sm:space-y-7">
-      <ChatLauncher />
       <OverviewHeader title={<StudentGreeting greeting={getGreeting()} />} />
 
       <LiveNextClass initialEntries={timetable.entries} initialLoaded={timetable.loaded} initialNow={initialNow} />

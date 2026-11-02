@@ -1,13 +1,10 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { useStudentProfile } from "@/components/providers/student-profile-provider";
 import { createClient } from "@/lib/supabase/client";
 
 const Context = createContext<{ counts: Record<string, number>; refresh: () => Promise<void> } | null>(null);
-export function MessagesProvider({ children }: { children: ReactNode }) {
-  const { profile } = useStudentProfile();
+export function MessagesProvider({ userId, children }: { userId: string; children: ReactNode }) {
   const [counts, setCounts] = useState<Record<string, number>>({});
-  const userId = profile?.id;
   const refresh = useCallback(async () => {
     if (!userId) return;
     const { data, error } = await createClient().rpc("chat_unread_counts");

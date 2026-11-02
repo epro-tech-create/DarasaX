@@ -24,6 +24,7 @@ import { Logo } from "@/components/brand/logo";
 import { NotificationPanel } from "@/components/layout/notification-panel";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { StaffPageMotion } from "@/components/staff/staff-page-motion";
+import { ChatLauncher } from "@/components/messages/chat-launcher";
 
 import { useNotifications } from "@/lib/notifications-store";
 import { MoreMenu } from "@/components/layout/more-menu";
@@ -275,6 +276,7 @@ export function StaffShell({
         </nav>
       </div>
 
+      {role !== "lecturer" && pathname !== `${home}/messages` && <ChatLauncher href={`${home}/messages`} />}
       <NotificationPanel
         open={notificationsOpen}
         onClose={() => setNotificationsOpen(false)}

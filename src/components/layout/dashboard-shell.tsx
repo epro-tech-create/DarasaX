@@ -7,9 +7,12 @@ import { AppSidebar, TopBar } from "@/components/layout/app-sidebar";
 import { MobileNavigation } from "@/components/layout/mobile-navigation";
 import { NotificationPanel } from "@/components/layout/notification-panel";
 import { SearchCommand } from "@/components/layout/search-command";
+import { usePathname } from "next/navigation";
+import { ChatLauncher } from "@/components/messages/chat-launcher";
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const translateUI = useTranslate();
+  const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
@@ -33,6 +36,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </main>
       </div>
       <MobileNavigation />
+      {pathname !== "/messages" && <ChatLauncher />}
       <SearchCommand open={searchOpen} onClose={() => setSearchOpen(false)} />
       <NotificationPanel
         open={notificationsOpen}

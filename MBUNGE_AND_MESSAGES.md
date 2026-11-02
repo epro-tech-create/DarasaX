@@ -34,9 +34,12 @@ Client navigation refreshes membership on focus and within 30 seconds.
 
 ## Messages
 
-The dashboard's bottom-left floating button opens `/messages` inside the normal
-student layout. **My Class** uses the authenticated student's actual class;
-**All Classes** is a shared student room. Rooms start empty. Messages, sender
+A bottom-right floating button is available throughout the student, CR and admin
+portals, above the mobile navigation. It opens `/messages`, `/cr/messages` or
+`/admin/messages` in the appropriate layout. Lecturers have no chat button or
+chat access. The Messages heading and introductory description are omitted. **My Class** uses the authenticated student's actual class;
+**All Classes** is shared by students, CRs and verified administrators. CRs also
+have their assigned class room; administrators use the shared room. Rooms start empty. Messages, sender
 identity, read receipts and unread counts are stored in Supabase. There is no
 mock chat or browser-local message storage.
 
@@ -78,3 +81,6 @@ denial, cohort/class scope, normal CR behavior, revocation, publishing, timetabl
 permissions, chat author stamping, room privacy, deletion and unread receipts.
 Scheduling scope tests use minimal stand-ins for existing scheduling transactions;
 the migration only changes their access predicate and retains existing behavior.
+
+The additive `20261102045753_staff_chat_access.sql` migration enables scoped CR
+and verified administrator chat access without changing existing records.
