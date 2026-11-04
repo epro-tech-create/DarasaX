@@ -1,4 +1,5 @@
 import type { StaffRole } from "@/types";
+import { isPolicyPath } from "@/lib/policy-routes";
 
 export type AppRole = "student" | "admin" | "class_rep" | "lecturer";
 
@@ -76,6 +77,7 @@ export function isStaffRole(role: AppRole): role is StaffRole {
 }
 
 export function pathAllowedForRole(pathname: string, role: AppRole): boolean {
+  if (isPolicyPath(pathname)) return true;
   const isSharedAuth =
     pathname === "/login" ||
     pathname === "/verify-email" ||

@@ -2552,5 +2552,8 @@
   "The timetable service returned an unexpected response. Please refresh and try again.": "Huduma ya ratiba imerudisha jibu lisilotarajiwa. Tafadhali onyesha upya na ujaribu tena.",
   "Reading the timetable took too long. Try a clearer or smaller image.": "Kusoma ratiba kumechukua muda mrefu. Jaribu picha iliyo wazi zaidi au ndogo.",
   "Could not upload the timetable. Check your class access and connection, then try again.": "Imeshindikana kupakia ratiba. Angalia ruhusa ya darasa lako na muunganisho, kisha ujaribu tena.",
-  "The upload request could not be completed. Check your connection, refresh DarasaX, and try again.": "Ombi la kupakia halikukamilika. Angalia muunganisho, onyesha DarasaX upya, na ujaribu tena."
+  "The upload request could not be completed. Check your connection, refresh DarasaX, and try again.": "Ombi la kupakia halikukamilika. Angalia muunganisho, onyesha DarasaX upya, na ujaribu tena.",
+  "Privacy Policy": "Sera ya Faragha",
+  "Terms of Use": "Masharti ya Matumizi",
+  "Security & Privacy": "Usalama na Faragha"
 }

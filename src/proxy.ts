@@ -1,4 +1,5 @@
 import { getStudentAdmission } from "@/lib/auth/admission";
+import { isPolicyPath } from "@/lib/policy-routes";
 import { randomBytes } from "node:crypto";
 import { contentSecurityPolicy } from "@/lib/security-headers";
 import { studentPostAuthPath, safeStudentReturnPath } from "@/lib/auth/redirect";
@@ -43,6 +44,8 @@ function isStudentProtected(pathname: string) {
 
 async function authorizeRequest(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  // Public policy documents must be readable before signing in on every portal.
+  if (isPolicyPath(pathname)) return NextResponse.next();
   if (pathname === "/sw.js" || pathname === "/manifest.webmanifest") return NextResponse.next();
   if (pathname === "/auth/signout") return NextResponse.next();
   // The callback exchanges and verifies its code and checks membership itself.

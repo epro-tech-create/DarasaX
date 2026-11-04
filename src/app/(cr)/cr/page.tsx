@@ -46,7 +46,7 @@ export default function ClassRepOverviewPage() {
         description={translateUI(`Keep ${streamId} connected with useful materials, clear notices, and an up-to-date timetable.`)}
         actions={
           <div className="flex flex-wrap gap-2">
-            <Button href="/cr/materials" size="sm">
+            <Button href="/cr/modules" size="sm">
               <FileUp className="h-3.5 w-3.5" />
               Upload
             </Button>
@@ -71,7 +71,7 @@ export default function ClassRepOverviewPage() {
         <StaffFadeItem>
           <StaffStatCard
             label={translateUI("Class materials")}
-            href="/cr/materials"
+            href="/cr/modules"
             value={String(classUploads.length)}
             icon={FileUp}
             tone="success"
@@ -86,7 +86,7 @@ export default function ClassRepOverviewPage() {
       <div className="grid items-start gap-5">
 
         <StaffSection title={translateUI("Recent class materials")} description={translateUI("Published files ready for your class.")}
-          action={<Link href="/cr/materials" className="text-xs font-medium text-primary">View library</Link>}>
+          action={<Link href="/cr/modules" className="text-xs font-medium text-primary">View modules</Link>}>
           <div className="space-y-2">
             {classUploads.slice(0, 4).map((item) => <button type="button" key={item.id} onClick={() => void viewMaterial(item)}
               className="focus-ring flex w-full items-center gap-3 rounded-xl border border-border/70 px-3 py-3 text-left transition hover:border-primary/40">

@@ -31,3 +31,4 @@ export default function LecturerStudentsPage(){
    {ready&&!error&&!rows.length&&<p className="py-4 text-sm text-muted-foreground">{t(query.trim() ? "No students match your search." : "No students in this class yet.")}</p>}
   </StaffSection></div>;
 }
+

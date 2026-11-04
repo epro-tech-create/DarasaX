@@ -7,7 +7,7 @@ function load(file, deps = {}) {
  vm.runInNewContext(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}}).outputText,{exports,require:n=>deps[n],URL,RegExp});
  return exports;
 }
-const roles=load('src/lib/app-role.ts'), cookieHelpers=load('src/lib/auth/admin-device-cookies.ts'), security=load('src/lib/auth/admin-security.ts');
+const roles=load('src/lib/app-role.ts', {'@/lib/policy-routes':load('src/lib/policy-routes.ts')}), cookieHelpers=load('src/lib/auth/admin-device-cookies.ts'), security=load('src/lib/auth/admin-security.ts');
 const names=cookieHelpers.adminCookieNames(true);
 let user,staff,verified,startResult,attemptAllowed,verifyError,verifyUser,finishError,stored,writes,sends,verificationCalls,rpcs,signedOut;
 function reset(){ user={id:'admin-one',email:'admin@example.invalid'};staff={role:'admin',status:'active'};verified=false;startResult={sent:true,verified:false};attemptAllowed=true;verifyError=null;verifyUser=user;finishError=null;stored=new Map();writes=[];sends=[];verificationCalls=[];rpcs=[];signedOut=false; }

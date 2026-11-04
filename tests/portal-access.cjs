@@ -9,7 +9,8 @@ function load(file, dependencies) {
   }).outputText, { exports, require: name => dependencies[name], process, URL, Headers });
   return exports;
 }
-const roles = load('src/lib/app-role.ts', {});
+const policyRoutes = load('src/lib/policy-routes.ts', {});
+const roles = load('src/lib/app-role.ts', {'@/lib/policy-routes': policyRoutes});
 for (const [host, role] of [
   ['darasax.com', 'student'], ['www.darasax.com', 'student'],
   ['admin.darasax.com', 'admin'], ['lecturer.darasax.com', 'lecturer'],
@@ -26,6 +27,7 @@ const redirects = load('src/lib/auth/redirect.ts', {});
 let admission = {status:'approved',welcome_seen_at:'2026-10-21'};
 const securityHeaders = load('src/lib/security-headers.ts', {});
 const { proxy } = load('src/proxy.ts', {
+  '@/lib/policy-routes': policyRoutes,
   'node:crypto': require('node:crypto'),
   '@/lib/security-headers': securityHeaders,
   '@/lib/auth/redirect': redirects,
@@ -51,6 +53,14 @@ async function check(host, path, member, expected, destination) {
 }
 (async () => {
   const host = 'darasax.com';
+  for (const domain of ['darasax.com', 'admin.darasax.com', 'lecturer.darasax.com', 'cr.darasax.com']) {
+    for (const path of policyRoutes.policyPaths) {
+      await check(domain, path, undefined, 200);
+      for (const role of ['student', 'admin', 'lecturer', 'class_rep']) assert.equal(roles.pathAllowedForRole(path, role), true);
+    }
+  }
+  assert.equal(policyRoutes.isPolicyPath('/legal/privacy/anything'), false);
+  assert.equal(policyRoutes.isPolicyPath('/legal/unknown'), false);
   for (const domain of ['darasax.com', 'admin.darasax.com', 'lecturer.darasax.com', 'cr.darasax.com']) {
     for (const path of ['/robots.txt', '/sitemap.xml', '/opengraph-image']) await check(domain, path, undefined, 200);
   }
@@ -112,6 +122,8 @@ async function check(host, path, member, expected, destination) {
   await check('darasax-cr.eprotechtz.com', '/', undefined, 307, '/cr');
   assert.equal(new URL((await proxy({ nextUrl: new URL('https://cr.darasax.com/'), url: 'https://cr.darasax.com/', headers: new Headers({ host: 'cr.darasax.com' }) })).location).origin, 'https://darasax.com');
   failed = true;
+  // Reading policies must not depend on authentication being available.
+  for (const path of policyRoutes.policyPaths) await check('admin.darasax.com', path, undefined, 200);
   await check(host, '/auth/callback', cr, 200);
   await check(host, '/cr', cr, 503);
   failed = false;
