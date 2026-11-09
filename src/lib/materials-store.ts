@@ -48,6 +48,7 @@ function toUpload(row: MaterialRow): MaterialUpload {
       (row.size_bytes != null ? formatFileSize(row.size_bytes) : "—"),
     createdAt: row.created_at,
     dueAt: row.due_at ?? undefined,
+    completedAt: row.completed_at ?? undefined,
     onlineSubmission: row.online_submission,
     downloads: row.downloads,
     fileUrl: row.file_url ?? undefined,
@@ -407,6 +408,19 @@ export function useMaterialsStore() {
     [],
   );
 
+  const setAssignmentDone = useCallback(async (id: string, markDone: boolean) => {
+    const { data, error } = await createClient().rpc("set_assignment_done", {
+      assignment_id: id,
+      mark_done: markDone,
+    });
+    if (error) throw error;
+    const completedAt = data ?? undefined;
+    invalidateQueries("materials");
+    setItems(previous => previous.map(item => item.id === id ? { ...item, completedAt } : item));
+    window.dispatchEvent(new Event("darasax:materials"));
+    return completedAt;
+  }, []);
+
   const publishNotice = useCallback(
     async (input: {
       title: string;
@@ -511,6 +525,7 @@ export function useMaterialsStore() {
     publish,
     publishNotice,
     updateItem,
+    setAssignmentDone,
     deleteItem,
     bumpDownloads,
   };

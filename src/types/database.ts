@@ -223,6 +223,7 @@ export type Database = {
           year_of_study: number;
           semester: number;
           due_at: string | null;
+          completed_at: string | null;
           online_submission: boolean;
           uploaded_by: string;
           uploaded_by_id: string | null;
@@ -250,6 +251,7 @@ export type Database = {
           year_of_study?: number;
           semester?: number;
           due_at?: string | null;
+          completed_at?: string | null;
           online_submission?: boolean;
           uploaded_by?: string;
           uploaded_by_id?: string | null;
@@ -277,6 +279,7 @@ export type Database = {
           year_of_study?: number;
           semester?: number;
           due_at?: string | null;
+          completed_at?: string | null;
           online_submission?: boolean;
           uploaded_by?: string;
           uploaded_by_id?: string | null;
@@ -486,6 +489,7 @@ export type Database = {
       mbunge_students: { Args: Record<string, never>; Returns: Json };
       chat_unread_counts: { Args: Record<string, never>; Returns: Json };
       can_submit_assignment: { Args: { assignment_id: string }; Returns: boolean };
+      set_assignment_done: { Args: { assignment_id: string; mark_done: boolean }; Returns: string | null };
       can_import_timetable: { Args: { target_class: string }; Returns: boolean };
       apply_timetable_import: { Args: { target_class: string; starts_on: string; sessions: Json; source_name: string; request_key: string }; Returns: string };
       undo_timetable_import: { Args: { import_id: string }; Returns: undefined };

@@ -6,6 +6,7 @@ import { StaffModal } from "@/components/staff/staff-modal";
 import { createClient } from "@/lib/supabase/client";
 import { useTranslate } from "@/components/providers/language-provider";
 import { invalidateQueries } from "@/lib/supabase/query-cache";
+import { isAssignmentDone } from "@/lib/assignment-status";
 import type { Database } from "@/types/database";
 import type { MaterialUpload } from "@/types";
 
@@ -36,7 +37,8 @@ export function StudentSubmission({ assignment }: { assignment: MaterialUpload }
   const [success, setSuccess] = useState("");
   const input = useRef<HTMLInputElement>(null);
   const [now, setNow] = useState(Date.now);
-  const closed = !!assignment.dueAt && new Date(assignment.dueAt).getTime() <= now;
+  const doneByStaff = Boolean(assignment.completedAt);
+  const closed = doneByStaff || (!!assignment.dueAt && new Date(assignment.dueAt).getTime() <= now);
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
@@ -87,7 +89,7 @@ export function StudentSubmission({ assignment }: { assignment: MaterialUpload }
     <h2 className="font-semibold">{t("Your submission")}</h2>
     <p className="text-xs text-muted-foreground">{t(assignment.onlineSubmission ? "Upload one file, up to 20 MB. You can replace it until the deadline. Only you and authorized teaching staff can access it." : "This assignment uses offline hand-in. Follow the publisher’s instructions.")}</p>
     {row ? <div className="rounded-xl bg-primary/5 p-3 text-sm"><p className="break-all font-medium">{row.file_name}</p><p className="mt-1 text-xs text-muted-foreground">{new Date(row.submitted_at).toLocaleString(t.locale, { timeZone: "Africa/Dar_es_Salaam" })} · EAT</p><Button className="mt-2" size="sm" variant="outline" onClick={() => void openFile(row).catch(e => setError(e.message))}>{t("Download submitted file")}</Button></div> : null}
-    {assignment.onlineSubmission && <><p className="text-xs text-primary">{t(closed ? "Deadline passed. Submissions are closed." : row ? "A new upload will replace your current submission." : "No submission yet.")}</p>
+    {assignment.onlineSubmission && <><p className="text-xs text-primary">{t(doneByStaff ? "Assignment marked done. Submissions are closed." : closed ? "Deadline passed. Submissions are closed." : row ? "A new upload will replace your current submission." : "No submission yet.")}</p>
       <input ref={input} type="file" aria-label={t("Assignment submission file")} accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx,.zip,.txt" disabled={!ready || busy || closed} onChange={e => setFile(e.target.files?.[0] ?? null)} className="block max-w-full text-xs" />
       <Button disabled={!ready || busy || closed || !file} onClick={() => void upload()}>{t(busy ? "Submitting…" : row ? "Replace submission" : "Submit assignment")}</Button></>}
     {success ? <p role="status" className="text-xs text-primary">{t(success)}</p> : null}
@@ -131,7 +133,7 @@ function SubmissionInbox({ assignment }: { assignment: MaterialUpload }) {
     finally { setBusy(false); }
   }
   return <div className="space-y-4">
-    <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-muted/40 p-3"><p className="text-sm">{t(enabled ? "Online submissions enabled" : "Offline hand-in")}</p><Button size="sm" variant="outline" disabled={busy} onClick={() => void toggle()}>{t(enabled ? "Disable uploads" : "Enable uploads")}</Button></div>
+    <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-muted/40 p-3"><p className="text-sm">{t(isAssignmentDone(assignment) ? "Assignment done" : enabled ? "Online submissions enabled" : "Offline hand-in")}</p><Button size="sm" variant="outline" disabled={busy || isAssignmentDone(assignment)} onClick={() => void toggle()}>{t(enabled ? "Disable uploads" : "Enable uploads")}</Button></div>
     <p className="text-xs text-muted-foreground">{t("Only admins, the class CR, and lecturers assigned to this class and module can review these files.")}</p>
     <Button size="sm" variant="outline" disabled={loading} onClick={() => { setLoading(true); setError(""); setVersion(v => v + 1); }}>{t("Refresh")}</Button>
     {loading ? <p role="status">{t("Loading submissions…")}</p> : <><p className="text-sm">{count} {t("submissions")}</p>{rows.map(row => <div key={row.id} className="rounded-xl border border-border p-3"><p className="font-semibold">{row.student_name}</p><p className="text-xs text-muted-foreground">{row.registration_number || row.student_id}</p><p className="mt-1 break-all text-xs">{row.file_name}</p><p className="text-xs text-muted-foreground">{new Date(row.submitted_at).toLocaleString(t.locale, { timeZone: "Africa/Dar_es_Salaam" })} · EAT</p><Button size="sm" variant="outline" className="mt-2" onClick={() => void openFile(row).catch(e => setError(e.message))}>{t("Download")}</Button></div>)}</>}

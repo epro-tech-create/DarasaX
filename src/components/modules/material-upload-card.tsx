@@ -14,6 +14,7 @@ import { MaterialShareButton } from "@/components/modules/material-share-button"
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { downloadMaterial, viewMaterial } from "@/lib/materials-store";
+import { isAssignmentDone } from "@/lib/assignment-status";
 import { formatRelativeTime } from "@/lib/utils";
 
 const kindMeta: Record<
@@ -51,6 +52,7 @@ export function MaterialUploadCard({ item }: { item: MaterialUpload }) {
         <div className="min-w-0">
           <div className="mb-1 flex flex-wrap items-center gap-2">
             <Badge tone={meta.tone}>{translateUI(meta.label)}</Badge>
+            {isAssignmentDone(item) ? <Badge tone="primary">{translateUI("Done")}</Badge> : null}
             <span className="text-xs text-muted-foreground">{translateUI(item.size)}</span>
           </div>
           <h3 className="font-heading text-base font-semibold">{item.title}</h3>

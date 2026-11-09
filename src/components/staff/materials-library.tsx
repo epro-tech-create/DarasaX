@@ -22,6 +22,7 @@ import {
 import { SubmissionManagerButton } from "@/components/assignments/submissions";
 import { MaterialShareButton } from "@/components/modules/material-share-button";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { StaffModal } from "@/components/staff/staff-modal";
 import { getModule, modules } from "@/data/mock";
 import { useClassRegistry } from "@/lib/class-registry";
@@ -30,6 +31,7 @@ import {
   useMaterialsStore,
   viewMaterial,
 } from "@/lib/materials-store";
+import { isAssignmentDone } from "@/lib/assignment-status";
 import { cn } from "@/lib/utils";
 import type { ClassStreamId, MaterialUpload, UploadKind } from "@/types";
 import { useStaffSession } from "@/lib/staff-auth";
@@ -69,6 +71,7 @@ function FileActions({
   onDownload,
   onEdit,
   onDelete,
+  onMarkDone,
   className,
   canManage,
 }: {
@@ -78,6 +81,7 @@ function FileActions({
   onDownload: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onMarkDone: (markDone: boolean) => void;
   className?: string;
   canManage: boolean;
 }) {
@@ -86,6 +90,13 @@ function FileActions({
   return (
     <div className={cn("flex flex-wrap items-center gap-0.5", className)}>
       {item.kind === "assignment" && canManage && !session?.isMbunge ? <SubmissionManagerButton assignment={item} /> : null}
+      {item.kind === "assignment" && item.status === "published" && canManage && !session?.isMbunge ? (
+        item.completedAt && !(item.dueAt && Date.parse(item.dueAt) <= Date.now())
+          ? <Button size="sm" variant="outline" disabled={busy} onClick={() => onMarkDone(false)}>{translateUI("Reopen assignment")}</Button>
+          : isAssignmentDone(item)
+            ? <Badge tone="primary">{translateUI("Done")}</Badge>
+            : <Button size="sm" variant="outline" disabled={busy} onClick={() => onMarkDone(true)}>{translateUI("Mark done")}</Button>
+      ) : null}
       <button
         type="button"
         disabled={busy}
@@ -140,17 +151,20 @@ export function MaterialsLibrary({
 }) {
   const translateUI = useTranslate();
   const { session } = useStaffSession();
+  const { streams: classStreams } = useClassRegistry();
   const visibleKinds = kinds.filter(kind => kind.id !== "announcement");
   const canManage = (item: MaterialUpload) => {
     if (!session) return false;
     if (session.isMbunge) return true;
     if (session.role === "admin") return true;
+    if (session.role === "class_rep" && !item.streamId) return true;
     const moduleAllowed = session.role !== "lecturer" || !item.moduleId || session.moduleIds.includes(item.moduleId);
-    const classAllowed = Boolean(item.streamId && (session.role === "class_rep" ? session.streamId === item.streamId : session.streamIds.includes(item.streamId)));
+    const classAllowed = item.streamId
+      ? (session.role === "class_rep" ? session.streamId === item.streamId : session.streamIds.includes(item.streamId))
+      : session.role === "lecturer" && classStreams.length > 0 && classStreams.every(stream => session.streamIds.includes(stream.id));
     return moduleAllowed && (item.uploadedById === session.id || classAllowed);
   };
-  const { streams: classStreams } = useClassRegistry();
-  const { items, ready, updateItem, deleteItem, bumpDownloads } =
+  const { items, ready, updateItem, setAssignmentDone, deleteItem, bumpDownloads } =
     useMaterialsStore();
   const [query, setQuery] = useState("");
   const [kindFilter, setKindFilter] = useState<"all" | UploadKind>("all");
@@ -158,6 +172,7 @@ export function MaterialsLibrary({
   const [editing, setEditing] = useState<MaterialUpload | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [form, setForm] = useState({
     title: "",
     kind: "notes" as UploadKind,
@@ -277,6 +292,20 @@ export function MaterialsLibrary({
     }
   }
 
+  async function onMarkDone(item: MaterialUpload, markDone: boolean) {
+    setBusyId(item.id);
+    setErrorMessage("");
+    setMessage("");
+    try {
+      await setAssignmentDone(item.id, markDone);
+      setMessage(markDone ? "Assignment marked done." : "Assignment reopened.");
+    } catch {
+      setErrorMessage("Could not update assignment status. Please try again.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
@@ -346,6 +375,7 @@ export function MaterialsLibrary({
           {translateUI(message)}
         </p>
       ) : null}
+      {errorMessage ? <p role="alert" className="rounded-xl border border-danger/30 bg-danger/10 px-3 py-2 text-[12px] font-medium text-danger">{translateUI(errorMessage)}</p> : null}
 
       <div className="flex items-baseline justify-between gap-3">
         <h2 className="font-heading text-[13px] font-semibold">{translateUI(title)}</h2>
@@ -399,6 +429,7 @@ export function MaterialsLibrary({
                   onDownload={() => onDownload(item)}
                   onEdit={() => openEdit(item)}
                   onDelete={() => onDelete(item)}
+                  onMarkDone={(markDone) => void onMarkDone(item, markDone)}
                 />
               </article>
             );
@@ -436,6 +467,7 @@ export function MaterialsLibrary({
                     onDownload={() => onDownload(item)}
                     onEdit={() => openEdit(item)}
                     onDelete={() => onDelete(item)}
+                    onMarkDone={(markDone) => void onMarkDone(item, markDone)}
                   />
                 </li>
               );
