@@ -29,12 +29,12 @@ export function UploadWorkspace({ title, description, defaultKind = "notes", upl
   const { streams, ready: classesReady, error: classesError } = useClassRegistry();
   const { session } = useStaffSession();
   const recipientStreams = session?.isMbunge ? streams : role === "lecturer" ? streams.filter(stream => session?.streamIds.includes(stream.id)) : role === "class_rep" ? streams.filter(stream => session?.streamId === stream.id) : streams;
-  const canTargetAll = session?.isMbunge || role === "admin" || role === "lecturer" && (classesReady && streams.length > 0 && streams.every(stream => session?.streamIds.includes(stream.id)));
   const { publish } = useMaterialsStore();
   const catalog = allowedModuleIds === undefined ? modules : modules.filter(module => allowedModuleIds.includes(module.id));
   const [kind, setKind] = useState<UploadKind>(defaultKind);
+  const canTargetAll = session?.isMbunge || role === "admin" || role === "class_rep" || role === "lecturer" && (defaultKind === "announcement" || classesReady && streams.length > 0 && streams.every(stream => session?.streamIds.includes(stream.id)));
   const [moduleId, setModuleId] = useState(catalog[0]?.id ?? "");
-  const [selectedStream, setStreamId] = useState<ClassStreamId | "all">("all");
+  const [selectedStream, setStreamId] = useState<ClassStreamId | "all">(() => role === "class_rep" ? session?.streamId ?? "all" : "all");
   const streamId = selectedStream === "all" && canTargetAll ? "all" : recipientStreams.some(stream => stream.id === selectedStream) ? selectedStream : recipientStreams[0]?.id;
   const [dueAt, setDueAt] = useState("");
   const [onlineSubmission, setOnlineSubmission] = useState(false);
@@ -59,7 +59,6 @@ export function UploadWorkspace({ title, description, defaultKind = "notes", upl
   async function handlePublish() {
     if (busy.current || !pending.length) return;
     if (!streamId || !classesReady || classesError) { setError("Choose an available teaching class."); return; }
-    if (kind === "assignment" && onlineSubmission && streamId === "all") { setError("Choose a specific class for online submissions."); return; }
     if (!moduleId || !catalog.some(module => module.id === moduleId)) { setError("Select a module you teach."); return; }
     if (pending.some(item => !item.title.trim())) { setError("Enter a title for every file."); return; }
     busy.current = true; setPublishing(true); onBusyChange?.(true); setError("");
@@ -136,3 +135,4 @@ export function UploadWorkspace({ title, description, defaultKind = "notes", upl
     {footerNote && <div className="text-xs text-muted-foreground">{t(footerNote)}</div>}
   </div>;
 }
+
