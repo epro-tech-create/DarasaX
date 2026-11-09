@@ -42,6 +42,18 @@ function isStudentProtected(pathname: string) {
   );
 }
 
+// The dashboard layout performs the full student cohort gate after reading
+// the workspace once. Keep the profile/admission checks in the proxy only for
+// auth and onboarding routes that do not render inside that layout.
+function isStudentWorkspacePath(pathname: string) {
+  const roots = [
+    "/dashboard", "/messages", "/mbunge", "/modules", "/assignments",
+    "/timetable", "/past-papers", "/announcements", "/planner", "/ask",
+    "/missed", "/profile", "/settings", "/helpdesk",
+  ];
+  return roots.some((root) => pathname === root || pathname.startsWith(`${root}/`));
+}
+
 async function authorizeRequest(request: NextRequest) {
   const { pathname } = request.nextUrl;
   // Public policy documents must be readable before signing in on every portal.
@@ -112,7 +124,9 @@ async function authorizeRequest(request: NextRequest) {
   let staff;
   let studentContext: Awaited<ReturnType<typeof getProfile>> | null = null;
   let studentAdmission: Awaited<ReturnType<typeof getStudentAdmission>> | null = null;
-  const checkStudent = user && portal === "student" && (isStudentProtected(pathname) || pathname === "/login" || pathname === "/signup");
+  const checkStudent = user && portal === "student" &&
+    (pathname === "/login" || pathname === "/signup" ||
+      (isStudentProtected(pathname) && !isStudentWorkspacePath(pathname)));
   try {
     if (user) {
       [staff, studentContext, studentAdmission] = await Promise.all([
@@ -201,7 +215,7 @@ async function authorizeRequest(request: NextRequest) {
   if (
     user &&
     !staff &&
-    (isStudentProtected(pathname) ||
+    ((isStudentProtected(pathname) && !isStudentWorkspacePath(pathname)) ||
       pathname === "/login" ||
       pathname === "/signup")
   ) {
