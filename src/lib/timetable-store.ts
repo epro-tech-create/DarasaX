@@ -131,14 +131,20 @@ export function useTimetableStore(range?: { from: string; to: string }) {
     return entry;
   }, [refresh]);
 
-  // Keep the dated history and use the same transaction that cancels queued
-  // reminders. Direct deletion is intentionally forbidden by the database.
+  // Keep an audit record, remove the occurrence from timetable results, and
+  // cancel queued reminders in one database transaction.
   const deleteEntry = useCallback(async (entry: TimetableEntry, change: { date: string; scope: "once" | "future"; reason: string; requestId: string }) => {
-    await updateEntry(entry.seriesId ?? entry.id, entry, {
-      ...change, newDate: change.date, status: "cancelled",
-      reason: change.reason.trim(),
+    const { error } = await createClient().rpc("delete_timetable_session", {
+      target_entry: (entry.seriesId ?? entry.id).split("@")[0],
+      target_date: change.date,
+      target_scope: change.scope,
+      reason_text: change.reason.trim(),
+      request_key: change.requestId,
     });
-  }, [updateEntry]);
+    if (error) throw error;
+    invalidateQueries("timetable");
+    window.dispatchEvent(new Event("darasax:timetable"));
+  }, []);
 
   const forStream = useCallback(
     (streamId: ClassStreamId) => entries.filter((e) => e.streamId === streamId && (!e.sessionDate || (e.sessionDate >= (range?.from ?? weekStart(tanzaniaDate())) && e.sessionDate <= (range?.to ?? addDateDays(weekStart(tanzaniaDate()), 6))))),

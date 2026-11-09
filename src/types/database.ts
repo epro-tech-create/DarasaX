@@ -494,6 +494,7 @@ export type Database = {
       cancel_timetable_today: { Args: { target_class: string; reason_text: string; request_key: string }; Returns: number };
       get_timetable_occurrences: { Args: { range_start: string; range_end: string }; Returns: import("@/lib/timetable-dates").TimetableOccurrence[] };
       change_timetable_session: { Args: { entry_id: string; occurrence_date: string; change_scope: string; new_date: string; new_start: string; new_end: string; new_room: string; new_lecturer: string; new_module: string; change_status: string; change_reason: string; request_id: string }; Returns: undefined };
+      delete_timetable_session: { Args: { target_entry: string; target_date: string; target_scope: string; reason_text: string; request_key: string }; Returns: undefined };
       get_push_public_key: { Args: Record<string, never>; Returns: string };
       get_push_device: { Args: { push_endpoint: string }; Returns: Json };
       register_push_subscription: { Args: { push_endpoint: string; push_p256dh: string; push_auth: string; push_origin: string }; Returns: Json };
