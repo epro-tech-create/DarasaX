@@ -6,13 +6,16 @@ import { roleFromHost, getAppRole, APP_HOME } from "@/lib/app-role";
 import { after, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { adminEmailVerified, ADMIN_EMAIL_PATH } from "@/lib/auth/admin-security";
+import { publicRequestOrigin } from "@/lib/request-origin";
 import {
   ensureProfile,
   getProfile,
 } from "@/lib/auth/profile";
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
+  const origin = publicRequestOrigin(request);
+  if (!origin) return new NextResponse("Invalid callback origin.", { status: 400 });
   const code = searchParams.get("code");
   const next = searchParams.get("next");
   const errorDescription = searchParams.get("error_description");
@@ -32,7 +35,7 @@ export async function GET(request: Request) {
       const user = data.user;
 
       if (user) {
-        const portal = roleFromHost(new URL(request.url).host) ?? getAppRole();
+        const portal = roleFromHost(new URL(origin).host) ?? getAppRole();
         if (portal === "lecturer") {
           const { error: registrationError } = await supabase.rpc("complete_lecturer_registration");
           if (registrationError) {
