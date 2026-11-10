@@ -4,13 +4,14 @@ import { createClient } from "@/lib/supabase/server";
 import { materialKey, readUrl, removeObject, uploadUrl } from "@/lib/r2";
 import { getStaffProfile } from "@/lib/auth/staff-profile";
 import { adminEmailVerified } from "@/lib/auth/admin-security";
+import { hasValidRequestOrigin } from "@/lib/request-origin";
 
 export const runtime = "nodejs";
 const json = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: { "Cache-Control": "private, no-store" } });
 
 export async function POST(request: Request) {
   // Mutating requests must originate from this app, not a third-party website.
-  if (request.headers.get("origin") !== new URL(request.url).origin) return json({ error: "Invalid request origin." }, 403);
+  if (!hasValidRequestOrigin(request)) return json({ error: "Invalid request origin." }, 403);
   const supabase = await createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) return json({ error: "Sign in to access files." }, 401);

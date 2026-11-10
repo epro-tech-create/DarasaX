@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { extractTimetable } from "@/lib/timetable-document";
+import { hasValidRequestOrigin } from "@/lib/request-origin";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
 const running = new Set<string>();
 const json = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: { "Cache-Control": "private, no-store" } });
 export async function POST(request: Request) {
-  if (request.headers.get("origin") !== new URL(request.url).origin) return json({ error: "Invalid request origin." }, 403);
+  if (!hasValidRequestOrigin(request)) return json({ error: "Invalid request origin." }, 403);
   const client = await createClient();
   const { data: { user } } = await client.auth.getUser();
   if (!user) return json({ error: "Sign in required." }, 401);

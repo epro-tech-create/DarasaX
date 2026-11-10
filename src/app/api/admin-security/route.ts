@@ -8,6 +8,7 @@ import { adminCookieNames, adminCookieOptions } from "@/lib/auth/admin-device-co
 import { roleFromHost } from "@/lib/app-role";
 import { maskEmail } from "@/lib/auth/email";
 import { AUTH_OTP_LENGTH } from "@/lib/auth/constants";
+import { hasValidRequestOrigin, isSecureRequest } from "@/lib/request-origin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,7 +28,7 @@ export async function GET(request: Request) {
   try {
     const current = await context(request);
     if (!current) return json({ error: "Administrator sign in required." }, 401);
-    const secure = new URL(request.url).protocol === "https:";
+    const secure = isSecureRequest(request);
     const names = adminCookieNames(secure);
     const store = await cookies();
     return json({ verified: await adminEmailVerified(current.client), pending: Boolean(store.get(names.challenge)?.value), email: maskEmail(current.email) });
@@ -35,7 +36,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (request.headers.get("origin") !== new URL(request.url).origin) return json({ error: "Invalid request origin." }, 403);
+  if (!hasValidRequestOrigin(request)) return json({ error: "Invalid request origin." }, 403);
   let body;
   try { body = await request.json(); } catch { return json({ error: "Invalid request." }, 400); }
   if (!body || !["start", "verify", "forget"].includes(body.action)) return json({ error: "Invalid request." }, 400);
@@ -43,7 +44,7 @@ export async function POST(request: Request) {
     const current = await context(request);
     if (!current) return json({ error: "Administrator sign in required." }, 401);
     const { client, user, email } = current;
-    const secure = new URL(request.url).protocol === "https:";
+    const secure = isSecureRequest(request);
     const names = adminCookieNames(secure);
     const store = await cookies();
     const browserToken = store.get(names.browser)?.value ?? "";
