@@ -35,6 +35,7 @@ import { MaterialsLibrary } from "@/components/staff/materials-library";
 import { useClassRegistry } from "@/lib/class-registry";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import type { Module } from "@/types";
 
 const tabs = ["Overview", "Notes", "Assignments", "Past Papers", "Resources"] as const;
 
@@ -51,7 +52,6 @@ export function ModuleDetail({ crClassId }: { crClassId?: string | null }) {
   const { classes, ready: classesReady, error: classesError } = useClassRegistry({ enabled: isCr });
   const { published: allPublished, ready: materialsReady } = useMaterialsStore();
   const { forModule, setCompleted, classCompletions, personalProgress, error: topicError, ready: topicsReady, refresh } = useTopicProgress();
-  const { items: allAssignments } = useAssignments();
 
   const published = useMemo(() => isCr
     ? allPublished.filter((item) => !item.streamId || item.streamId === crClassId)
@@ -113,11 +113,6 @@ export function ModuleDetail({ crClassId }: { crClassId?: string | null }) {
     () => (base ? materialsForModule(published, base.id) : []),
     [base, published],
   );
-  const moduleAssignments = useMemo(() => {
-    if (!base) return [];
-    const ids = new Set(getAssignmentsForModule(base.id).map((a) => a.id));
-    return allAssignments.filter((a) => ids.has(a.id) || a.moduleId === base.id);
-  }, [base, allAssignments]);
 
   if (!courseModule || !base) notFound();
 
@@ -135,7 +130,7 @@ export function ModuleDetail({ crClassId }: { crClassId?: string | null }) {
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
           ["Notes", liveNotes.length, "Notes"],
-          ["Assignments", isCr ? liveAll.filter((item) => item.kind === "assignment").length : moduleAssignments.length, "Assignments"],
+          ["Assignments", liveAll.filter((item) => item.kind === "assignment").length, "Assignments"],
           ["Past Papers", livePapers.length, "Past Papers"],
           ["Topics", courseModule.topicsTotal, "Overview"],
         ].map(([label, value, target]) => (
@@ -282,16 +277,8 @@ export function ModuleDetail({ crClassId }: { crClassId?: string | null }) {
             <MaterialsLibrary title={translateUI("Assignments")} filterItems={(items) => items.filter((item) =>
               item.moduleId === courseModule.id && item.kind === "assignment" && (!item.streamId || item.streamId === crClassId),
             )} />
-          ) : moduleAssignments.length === 0 ? (
-            <EmptyState
-              icon={ClipboardList}
-              title={translateUI("No assignments")}
-              description={translateUI("Assignments for this module will show up here.")}
-            />
           ) : (
-            moduleAssignments.map((a) => (
-              <AssignmentCard key={a.id} assignment={a} module={courseModule} />
-            ))
+            <StudentModuleAssignments courseModule={courseModule} />
           )}
         </div>
       ) : null}
@@ -338,6 +325,25 @@ export function ModuleDetail({ crClassId }: { crClassId?: string | null }) {
       ) : null}
     </div>
   );
+}
+
+function StudentModuleAssignments({ courseModule }: { courseModule: Module }) {
+  const translateUI = useTranslate();
+  const { items, ready } = useAssignments();
+  const assignmentIds = new Set(getAssignmentsForModule(courseModule.id).map((item) => item.id));
+  const assignments = items.filter((item) => item.moduleId === courseModule.id || assignmentIds.has(item.id));
+
+  if (!ready) return <LoadingList />;
+  if (assignments.length === 0) {
+    return <EmptyState
+      icon={ClipboardList}
+      title={translateUI("No assignments")}
+      description={translateUI("Assignments for this module will show up here.")}
+    />;
+  }
+  return assignments.map((assignment) => (
+    <AssignmentCard key={assignment.id} assignment={assignment} module={courseModule} />
+  ));
 }
 
 function LoadingList() {
