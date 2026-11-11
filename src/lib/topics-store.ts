@@ -103,9 +103,10 @@ export function useTopicsStore() {
     return () => window.removeEventListener("darasax:topics", onProgress);
   }, [refreshProgress]);
 
+  const completedInClass = new Set(classCompletions.map((item) => item.topic_id));
   const topics: Topic[] = rows
     .filter((r) => r.published)
-    .map((r) => toTopic(r, progress[r.id] ?? false))
+    .map((r) => toTopic(r, Boolean(progress[r.id]) || completedInClass.has(r.id)))
     .sort((a, b) =>
       a.moduleId === b.moduleId
         ? a.number - b.number
@@ -247,6 +248,7 @@ export function useTopicsStore() {
 
   return {
     classCompletions,
+    personalProgress: progress,
     rows,
     topics,
     staffTopics,

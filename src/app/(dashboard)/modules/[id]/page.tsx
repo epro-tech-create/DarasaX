@@ -41,7 +41,7 @@ export default function ModuleDetailPage() {
   const base = getModule(params.id);
   const [tab, setTab] = useState<(typeof tabs)[number]>("Overview");
   const { published, ready: materialsReady } = useMaterialsStore();
-  const { forModule, setCompleted, classCompletions, error: topicError, ready: topicsReady } = useTopicProgress();
+  const { forModule, setCompleted, classCompletions, personalProgress, error: topicError, ready: topicsReady } = useTopicProgress();
   const { items: allAssignments } = useAssignments();
 
   const topics = useMemo(
@@ -168,9 +168,9 @@ export default function ModuleDetailPage() {
                     size="sm"
                     variant={topic.completed ? "secondary" : "outline"}
                     type="button"
-                    onClick={() => setCompleted(topic.id, !topic.completed)}
+                    onClick={() => void setCompleted(topic.id, !personalProgress[topic.id])}
                   >
-                    {translateUI(topic.completed ? "Done" : "Mark done")}
+                    {translateUI(personalProgress[topic.id] ? "Undo personal completion" : "Mark personally complete")}
                   </Button>
                   <ChevronRight className="hidden h-4 w-4 text-muted-foreground sm:block" />
                 </div>

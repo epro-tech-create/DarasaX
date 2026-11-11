@@ -28,7 +28,7 @@ export default function TopicDetailPage() {
   const learningPrefix = useLearningPrefix();
   const params = useParams<{ id: string; topicId: string }>();
   const courseModule = getModule(params.id);
-  const { topics, setCompleted, classCompletions, ready, error, refresh } = useTopicProgress();
+  const { topics, setCompleted, classCompletions, personalProgress, ready, error, refresh } = useTopicProgress();
   const { published } = useMaterialsStore();
 
   const topic = useMemo(
@@ -127,10 +127,10 @@ export default function TopicDetailPage() {
             size="sm"
             type="button"
             variant={topic.completed ? "secondary" : "primary"}
-            onClick={() => void setCompleted(topic.id, !topic.completed)}
+            onClick={() => void setCompleted(topic.id, !personalProgress[topic.id])}
           >
             <CheckCircle2 className="h-4 w-4" />
-            {translateUI(topic.completed ? "Undo complete" : "Mark topic done")}
+            {translateUI(personalProgress[topic.id] ? "Undo personal completion" : "Mark personally complete")}
           </Button>
         </div>
       </section>
