@@ -19,11 +19,19 @@ export function ModulesBrowser({ streamId }: { streamId?: string | null }) {
   const [category, setCategory] = useState<CategoryFilter>("all");
   const [view, setView] = useState<"grid" | "list">("grid");
   const { published } = useMaterialsStore();
-  const { topics } = useTopicProgress();
+  const { topics, classCompletions } = useTopicProgress();
 
   const enriched = useMemo(
-    () => enrichModules(modules, published.filter(item => streamId === undefined || Boolean(streamId && (!item.streamId || item.streamId === streamId))), topics),
-    [published, topics, streamId],
+    () => {
+      if (streamId === undefined) return enrichModules(modules, published, topics);
+      const completedTopics = new Set(classCompletions.filter((item) => item.class_id === streamId).map((item) => item.topic_id));
+      return enrichModules(
+        modules,
+        published.filter((item) => !item.streamId || item.streamId === streamId),
+        topics.map((topic) => ({ ...topic, completed: completedTopics.has(topic.id) })),
+      );
+    },
+    [published, topics, classCompletions, streamId],
   );
 
   const filtered = useMemo(() => {

@@ -54,6 +54,7 @@ const adminNav: StaffNavItem[] = [
 const crNav: StaffNavItem[] = [
   { href: "/cr", label: "Overview", icon: Home },
   { href: "/cr/announcements", label: "Announcements", icon: Megaphone },
+  { href: "/cr/modules", label: "Modules", icon: GraduationCap },
   { href: "/cr/topics", label: "Topics", icon: ListOrdered },
   { href: "/cr/materials", label: "Library", icon: BookOpen },
   { href: "/cr/timetable", label: "Timetable", icon: CalendarDays },
