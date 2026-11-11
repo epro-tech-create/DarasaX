@@ -298,6 +298,18 @@ export type Database = {
         };
         Relationships: [];
       };
+      student_topic_progress: {
+        Row: { user_id: string; topic_id: string; completed: boolean };
+        Insert: { user_id?: string; topic_id: string; completed: boolean };
+        Update: { completed?: boolean };
+        Relationships: [];
+      };
+      class_topic_completion: {
+        Row: { class_id: string; topic_id: string };
+        Insert: { class_id: string; topic_id: string };
+        Update: { class_id?: string; topic_id?: string };
+        Relationships: [];
+      };
       module_topics: {
         Row: {
           id: string;
@@ -482,6 +494,10 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      set_class_topic_completion: {
+        Args: { target_topic: string; all_classes: boolean; mark_done: boolean };
+        Returns: undefined;
+      };
       is_mbunge: { Args: Record<string, never>; Returns: boolean };
       appoint_mbunge: { Args: { student_email: string }; Returns: undefined };
       revoke_mbunge: { Args: { target_student: string }; Returns: undefined };

@@ -7,29 +7,11 @@ import { cachedQuery, invalidateQueries } from "@/lib/supabase/query-cache";
 import type { Database, ModuleTopicRow } from "@/types/database";
 import type { StaffRole, Topic } from "@/types";
 
-// v1 was prefilled from demo data, so use a clean key for real student progress.
-const PROGRESS_KEY = "darasax_topic_progress_v2";
-
 function isConfigured() {
   return Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   );
-}
-
-function readProgress(): Record<string, boolean> {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = localStorage.getItem(PROGRESS_KEY);
-    if (!raw) return {};
-    return JSON.parse(raw) as Record<string, boolean>;
-  } catch {
-    return {};
-  }
-}
-
-function writeProgress(map: Record<string, boolean>) {
-  localStorage.setItem(PROGRESS_KEY, JSON.stringify(map));
 }
 
 function toTopic(row: ModuleTopicRow, completed: boolean): Topic {
@@ -64,7 +46,22 @@ export function useTopicsStore() {
   const [rows, setRows] = useState<ModuleTopicRow[]>([]);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState("");
-  const [progressTick, setProgressTick] = useState(0);
+  const [progress, setProgress] = useState<Record<string, boolean>>({});
+  const [classCompletions, setClassCompletions] = useState<Database["public"]["Tables"]["class_topic_completion"]["Row"][]>([]);
+
+  const refreshProgress = useCallback(async () => {
+    const client = createClient();
+    const [personal, classes] = await Promise.all([
+      client.from("student_topic_progress").select("topic_id,completed"),
+      client.from("class_topic_completion").select("class_id,topic_id"),
+    ]);
+    if (personal.error || classes.error) {
+      setError("Topic progress could not be loaded. Please try again.");
+      return;
+    }
+    setProgress(Object.fromEntries(personal.data.map((row) => [row.topic_id, row.completed])));
+    setClassCompletions(classes.data);
+  }, []);
 
   const refresh = useCallback(async () => {
     setReady(false);
@@ -85,12 +82,13 @@ export function useTopicsStore() {
         return data ?? [];
       });
       setRows(rows);
+      await refreshProgress();
     } catch {
       setError("Topics could not be loaded. Please try again.");
     } finally {
       setReady(true);
     }
-  }, []);
+  }, [refreshProgress]);
 
   useEffect(() => {
     const timer = setTimeout(() => void refresh(), 0);
@@ -100,21 +98,10 @@ export function useTopicsStore() {
   }, [refresh]);
 
   useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === PROGRESS_KEY) setProgressTick((n) => n + 1);
-    };
-    const onLocal = () => setProgressTick((n) => n + 1);
-    window.addEventListener("storage", onStorage);
-    window.addEventListener("darasax:topics", onLocal);
-    return () => {
-      window.removeEventListener("storage", onStorage);
-      window.removeEventListener("darasax:topics", onLocal);
-    };
-  }, []);
-
-  const progress = readProgress();
-  // Re-read when progressTick changes (localStorage mutations).
-  void progressTick;
+    const onProgress = () => void refreshProgress();
+    window.addEventListener("darasax:topics", onProgress);
+    return () => window.removeEventListener("darasax:topics", onProgress);
+  }, [refreshProgress]);
 
   const topics: Topic[] = rows
     .filter((r) => r.published)
@@ -142,22 +129,24 @@ export function useTopicsStore() {
     [topics, staffTopics],
   );
 
-  const setCompleted = useCallback((topicId: string, completed: boolean) => {
-    const map = readProgress();
-    map[topicId] = completed;
-    writeProgress(map);
-    setProgressTick((n) => n + 1);
-    window.dispatchEvent(new Event("darasax:topics"));
-    const topic = rows.find((row) => row.id === topicId);
-    void recordAudit({
-      role: "student",
-      action: "other",
-      summary: completed
-        ? `Marked topic done: ${topic?.title ?? topicId}`
-        : `Reopened topic: ${topic?.title ?? topicId}`,
-      detail: topic?.module_id,
-    });
-  }, [rows]);
+  const setCompleted = useCallback(async (topicId: string, completed: boolean) => {
+    setError("");
+    try {
+      const client = createClient();
+      const { data: { user } } = await client.auth.getUser();
+      if (!user) throw new Error("Sign in required");
+      const { error } = await client.from("student_topic_progress").upsert({
+        user_id: user.id,
+        topic_id: topicId,
+        completed,
+      });
+      if (error) throw error;
+      setProgress((previous) => ({ ...previous, [topicId]: completed }));
+      window.dispatchEvent(new Event("darasax:topics"));
+    } catch {
+      setError("Topic progress could not be saved. Please try again.");
+    }
+  }, []);
 
   const createTopic = useCallback(
     async (
@@ -257,6 +246,7 @@ export function useTopicsStore() {
   }, [rows]);
 
   return {
+    classCompletions,
     rows,
     topics,
     staffTopics,

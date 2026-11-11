@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { StaffModal } from "@/components/staff/staff-modal";
 import { StaffSection } from "@/components/staff/staff-ui";
 import { modules } from "@/data/mock";
+import { createClient } from "@/lib/supabase/client";
+import { useStaffSession } from "@/lib/staff-auth";
 import { useTopicsStore } from "@/lib/topics-store";
 import type { ModuleTopicRow } from "@/types/database";
 import type { StaffRole } from "@/types";
@@ -46,7 +48,31 @@ export function TopicsWorkspace({
   allowedModuleIds?: string[];
 }) {
   const translateUI = useTranslate();
-  const { rows, ready, createTopic, updateTopic, deleteTopic } = useTopicsStore();
+  const { rows, ready, classCompletions, refresh, createTopic, updateTopic, deleteTopic } = useTopicsStore();
+  const { session } = useStaffSession();
+  const canMarkClass = role === "class_rep" && session?.role === "class_rep" && !session.isMbunge;
+  const [completionScope, setCompletionScope] = useState("own");
+  const [savingCompletion, setSavingCompletion] = useState(false);
+
+  async function markClassTopic(topicId: string, markDone: boolean) {
+    setSavingCompletion(true);
+    setError("");
+    setMessage("");
+    try {
+      const { error } = await createClient().rpc("set_class_topic_completion", {
+        target_topic: topicId,
+        all_classes: completionScope === "all",
+        mark_done: markDone,
+      });
+      if (error) throw error;
+      setMessage(markDone ? "Class topic marked complete." : "Class topic reopened.");
+      await refresh();
+    } catch {
+      setError("Class topic completion could not be saved.");
+    } finally {
+      setSavingCompletion(false);
+    }
+  }
   const catalog = useMemo(() => {
     if (!allowedModuleIds || allowedModuleIds.length === 0) return modules;
     const allowed = new Set(allowedModuleIds);
@@ -252,6 +278,16 @@ export function TopicsWorkspace({
         title={translateUI("Course outline")}
         description={translateUI("Same list students see under each module’s Overview tab (when published).")}
       >
+        {canMarkClass && (
+          <label className="mb-3 flex items-center gap-2 text-sm">
+            {translateUI("Mark completion for")}
+            <select className="rounded-lg border bg-background p-2" value={completionScope}
+              onChange={(event) => setCompletionScope(event.target.value)} disabled={savingCompletion}>
+              {session.streamId && <option value="own">{translateUI("My class")}</option>}
+              <option value="all">{translateUI("All classes")}</option>
+            </select>
+          </label>
+        )}
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-10 text-center">
             <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
@@ -295,6 +331,22 @@ export function TopicsWorkspace({
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
+                    {canMarkClass && row.published && (
+                      <>
+                        <Button size="sm" variant="outline" type="button"
+                          disabled={savingCompletion || (completionScope === "own" && !session.streamId)}
+                          onClick={() => void markClassTopic(row.id, true)}>
+                          {translateUI("Mark class complete")}
+                        </Button>
+                        {classCompletions.some((item) => item.topic_id === row.id &&
+                          (completionScope === "all" || item.class_id === session.streamId)) && (
+                          <Button size="sm" variant="outline" type="button" disabled={savingCompletion}
+                            onClick={() => void markClassTopic(row.id, false)}>
+                            {translateUI("Reopen for class")}
+                          </Button>
+                        )}
+                      </>
+                    )}
                     <Button
                       size="sm"
                       variant="outline"

@@ -28,7 +28,7 @@ export default function TopicDetailPage() {
   const learningPrefix = useLearningPrefix();
   const params = useParams<{ id: string; topicId: string }>();
   const courseModule = getModule(params.id);
-  const { topics, setCompleted, ready, error, refresh } = useTopicProgress();
+  const { topics, setCompleted, classCompletions, ready, error, refresh } = useTopicProgress();
   const { published } = useMaterialsStore();
 
   const topic = useMemo(
@@ -94,6 +94,9 @@ export default function TopicDetailPage() {
             </Badge>
           }
         />
+        {classCompletions.some((item) => item.topic_id === topic.id) && (
+          <p className="mt-2 text-sm text-muted-foreground">{translateUI("Completed in class")}</p>
+        )}
       </div>
 
       <section className="surface rounded-[20px] p-5 sm:p-6">
@@ -124,7 +127,7 @@ export default function TopicDetailPage() {
             size="sm"
             type="button"
             variant={topic.completed ? "secondary" : "primary"}
-            onClick={() => setCompleted(topic.id, !topic.completed)}
+            onClick={() => void setCompleted(topic.id, !topic.completed)}
           >
             <CheckCircle2 className="h-4 w-4" />
             {translateUI(topic.completed ? "Undo complete" : "Mark topic done")}

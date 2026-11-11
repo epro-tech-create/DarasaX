@@ -41,7 +41,7 @@ export default function ModuleDetailPage() {
   const base = getModule(params.id);
   const [tab, setTab] = useState<(typeof tabs)[number]>("Overview");
   const { published, ready: materialsReady } = useMaterialsStore();
-  const { forModule, setCompleted, ready: topicsReady } = useTopicProgress();
+  const { forModule, setCompleted, classCompletions, error: topicError, ready: topicsReady } = useTopicProgress();
   const { items: allAssignments } = useAssignments();
 
   const topics = useMemo(
@@ -127,6 +127,7 @@ export default function ModuleDetailPage() {
                 {translateUI("Mark topics done to update module progress")}</p>
             ) : null}
           </div>
+          {topicError && <p role="alert" className="text-sm text-danger">{translateUI(topicError)}</p>}
           {!topicsReady ? (
             <LoadingList />
           ) : topics.length === 0 ? (
@@ -154,6 +155,9 @@ export default function ModuleDetailPage() {
                     <p className="font-medium group-hover:text-primary">
                       {translateUI("Topic ")}{translateUI(String(topic.number).padStart(2, "0"))} —{" "}
                       {topic.title}
+                      {classCompletions.some((item) => item.topic_id === topic.id) && (
+                        <Badge className="ml-2">{translateUI("Completed in class")}</Badge>
+                      )}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       {translateUI(topic.durationMinutes)} {translateUI(" min")}</p>
