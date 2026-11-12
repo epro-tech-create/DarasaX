@@ -24,13 +24,13 @@ function useNotificationInbox(initialUserId: string | null) {
       try {
         if (!userId) { if (!disposed && request === generation) setInbox({ ...emptyInbox, ready: true }); return; }
         const recipient = userId;
-        const [list, unread] = await Promise.all([
-          supabase.from("notifications").select("*").eq("recipient_id", recipient).is("read_at", null).order("created_at", { ascending: false }).order("id", { ascending: false }).limit(50),
-          supabase.from("notifications").select("id", { count: "exact", head: true }).eq("recipient_id", recipient).is("read_at", null),
-        ]);
-        if (list.error || unread.error) throw list.error || unread.error;
+        const list = await supabase.from("notifications")
+          .select("id,title,body,type,created_at,read_at,href", { count: "exact" })
+          .eq("recipient_id", recipient).is("read_at", null)
+          .order("created_at", { ascending: false }).order("id", { ascending: false }).limit(50);
+        if (list.error) throw list.error;
         if (!disposed && request === generation) setInbox({
-          userId: recipient, ready: true, error: "", unreadCount: unread.count ?? 0,
+          userId: recipient, ready: true, error: "", unreadCount: list.count ?? 0,
           items: (list.data ?? []).map((row) => ({ id: row.id, title: row.title, body: row.body,
             type: row.type as NotificationType, createdAt: row.created_at, read: row.read_at !== null, href: row.href })),
         });
@@ -70,8 +70,7 @@ function useNotificationInbox(initialUserId: string | null) {
     setInbox(previous => previous.userId !== inbox.userId ? previous : ({ ...previous,
       items: previous.items.filter(item => item.id !== id),
       unreadCount: Math.max(0, previous.unreadCount - (previous.items.some(item => item.id === id) ? 1 : 0)), error: "" }));
-    refresh();
-  }, [inbox.userId, refresh]);
+  }, [inbox.userId]);
   const markAllRead = useCallback(async () => {
     if (!inbox.userId) return;
     const cutoff = new Date().toISOString();
@@ -83,8 +82,7 @@ function useNotificationInbox(initialUserId: string | null) {
       const remaining = previous.items.filter(item => item.createdAt > cutoff);
       return { ...previous, items: remaining, unreadCount: remaining.length, error: "" };
     });
-    refresh();
-  }, [inbox.userId, refresh]);
+  }, [inbox.userId]);
   return { ...inbox, markRead, markAllRead, refresh };
 }
 

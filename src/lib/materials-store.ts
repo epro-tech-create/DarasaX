@@ -228,7 +228,7 @@ export function useMaterialsStore({ enabled = true }: { enabled?: boolean } = {}
         const supabase = createClient();
         const { data, error } = await supabase
           .from("materials")
-          .select("*")
+          .select("id,title,kind,module_id,stream_id,status,uploaded_by,uploaded_by_id,role,size_label,size_bytes,created_at,due_at,completed_at,online_submission,downloads,file_url,file_path,file_name,mime_type,body")
           .order("created_at", { ascending: false });
         if (error) throw error;
         return data ?? [];
@@ -255,7 +255,7 @@ export function useMaterialsStore({ enabled = true }: { enabled?: boolean } = {}
         invalidateQueries("materials");
         void refresh();
       }
-    }, 30000);
+    }, 60000);
     return () => {
       clearTimeout(timer);
       clearInterval(poll);
