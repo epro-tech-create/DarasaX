@@ -3,7 +3,7 @@ import type { StudentDirectoryRow } from "./student-directory";
 
 /** Server-only report generation; authorization remains in the export handler. */
 export async function studentDetailsPdf(rows: StudentDirectoryRow[], scope: string): Promise<Buffer> {
-  const doc = new PDFDocument({ size: "A4", margin: 36, bufferPages: true,
+  const doc = new PDFDocument({ size: "A4", layout: "landscape", margin: 36, bufferPages: true,
     info: { Title: "DarasaX Student Register", Author: "DarasaX", Subject: scope } });
   const chunks: Buffer[] = [];
   const complete = new Promise<Buffer>((resolve, reject) => {
@@ -12,8 +12,8 @@ export async function studentDetailsPdf(rows: StudentDirectoryRow[], scope: stri
     doc.on("error", reject);
   });
   const left = 36, width = doc.page.width - 72;
-  const widths = [34, width - 34 - 125 - 104, 125, 104];
-  const labels = ["S/N", "Full name", "Reg. NO", "Class"];
+  const widths = [34, width - 34 - 125 - 104 - 260, 125, 104, 260];
+  const labels = ["S/N", "Full name", "Reg. NO", "Class", "Email"];
   let y = 0;
   function cells(values: string[], height: number, bold = false) {
     let x = left;
@@ -34,7 +34,7 @@ export async function studentDetailsPdf(rows: StudentDirectoryRow[], scope: stri
   header();
   const ordered = [...rows].sort((a, b) => a.name.localeCompare(b.name) || a.email.localeCompare(b.email));
   for (const [index, row] of ordered.entries()) {
-    const values = [String(index + 1), row.name, row.registration_number || "", row.stream_id];
+    const values = [String(index + 1), row.name, row.registration_number || "", row.stream_id, row.email || ""];
     doc.font("Helvetica").fontSize(10);
     const height = Math.max(23, ...values.map((value, i) => doc.heightOfString(value, { width: widths[i] - 10 }) + 10));
     if (y + height > doc.page.height - 56) { doc.addPage(); header(); }
