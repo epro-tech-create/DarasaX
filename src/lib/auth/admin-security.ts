@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 
-/** Called only after auth.getUser() has authenticated the request. */
+/** Called after the request identity has been verified. */
 export async function adminEmailVerified(client: SupabaseClient<Database>): Promise<boolean> {
   const { data, error } = await client.rpc("admin_email_verified");
   if (error) throw error;

@@ -10,12 +10,13 @@ import {
 import { OverviewHeader } from "@/components/dashboard/overview-ui";
 import { Button } from "@/components/ui/button";
 import { StaffStatCard } from "@/components/staff/staff-ui";
-import { StaffFadeItem, StaffStagger } from "@/components/staff/staff-motion";
-import { useAdminPeopleStore } from "@/lib/admin-people-store";
-import { useMaterialsStore } from "@/lib/materials-store";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { useStaffSession } from "@/lib/staff-auth";
 
 import { EngagementAnalytics } from "@/components/staff/engagement-analytics";
+
+type OverviewCounts = Record<"students" | "activeCrs" | "published" | "audit" | "downloads" | "uploads", number>;
 
 function greeting() {
   const h = new Date().getHours();
@@ -26,10 +27,24 @@ function greeting() {
 
 export default function AdminOverviewPage() {
   const translateUI = useTranslate();
-  const { students, classReps, audit } = useAdminPeopleStore();
-  const { published } = useMaterialsStore();
+  const [counts, setCounts] = useState<OverviewCounts | null>(null);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    const controller = new AbortController();
+    async function loadCounts() {
+      const { data, error } = await createClient().rpc("admin_overview_counts").abortSignal(controller.signal);
+      if (controller.signal.aborted) return;
+      setFailed(Boolean(error || !data));
+      if (!error && data) setCounts(data as OverviewCounts);
+    }
+    void loadCounts();
+    const onFocus = () => void loadCounts();
+    window.addEventListener("focus", onFocus);
+    return () => { controller.abort(); window.removeEventListener("focus", onFocus); };
+  }, []);
+  const value = (key: keyof OverviewCounts) => counts ? String(counts[key]) : "—";
   const { session } = useStaffSession();
-  const activeCrs = classReps.filter((c) => c.status === "active").length;
+
 
   return (
     <div className="space-y-6 sm:space-y-7">
@@ -39,13 +54,13 @@ export default function AdminOverviewPage() {
         description={translateUI("Manage your community, keep classes running, and see what needs attention.")}
         actions={
           <div className="flex flex-wrap gap-2">
-            <Button href="/admin/students" size="sm" variant="outline">
+            <Button prefetch={false} href="/admin/students" size="sm" variant="outline">
               Add student
             </Button>
-            <Button href="/admin/class-reps" size="sm" variant="outline">
+            <Button prefetch={false} href="/admin/class-reps" size="sm" variant="outline">
               Add CR
             </Button>
-            <Button href="/admin/materials" size="sm">
+            <Button prefetch={false} href="/admin/materials" size="sm">
               <FileUp className="h-3.5 w-3.5" />
               Upload
             </Button>
@@ -53,44 +68,37 @@ export default function AdminOverviewPage() {
         }
       />
 
-      <StaffStagger className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-        <StaffFadeItem>
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
           <StaffStatCard
             label={translateUI("Students")}
-            href="/admin/students"
-            value={String(students.length)}
+            prefetch={false} href="/admin/students"
+            value={value("students")}
             icon={Users}
           />
-        </StaffFadeItem>
-        <StaffFadeItem>
           <StaffStatCard
             label={translateUI("Active CRs")}
-            href="/admin/class-reps"
-            value={String(activeCrs)}
+            prefetch={false} href="/admin/class-reps"
+            value={value("activeCrs")}
             icon={GraduationCap}
             tone="success"
           />
-        </StaffFadeItem>
-        <StaffFadeItem>
           <StaffStatCard
             label={translateUI("Published materials")}
-            href="/admin/materials"
-            value={String(published.length)}
+            prefetch={false} href="/admin/materials"
+            value={value("published")}
             icon={FileUp}
             tone="primary"
           />
-        </StaffFadeItem>
-        <StaffFadeItem>
           <StaffStatCard
             label={translateUI("Audit events")}
-            href="/admin/audit"
-            value={String(audit.length)}
+            prefetch={false} href="/admin/audit"
+            value={value("audit")}
             icon={ScrollText}
           />
-        </StaffFadeItem>
-      </StaffStagger>
+      </div>
 
-      <EngagementAnalytics />
+      {failed && <p role="status" className="text-sm text-muted-foreground">{translateUI("Could not load dashboard totals.")}</p>}
+      <EngagementAnalytics totals={counts} />
     </div>
   );
 }

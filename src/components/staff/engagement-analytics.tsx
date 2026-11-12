@@ -30,9 +30,9 @@ const dateLabel = (date: string, locale: string) =>
     month: "short",
   });
 
-export function EngagementAnalytics() {
+export function EngagementAnalytics({ totals }: { totals?: { downloads: number; uploads: number } | null } = {}) {
   const translateUI = useTranslate();
-  const { items: materials, ready: materialsReady } = useMaterialsStore();
+  const { items: materials, ready: materialsReady } = useMaterialsStore({ enabled: totals === undefined });
   const [period, setPeriod] = useState<7 | 30>(7);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [error, setError] = useState(false);
@@ -106,7 +106,7 @@ export function EngagementAnalytics() {
         <StaffStatCard
           label={translateUI("Downloads · all time")}
           value={
-            materialsReady
+            totals !== undefined ? totals ? String(totals.downloads) : "—" : materialsReady
               ? String(materials.reduce((sum, m) => sum + m.downloads, 0))
               : "—"
           }
@@ -114,7 +114,7 @@ export function EngagementAnalytics() {
         />
         <StaffStatCard
           label={translateUI("Uploads · all time")}
-          value={materialsReady ? String(materials.length) : "—"}
+          value={totals !== undefined ? totals ? String(totals.uploads) : "—" : materialsReady ? String(materials.length) : "—"}
           icon={FileUp}
         />
       </div>

@@ -198,6 +198,7 @@ export function StaffShell({
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={role === "admin" ? false : undefined}
                 title={translateUI(item.label)}
                 className={cn(
                   "focus-ring flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium transition",
@@ -261,6 +262,7 @@ export function StaffShell({
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={role === "admin" ? false : undefined}
                   className={cn(
                     "flex min-w-[64px] flex-1 flex-col items-center gap-0.5 rounded-xl px-2 py-1.5 text-[11px] font-medium transition",
                     active

@@ -122,6 +122,8 @@ async function authorizeRequest(request: NextRequest) {
 
   // A query failure must not turn staff into a student or grant access.
   let staff;
+  let adminVerified = false;
+  const checkAdmin = portal === "admin" && (adminPath || pathname === "/login" || pathname === "/");
   let studentContext: Awaited<ReturnType<typeof getProfile>> | null = null;
   let studentAdmission: Awaited<ReturnType<typeof getStudentAdmission>> | null = null;
   const checkStudent = user && portal === "student" &&
@@ -129,10 +131,11 @@ async function authorizeRequest(request: NextRequest) {
       (isStudentProtected(pathname) && !isStudentWorkspacePath(pathname)));
   try {
     if (user) {
-      [staff, studentContext, studentAdmission] = await Promise.all([
+      [staff, studentContext, studentAdmission, adminVerified] = await Promise.all([
         getStaffProfile(supabase, user.id),
         checkStudent ? getProfile(supabase, user.id) : null,
         checkStudent ? getStudentAdmission(supabase, user.id) : null,
+        checkAdmin ? adminEmailVerified(supabase) : false,
       ]);
     } else staff = null;
   } catch {
@@ -153,10 +156,7 @@ async function authorizeRequest(request: NextRequest) {
     supabaseResponse.headers.set("Cache-Control", "private, no-store");
     return supabaseResponse;
   }
-  if (portal === "admin" && active && staff?.role === "admin" && (adminPath || pathname === "/login" || pathname === "/")) {
-    try { if (!await adminEmailVerified(supabase)) return redirect(ADMIN_EMAIL_PATH); }
-    catch { return new NextResponse("Account security could not be verified. Please try again.", { status: 503 }); }
-  }
+  if (checkAdmin && active && staff?.role === "admin" && !adminVerified) return redirect(ADMIN_EMAIL_PATH);
   // Verified users finish lecturer registration before entering the protected workspace.
   if (portal === "lecturer" && !staff && ["/signup", "/verify-email", "/login"].includes(pathname)) {
     supabaseResponse.headers.set("Cache-Control", "private, no-store");

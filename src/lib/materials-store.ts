@@ -214,7 +214,7 @@ export type UpdateMaterialInput = {
   file?: File | null;
 };
 
-export function useMaterialsStore() {
+export function useMaterialsStore({ enabled = true }: { enabled?: boolean } = {}) {
   const [items, setItems] = useState<MaterialUpload[]>([]);
   const [ready, setReady] = useState(false);
 
@@ -242,6 +242,7 @@ export function useMaterialsStore() {
   }, []);
 
   useEffect(() => {
+    if (!enabled) return;
     const timer = setTimeout(() => void refresh(), 0);
     const onFocus = (event: Event) => {
       invalidateQueriesForEvent("materials", event);
@@ -261,7 +262,7 @@ export function useMaterialsStore() {
       window.removeEventListener("focus", onFocus);
       window.removeEventListener("darasax:materials", onFocus);
     };
-  }, [refresh]);
+  }, [enabled, refresh]);
 
   const publish = useCallback(async (input: PublishMaterialInput, options?: { deferRefresh?: boolean }) => {
     const supabase = createClient();

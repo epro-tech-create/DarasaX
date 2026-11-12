@@ -494,6 +494,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      admin_overview_counts: { Args: Record<string, never>; Returns: Json };
       update_my_staff_name: { Args: { display_name: string }; Returns: undefined };
       set_class_topic_completion: {
         Args: { target_topic: string; all_classes: boolean; mark_done: boolean };

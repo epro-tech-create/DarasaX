@@ -12,6 +12,7 @@ export function StaffStatCard({
   icon: Icon,
   tone = "primary",
   href,
+  prefetch,
 }: {
   label: string;
   value: string;
@@ -19,6 +20,7 @@ export function StaffStatCard({
   icon: LucideIcon;
   tone?: "primary" | "success" | "warning" | "danger";
   href?: string;
+  prefetch?: boolean;
 }) {
   const translateUI = useTranslate();
   const tones = {
@@ -53,7 +55,7 @@ export function StaffStatCard({
       </div>
     </div>
   );
-  return href ? <Link href={href} className="focus-ring block rounded-2xl">{translateUI(content)}</Link> : content;
+  return href ? <Link href={href} prefetch={prefetch} className="focus-ring block rounded-2xl">{translateUI(content)}</Link> : content;
 }
 
 export function StaffSection({
