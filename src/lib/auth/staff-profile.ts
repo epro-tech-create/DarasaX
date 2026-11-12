@@ -26,10 +26,10 @@ async function syncProfileContact(
 ): Promise<StaffProfile> {
   const email = user.email?.trim() || existing.email;
   const name =
+    existing.full_name?.trim() ||
     fullName?.trim() ||
     (user.user_metadata?.full_name as string | undefined)?.trim() ||
-    (user.user_metadata?.name as string | undefined)?.trim() ||
-    existing.full_name;
+    (user.user_metadata?.name as string | undefined)?.trim();
 
   const needsEmail = Boolean(email && email !== existing.email);
   const needsName = Boolean(name && name !== existing.full_name);

@@ -494,6 +494,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      update_my_staff_name: { Args: { display_name: string }; Returns: undefined };
       set_class_topic_completion: {
         Args: { target_topic: string; all_classes: boolean; mark_done: boolean };
         Returns: undefined;

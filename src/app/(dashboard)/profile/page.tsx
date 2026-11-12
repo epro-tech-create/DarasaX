@@ -4,6 +4,7 @@ import { useTranslate } from "@/components/providers/language-provider";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { ChangePasswordForm } from "@/components/auth/change-password-form";
 import { RegistrationNumber } from "@/components/profile/registration-number";
+import { AccountEmailForm } from "@/components/profile/account-email-form";
 import { LanguageSettings } from "@/components/profile/language-settings";
 
 import { FormEvent, useEffect, useState } from "react";
@@ -298,6 +299,7 @@ export default function ProfilePage() {
         </fieldset>
       </form>
       <RegistrationNumber userId={profile.id} className={profile.class_name} />
+      <AccountEmailForm key={profile.email} email={profile.email ?? ""} />
       <LanguageSettings />
       <ChangePasswordForm />
       <SignOutButton />
