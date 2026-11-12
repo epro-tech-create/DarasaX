@@ -13,7 +13,10 @@ export function StaffSessionProvider({ initialProfile, children }: { initialProf
   const refresh = useCallback(async () => {
     const request = generation.current;
     const next = await fetchStaffSession();
-    if (request === generation.current) setSession(next);
+    // Keep the server-verified session through transient Auth/PostgREST errors.
+    // A genuine sign-out is handled by SIGNED_OUT below, and server layouts
+    // still re-check staff access before rendering every protected page.
+    if (request === generation.current && next) setSession(next);
   }, []);
   useEffect(() => {
     const update = () => void refresh();
