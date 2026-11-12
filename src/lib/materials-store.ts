@@ -32,7 +32,14 @@ export function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function toUpload(row: MaterialRow): MaterialUpload {
+type MaterialListRow = Pick<MaterialRow,
+  | "id" | "title" | "kind" | "module_id" | "stream_id" | "status"
+  | "uploaded_by" | "uploaded_by_id" | "role" | "size_label" | "size_bytes"
+  | "created_at" | "due_at" | "completed_at" | "online_submission" | "downloads"
+  | "file_url" | "file_path" | "file_name" | "mime_type" | "body"
+>;
+
+function toUpload(row: MaterialListRow): MaterialUpload {
   return {
     id: row.id,
     title: row.title,
