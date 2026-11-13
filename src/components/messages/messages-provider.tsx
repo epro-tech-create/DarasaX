@@ -15,7 +15,7 @@ export function MessagesProvider({ userId, children }: { userId: string; childre
   useEffect(() => {
     let disposed = false;
     const update = () => { if (!disposed && document.visibilityState === "visible") void refresh(); };
-    const timer = setTimeout(update, 0); const poll = setInterval(update, 30000);
+    const timer = setTimeout(update, 0); const poll = setInterval(update, 60000);
     window.addEventListener("focus", update); window.addEventListener("darasax:chat", update);
     return () => { disposed = true; clearTimeout(timer); clearInterval(poll); window.removeEventListener("focus", update); window.removeEventListener("darasax:chat", update); };
   }, [refresh]);

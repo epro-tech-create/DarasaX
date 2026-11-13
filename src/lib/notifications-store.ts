@@ -40,7 +40,7 @@ function useNotificationInbox(initialUserId: string | null) {
     };
     const schedule = () => void refresh();
     const initial = setTimeout(schedule, 0);
-    const poll = setInterval(() => { if (document.visibilityState === "visible") schedule(); }, 30000);
+    const poll = setInterval(() => { if (document.visibilityState === "visible") schedule(); }, 60000);
     let authTimer: ReturnType<typeof setTimeout>;
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       const nextUserId = session?.user.id ?? null;

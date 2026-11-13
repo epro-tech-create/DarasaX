@@ -124,6 +124,11 @@ async function authorizeRequest(request: NextRequest) {
   let staff;
   let adminVerified = false;
   const checkAdmin = portal === "admin" && (adminPath || pathname === "/login" || pathname === "/");
+  // Student workspace pages perform their own admission/profile gate in the
+  // shared workspace loader. Querying staff_profiles here on every student
+  // navigation only duplicated traffic; staff portal paths and entry pages
+  // still validate membership before redirecting or granting access.
+  const checkStaff = portal !== "student" || crPath || pathname === "/login" || pathname === "/signup" || pathname === "/";
   let studentContext: Awaited<ReturnType<typeof getProfile>> | null = null;
   let studentAdmission: Awaited<ReturnType<typeof getStudentAdmission>> | null = null;
   const checkStudent = user && portal === "student" &&
@@ -132,7 +137,7 @@ async function authorizeRequest(request: NextRequest) {
   try {
     if (user) {
       [staff, studentContext, studentAdmission, adminVerified] = await Promise.all([
-        getStaffProfile(supabase, user.id),
+        checkStaff ? getStaffProfile(supabase, user.id) : Promise.resolve(null),
         checkStudent ? getProfile(supabase, user.id) : null,
         checkStudent ? getStudentAdmission(supabase, user.id) : null,
         checkAdmin ? adminEmailVerified(supabase) : false,

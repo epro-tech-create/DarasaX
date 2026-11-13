@@ -25,6 +25,7 @@ export function ClassChat({ participant }: { participant: { id: string; classNam
   const [deleting, setDeleting] = useState<string | null>(null);
   const [limit, setLimit] = useState(60);
   const request = useRef(0);
+  const readMarkers = useRef<Record<string, string>>({});
   const busy = useRef(false);
   const end = useRef<HTMLDivElement>(null);
   const items = state.room === room ? state.items : [];
@@ -40,15 +41,18 @@ export function ClassChat({ participant }: { participant: { id: string; classNam
     const messages = (data || []).reverse();
     setState({ room, items: messages, ready: true, error: "" });
     const latest = messages.at(-1);
-    if (latest && document.visibilityState === "visible") {
+    if (latest && document.visibilityState === "visible" && readMarkers.current[room] !== latest.id) {
       const { error: readError } = await client.from("class_message_reads").upsert({ room_id: room, user_id: userId, read_at: latest.created_at }, { onConflict: "user_id,room_id" });
       if (generation !== request.current) return;
-      if (!readError) window.dispatchEvent(new Event("darasax:chat"));
+      if (!readError) {
+        readMarkers.current[room] = latest.id;
+        window.dispatchEvent(new Event("darasax:chat"));
+      }
     }
   }, [room, userId, limit]);
   useEffect(() => {
     const load = () => { if (document.visibilityState === "visible") void refresh(); };
-    void refresh(); const poll = setInterval(load, 5000); window.addEventListener("focus", load);
+    void refresh(); const poll = setInterval(load, 30000); window.addEventListener("focus", load);
     return () => { request.current++; clearInterval(poll); window.removeEventListener("focus", load); };
   }, [refresh]);
   const latestId = items.at(-1)?.id;

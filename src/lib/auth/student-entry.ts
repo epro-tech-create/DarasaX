@@ -7,9 +7,10 @@ import { studentPostAuthPath } from "@/lib/auth/redirect";
 
 export async function studentEntry(stage: "/pending-approval" | "/welcome", next: string | null) {
   const client = await createClient();
-  const { data: { user } } = await client.auth.getUser();
-  if (!user) redirect(`/login${next ? `?next=${encodeURIComponent(next)}` : ""}`);
-  const [profile, admission] = await Promise.all([getProfile(client, user.id), getStudentAdmission(client, user.id)]);
+  const { data, error } = await client.auth.getClaims();
+  const userId = typeof data?.claims?.sub === "string" ? data.claims.sub : null;
+  if (error || !userId) redirect(`/login${next ? `?next=${encodeURIComponent(next)}` : ""}`);
+  const [profile, admission] = await Promise.all([getProfile(client, userId), getStudentAdmission(client, userId)]);
   const destination = studentPostAuthPath(Boolean(profile?.onboarding_completed), next, admission);
   if (destination.split("?")[0] !== stage) redirect(destination);
   return { profile, admission };

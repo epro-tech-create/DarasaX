@@ -18,7 +18,7 @@ export function AdmissionStatus({ status, registrationNumber, className }: {
   const router = useRouter();
   const [refreshing, startRefresh] = useTransition();
   useEffect(() => {
-    const timer = setInterval(() => { if (document.visibilityState === "visible") router.refresh(); }, 15000);
+    const timer = setInterval(() => { if (document.visibilityState === "visible") router.refresh(); }, 60000);
     return () => clearInterval(timer);
   }, [router]);
   return <main className="gradient-mesh min-h-screen px-4 py-8">
