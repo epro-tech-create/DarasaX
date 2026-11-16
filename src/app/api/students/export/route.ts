@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getStaffProfile } from "@/lib/auth/staff-profile";
 import { studentDirectoryRows } from "@/lib/student-directory";
 import { studentDetailsPdf } from "@/lib/student-pdf";
+import { studentDetailsXlsx } from "@/lib/student-xlsx";
 import { adminEmailVerified } from "@/lib/auth/admin-security";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
@@ -16,7 +17,9 @@ export async function GET(request:Request){
   if(staff?.status!=="active" || !["admin","class_rep","lecturer"].includes(staff.role))return fail("Active staff access required.",403);
   if(staff.role==="admin" && !await adminEmailVerified(client))return fail("Administrator email verification required.",403);
   const requested=new URL(request.url).searchParams.get("class");
+  const format=new URL(request.url).searchParams.get("format")??"pdf";
   if(requested && !/^[A-Za-z0-9_-]{1,100}$/.test(requested))return fail("Invalid class.",400);
+  if(format!=="pdf" && format!=="xlsx")return fail("Choose PDF or Excel format.",400);
   const allowed=staff.role==="class_rep" ? (staff.stream_id?[staff.stream_id]:[]) : (staff.stream_ids?.length?staff.stream_ids:staff.stream_id?[staff.stream_id]:[]);
   if(staff.role!=="admin" && (allowed.length===0 || (requested && !allowed.includes(requested))))return fail("You cannot export this class.",403);
   const {data,error}=await client.rpc("list_staff_students");
@@ -24,7 +27,12 @@ export async function GET(request:Request){
   // The RPC enforces scope; filter again so URL parameters can only narrow it.
   const rows=studentDirectoryRows(data).filter(row=>(staff.role==="admin" || allowed.includes(row.stream_id)) && (!requested || row.stream_id===requested));
   const name=(requested??(staff.role==="class_rep"?staff.stream_id:"all-students")??"students").replace(/[^A-Za-z0-9_-]/g,"_");
-  const pdf=await studentDetailsPdf(rows,requested??(staff.role==="class_rep"?staff.stream_id:"All assigned classes")??"Students");
+  const scope=requested??(staff.role==="class_rep"?staff.stream_id:"All assigned classes")??"Students";
+  if(format==="xlsx"){
+   const xlsx=await studentDetailsXlsx(rows,scope);
+   return new NextResponse(new Uint8Array(xlsx),{headers:{"Content-Type":"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet","Content-Disposition":`attachment; filename="DarasaX-${name}-students.xlsx"`,"Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff"}});
+  }
+  const pdf=await studentDetailsPdf(rows,scope);
   return new NextResponse(new Uint8Array(pdf),{headers:{"Content-Type":"application/pdf","Content-Disposition":`attachment; filename="DarasaX-${name}-students.pdf"`,"Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff"}});
  }catch{return fail("Could not download student details. Please try again.",500);}
 }
