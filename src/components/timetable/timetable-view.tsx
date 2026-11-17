@@ -11,6 +11,7 @@ import {
   Sparkles,
   Sun,
   UserRound,
+  Download,
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +24,7 @@ import type { ClassStreamId, TimetableEntry } from "@/types";
 import { addDateDays, dateDay, tanzaniaDate, weekStart } from "@/lib/timetable-dates";
 import { Button } from "@/components/ui/button";
 import { NoLessonsTodayButton } from "@/components/timetable/no-lessons-today-button";
+import { downloadTimetableXlsx } from "@/lib/timetable-xlsx";
 
 const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const dayFull = [
@@ -145,6 +147,8 @@ function ClassBlock({
 export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStream, onEdit, actions, onStreamChange }: { initialStream?: ClassStreamId; lockedStream?: ClassStreamId; onEdit?: (entry: TimetableEntry) => void; actions?: ReactNode; onStreamChange?: (stream: ClassStreamId) => void }) {
   const translateUI = useTranslate();
   const [view, setView] = useState<"today" | "week">("week");
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState("");
   const [selectedDate, setSelectedDate] = useState(tanzaniaDate);
   const fromDate = weekStart(selectedDate);
   const toDate = addDateDays(fromDate, 4);
@@ -208,6 +212,12 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
         description={translateUI(lockedStream ? "Your class schedule. Select a session to edit it." : "Pick your stream to load the right weekly schedule.")}
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            <Button size="sm" variant="outline" disabled={exporting || weekEntries.length === 0} onClick={async () => {
+              setExporting(true); setExportError("");
+              try { await downloadTimetableXlsx(weekEntries, streamId, fromDate, toDate); }
+              catch { setExportError("Could not export timetable. Please try again."); }
+              finally { setExporting(false); }
+            }}><Download className="h-4 w-4" />{translateUI(exporting ? "Preparing export…" : "Export timetable")}</Button>
             {actions}
             {onEdit && <NoLessonsTodayButton key={streamId} streamId={streamId} />}
             <div className="inline-flex rounded-xl border border-border/80 bg-muted/40 p-0.5">
@@ -238,6 +248,7 @@ export function TimetableView({ initialStream = DEFAULT_CLASS_STREAM, lockedStre
         <p className="text-xs text-muted-foreground">{fromDate} – {toDate} · EAT</p>
       </div>
       {scheduleError ? <p role="alert" className="text-sm text-danger">{scheduleError}</p> : null}
+      {exportError ? <p role="alert" className="text-sm text-danger">{translateUI(exportError)}</p> : null}
 
       <div className="surface flex flex-col gap-3 rounded-2xl p-3.5 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
