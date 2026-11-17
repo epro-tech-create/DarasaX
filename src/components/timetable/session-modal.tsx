@@ -31,7 +31,7 @@ export function SessionModal({ entry, streamId, onClose }: { entry: TimetableEnt
     deleting.current = true; setBusy(true); setError("");
     deleteRequestId.current ??= crypto.randomUUID();
     try {
-      await deleteEntry(entry, { date: original, scope: "once", reason: form.reason.trim(), requestId: deleteRequestId.current });
+      await deleteEntry(entry, { date: original, scope: form.scope, reason: form.reason.trim(), requestId: deleteRequestId.current });
       onClose();
     } catch (failure) {
       setError(failure && typeof failure === "object" && "message" in failure ? String(failure.message) : "Could not delete this lesson. Please try again.");
@@ -66,8 +66,13 @@ export function SessionModal({ entry, streamId, onClose }: { entry: TimetableEnt
         <p className="mt-1 text-xs text-muted-foreground">{dateLabel(lessonDate)} · {entry.startTime}–{entry.endTime}{entry.status === "cancelled" ? " · Cancelled" : ""}</p>
       </div> : null}
       {confirmDelete && entry ? <>
-        <p className="text-sm leading-relaxed">Delete only the lesson on <strong>{dateLabel(lessonDate)}</strong>? Other weeks stay unchanged.</p>
-        <p className="text-sm leading-relaxed text-muted-foreground">This lesson will disappear from the timetable. No notification will be sent, and further reminders will stop.</p>
+        <p className="text-sm leading-relaxed">Choose which lessons to delete, starting from <strong>{dateLabel(lessonDate)}</strong>.</p>
+        <fieldset disabled={busy} className="space-y-2">
+          <legend className="mb-2 text-sm font-medium">Delete</legend>
+          <label className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-sm ${form.scope === "once" ? "border-primary bg-primary/5" : "border-border"}`}><input type="radio" name="delete-lesson-scope" value="once" checked={form.scope === "once"} onChange={() => { deleteRequestId.current = null; change({ scope: "once" }); }} className="accent-primary" /><span>This lesson only <span className="text-xs text-muted-foreground">· {dateLabel(lessonDate)}</span></span></label>
+          <label className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-sm ${form.scope === "future" ? "border-primary bg-primary/5" : "border-border"}`}><input type="radio" name="delete-lesson-scope" value="future" checked={form.scope === "future"} onChange={() => { deleteRequestId.current = null; change({ scope: "future" }); }} className="accent-primary" /><span>This and all future sessions</span></label>
+        </fieldset>
+        <p className="text-sm leading-relaxed text-muted-foreground">Deleted lessons disappear from the timetable. No notification will be sent, and their reminders will stop.</p>
         <label className="block text-sm font-medium">Reason (optional)<textarea maxLength={500} value={form.reason} disabled={busy} onChange={e => { deleteRequestId.current = null; change({ reason: e.target.value }); }} className="mt-1 min-h-20 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" /></label>
         {error ? <p role="alert" className="text-sm text-danger">{error}</p> : null}
         <div className="flex justify-end gap-2"><Button type="button" variant="outline" disabled={busy} onClick={() => { setConfirmDelete(false); setError(""); }}>Keep lesson</Button><Button type="button" variant="danger" disabled={busy} onClick={() => void removeLesson()}>{busy ? "Deleting…" : "Delete lesson"}</Button></div>
